@@ -104,13 +104,11 @@ class Robot : public IRobot {
 
   ControlSignal control_signal_;
   MotionState last_motion_state_;
+
   kuka::motion::external::ExternalControlMode control_mode_{
       kuka::motion::external::ExternalControlMode::EXTERNAL_CONTROL_MODE_UNSPECIFIED};
+  
   std::atomic<bool> stop_monitoring_;
-
-  std::condition_variable control_mode_changed_;
-  bool cv_flag_ = false;
-  std::mutex cv_mutex_;
   std::mutex event_handler_mutex_;
 
   // Members and methods necessary for network configuration and error handling.

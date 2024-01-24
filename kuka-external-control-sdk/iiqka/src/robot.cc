@@ -161,11 +161,6 @@ OperationStatus Robot::CreateControllingSubscription() {
       switch (static_cast<int>(response.event())) {
         case kuka::ecs::v1::CommandEvent::SAMPLING:
           event_handler_->OnSampling();
-          {
-            std::lock_guard<std::mutex> lck(cv_mutex_);
-            cv_flag_ = true;
-            control_mode_changed_.notify_all();
-          }
           break;
         case kuka::ecs::v1::CommandEvent::CONTROL_MODE_SWITCH:
           event_handler_->OnControlModeSwitch(response.message());
@@ -319,29 +314,8 @@ BaseControlSignal& Robot::GetControlSignal() { return control_signal_; };
 BaseMotionState& Robot::GetLastMotionState() { return last_motion_state_; };
 
 OperationStatus Robot::SwitchControlMode(ControlMode control_mode) {
-  /*
-  using namespace std::chrono_literals;
-  {
-    std::lock_guard<std::mutex> lck(cv_mutex_);
-    cv_flag_ = false;
-  }
-  */
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);
   return SendControlSignal();
-  //OperationStatus op_status = SendControlSignal();
-
-  /*
-  if (op_status.return_code != ReturnCode::OK) {
-    return op_status;
-  }
-  std::unique_lock<std::mutex> lck(cv_mutex_);
-  bool result = control_mode_changed_.wait_for(lck, 2s, [this] { return cv_flag_ == true; });
-
-  return result ? OperationStatus(ReturnCode::OK)
-                : OperationStatus(ReturnCode::ERROR,
-                                  "SwitchControlMode failed: control mode switch failed or did not "
-                                  "finish in time.");
-                                  */
 }
 
 bool Robot::IsSubscribedToMonitoring() { return monitoring_thread_.joinable(); }
