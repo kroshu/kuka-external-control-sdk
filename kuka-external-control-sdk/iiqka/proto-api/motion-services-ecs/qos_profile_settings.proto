@@ -1,0 +1,44 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.ecs.v1;
+
+option csharp_namespace = "Kuka.Ecs.V1";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
+option java_multiple_files = true;
+option java_outer_classname = "QosProfileSettingsProto";
+option java_package = "com.kuka.ecs.v1";
+option optimize_for = LITE_RUNTIME;
+
+
+// QoS profile
+message QoSProfile
+{
+  // One of the available QoS profiles
+  oneof profile_type {
+    // RT Packet Loss Profile
+    RTPacketLossProfile rt_packet_loss_profile = 1;
+  }
+}
+
+// Settings for the QoS profiler called 'RTPacketLossProfile'
+message RTPacketLossProfile
+{
+  // Intervene after we lose at least this many packets in the specified timeframe
+  uint32 lost_packets_in_timeframe = 1;
+
+  // The timeframe in milliseconds
+  uint32 timeframe_ms = 2;
+
+  // Intervene after we lose at least this many packets consequently
+  uint32 consequent_lost_packets = 3;
+}
+
+
+

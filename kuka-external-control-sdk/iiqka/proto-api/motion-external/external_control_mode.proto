@@ -1,0 +1,30 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.motion.external;
+
+option csharp_namespace = "Kuka.Motion.External";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
+option java_multiple_files = true;
+option java_outer_classname = "ExternalControlServiceProto";
+option java_package = "com.kuka.motion.external";
+option optimize_for = LITE_RUNTIME;
+
+// Available external control modes
+enum ExternalControlMode {
+  EXTERNAL_CONTROL_MODE_UNSPECIFIED = 0;
+  JOINT_POSITION_CONTROL = 1;
+  JOINT_IMPEDANCE_CONTROL = 2;
+  JOINT_VELOCITY_CONTROL = 3;
+  JOINT_TORQUE_CONTROL = 4;
+  CARTESIAN_POSITION_CONTROL = 5;
+  CARTESIAN_IMPEDANCE_CONTROL = 6;
+  CARTESIAN_VELOCITY_CONTROL = 7;
+  WRENCH_CONTROL = 8;
+}

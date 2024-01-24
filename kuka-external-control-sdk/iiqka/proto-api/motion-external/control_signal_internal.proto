@@ -1,0 +1,46 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.motion.external;
+
+import "iiqka/proto-api/motion-external/utils.proto";
+import "iiqka/proto-api/motion-external/control_attributes.proto";
+import "iiqka/proto-api/motion-external/external_control_mode.proto";
+
+option csharp_namespace = "Kuka.Motion.External";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
+option java_multiple_files = true;
+option java_outer_classname = "ControlSignalInternalProto";
+option java_package = "com.kuka.motion.external";
+option optimize_for = LITE_RUNTIME;
+
+// Proto definition for external RT commands for internal usage on shared memory
+message ControlSignalInternal {
+  // Flag for stopping external command handling through RT-channel
+  bool stop_ipo = 1;
+  // The externally calculated joint position command of a joint group.
+  JointPositions joint_command = 2;
+  // The externally calculated base to tcp transformation
+  Transform cartesian_command = 3;
+  // The externally calculated joint velocity command
+  JointVelocities joint_velocity_command = 4;
+  // The externally calculated cartesian velocity (twist) command for the current tcp
+  Twist twist_command = 5;
+  // The externally calculated joint torque command of a joint group.
+  JointTorques joint_torque_command = 6;
+  // The externally calculated wrench command of a joint group.
+  Wrench wrench_command = 7;
+  // Joint impedance control attributes
+  JointImpedanceControlAttributes joint_attributes = 8;
+  // Cartesian impedance control attributes
+  CartesianImpedanceControlAttributes cartesian_attributes = 9;
+  // The control mode for the command sent
+  ExternalControlMode control_mode = 10;
+}
+

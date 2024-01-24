@@ -1,0 +1,58 @@
+@startuml MonitoringExample
+
+skinparam BackgroundColor #ffffff
+skinparam DiagramBorderColor #DarkGray
+skinparam DiagramBorderThickness 3
+skinparam TitleBackgroundColor #DarkGray
+skinparam TitleBorderColor #DarkGray
+skinparam sequenceMessageAlign center
+hide footbox
+
+title <b>Monitoring example
+
+participant ExampleApplication as app
+participant IRobot as robot #LightBlue
+participant Controller as ctrl #LightGreen
+
+autoactivate on
+
+== initialization ==
+app -> robot: Setup()
+activate app
+autoactivate off
+robot -> robot: setting up variables and connection configuration
+autoactivate on
+robot --> app: OK
+
+== monitoring flow ==
+app -> robot: StartMonitoring()
+robot -> ctrl: preparing for monitoring on controller side, start publishing motion states
+ctrl --> robot: OK
+robot --> app: OK
+
+app -> robot: CreateMonitoringSubscription(motion state handler callback)
+robot --> app: OK
+
+
+loop until stop wanted
+	ctrl --> robot: motion state: BaseMotionState
+	robot --> app: call motion state handler callback 
+	
+
+	autoactivate off
+	app -> app: execute calculations/act based on motion state
+	autoactivate on
+end
+
+
+app -> robot: CancelMonitoringSubscription()
+robot --> app: OK
+
+app -> robot: StopMonitoring()
+robot -> ctrl: stop monitoring on controller side
+ctrl --> robot: OK
+robot --> app: OK
+
+deactivate app
+
+@enduml

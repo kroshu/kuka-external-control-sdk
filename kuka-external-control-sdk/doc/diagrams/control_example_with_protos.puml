@@ -1,0 +1,69 @@
+@startuml ControlExampleWithProtos
+
+skinparam BackgroundColor #ffffff
+skinparam DiagramBorderColor #DarkGray
+skinparam DiagramBorderThickness 3
+skinparam TitleBackgroundColor #DarkGray
+skinparam TitleBorderColor #DarkGray
+skinparam sequenceMessageAlign center
+hide footbox
+
+title <b>Control example with protos
+
+participant ExampleApplication as app
+participant Controller as ctrl #LightGreen
+
+autoactivate on
+
+== initialization ==
+app -> app: setting up variables and connection configuration
+app -> ctrl: ObserveControlState gRPC call
+ctrl --> app: OK, opens return stream with CommandState
+
+== control flow ==
+app -> ctrl: OpenControlChannel gRPC call
+autoactivate off
+ctrl -> ctrl: preparing for control flow on controller side
+autoactivate on
+ctrl --> app: OK
+ctrl --> app: return SAMPLING state on observer stream
+
+
+loop until stop requested
+	alt normal execution
+		autoactivate off
+		app -> app: waiting for MotionStateExternal message to arrive
+		ctrl --> app: motion state message
+		app -> app: execute calculations based on motion state
+		app -> app: fill ControlSignalExternal message based on calculations with motion state
+		autoactivate on
+		
+		alt normal execution
+			app -> ctrl: send control signal
+			ctrl --> app: OK
+		else control mode switch requested
+			autoactivate off
+			app -> app: set new control mode for control signal
+			autoactivate on
+			app -> ctrl: send control signal
+			ctrl --> app: OK
+			autoactivate off
+			app -> app: wait for control mode change to happen
+			ctrl --> app: return CONTROL_MODE_SWITCH state on observer stream
+			ctrl --> app: return SAMPLING state on observer stream
+		else stop requested
+			app -> app: set stop flag of ControlSignalExternal to true
+			autoactivate on
+			app -> ctrl: send control signal
+			ctrl --> app: OK
+			ctrl --> app: return STOPPED state on observer stream
+		end
+		
+	else error occured on controller
+		ctrl --> app: return ERROR state on observer stream
+	end
+end
+
+deactivate app
+
+@enduml

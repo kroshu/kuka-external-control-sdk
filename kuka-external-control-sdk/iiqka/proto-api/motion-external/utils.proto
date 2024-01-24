@@ -1,0 +1,76 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.motion.external;
+
+option csharp_namespace = "Kuka.Motion.External";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
+option java_multiple_files = true;
+option java_outer_classname = "MotionStateInternalProto";
+option java_package = "com.kuka.motion.external";
+option optimize_for = LITE_RUNTIME;
+
+
+// An array of joint positions for a given kinematic structure.
+message JointPositions {
+  repeated double values = 1;
+}
+
+
+// An array of joint velocities for a given kinematic structure.
+message JointVelocities {
+  repeated double values = 1;
+}
+
+// An array of joint torques for a given kinematic structure.
+message JointTorques {
+  repeated double values = 1;
+}
+
+// Represents a vector in 3D space.
+message Vector {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+// Represents a quaternion in 3D space.
+message Quaternion {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+  double w = 4;
+}
+
+// Represents a velocity in 3D space.
+message Twist {
+  // The linear part of the velocity.
+  Vector linear = 1;
+
+  // The angular part of the velocity.
+  Vector angular = 2;
+}
+
+// Represents force in 3D space.
+message Wrench {
+  // The linear components.
+  Vector force = 1;
+
+  // The angular components.
+  Vector torque = 2;
+}
+
+// Represents a transform between two coordinate frames in 3D space.
+message Transform {
+  // The translational component.
+  Vector translation = 1;
+
+  // The rotational component.
+  Quaternion rotation = 2;
+}

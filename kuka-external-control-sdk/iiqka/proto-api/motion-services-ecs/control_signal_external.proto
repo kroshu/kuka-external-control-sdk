@@ -1,0 +1,31 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.ecs.v1;
+
+import "iiqka/proto-api/motion-services-ecs/external_header.proto";
+import "iiqka/proto-api/motion-external/control_signal_internal.proto";
+
+option csharp_namespace = "Kuka.Ecs.V1";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
+option java_multiple_files = true;
+option java_outer_classname = "ControlSignalExternalProto";
+option java_package = "com.kuka.ecs.v1";
+option optimize_for = LITE_RUNTIME;
+
+
+// Proto definition for external RT commands
+message ControlSignalExternal {
+  // Message Header
+  ExternalHeader header = 1;
+  // Internal control signal
+  kuka.motion.external.ControlSignalInternal control_signal = 2;
+  // Later feature for IOs
+  // repeated IOValue io_values = 3;
+}

@@ -1,0 +1,47 @@
+@startuml MonitoringExampleWithProtos
+
+skinparam BackgroundColor #ffffff
+skinparam DiagramBorderColor #DarkGray
+skinparam DiagramBorderThickness 3
+skinparam TitleBackgroundColor #DarkGray
+skinparam TitleBorderColor #DarkGray
+skinparam sequenceMessageAlign center
+hide footbox
+
+title <b>Monitoring example with protos
+
+participant ExampleApplication as app
+participant Controller as ctrl #LightGreen
+
+autoactivate on
+
+== initialization ==
+app -> app: setting up variables and connection configuration
+
+== monitoring flow ==
+app -> ctrl: StartMonitoring gRPC call
+autoactivate off
+ctrl -> ctrl: start publishing motion states
+autoactivate on
+ctrl --> app: OK
+
+autoactivate off
+app -> app: subscribe to monitoring messages
+
+loop until stop wanted
+	ctrl --> app: motion state: ExternalMotionState
+	app -> app: execute calculations/act based on motion state
+end
+
+
+app -> app: unsubscribe from monitoring messages
+autoactivate on
+app -> ctrl: StopMonitoring gRPC call
+autoactivate off
+ctrl -> ctrl: stop publishing on controller side
+autoactivate on
+ctrl -->  app: OK
+
+deactivate app
+
+@enduml

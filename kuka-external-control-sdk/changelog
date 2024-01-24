@@ -1,0 +1,34 @@
+kuka-external-control-sdk (0.0.5)
+
+  * Replace nanopb with protobuf + arena alloc
+  * Refactor message builder
+  * Add tests and fake cmd handling service
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Fri, 12 Jan 2024 10:49:00 +0000
+
+kuka-external-control-sdk (0.0.4)
+
+  * Finalize client library documentation and add licensing
+  * Fix minor bugs, refactor (e.g. use one Setup function)
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Wed, 08 Nov 2023 10:49:00 +0000
+
+kuka-external-control-sdk (0.0.3)
+
+  * Fix monitoring: add multicast
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Tue, 07 Nov 2023 17:11:00 +0000
+
+kuka-external-control-sdk (0.0.2)
+
+  * Generate protocol buffers when building from source.
+  * Fix buffer overflow in OperationStatus class.
+  * Fix bug when filling joint attributes.
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 18 Oct 2023 14:28:00 +0000
+
+kuka-external-control-sdk (0.0.1)
+
+  * Initial version.
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 21 Sept 2023 18:27:00 +0000

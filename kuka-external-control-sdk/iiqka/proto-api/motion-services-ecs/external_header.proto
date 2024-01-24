@@ -1,0 +1,26 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.ecs.v1;
+
+option csharp_namespace = "Kuka.Ecs.V1";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
+option java_multiple_files = true;
+option java_outer_classname = "ExternalHeaderProto";
+option java_package = "com.kuka.ecs.v1";
+option optimize_for = LITE_RUNTIME;
+
+
+// Proto definition for external RT commands
+message ExternalHeader {
+  // Message Id
+  uint32 message_id = 1;
+  // Interpolator message identifier
+  uint32 ipoc = 2;
+}

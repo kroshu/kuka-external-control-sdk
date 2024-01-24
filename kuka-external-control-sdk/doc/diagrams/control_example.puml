@@ -1,0 +1,94 @@
+@startuml ControlExample
+
+skinparam BackgroundColor #ffffff
+skinparam DiagramBorderColor #DarkGray
+skinparam DiagramBorderThickness 3
+skinparam TitleBackgroundColor #DarkGray
+skinparam TitleBorderColor #DarkGray
+skinparam sequenceMessageAlign center
+hide footbox
+
+title <b>Control example
+
+participant ExampleApplication as app
+participant IRobot as robot #LightBlue
+participant Controller as ctrl #LightGreen
+
+autoactivate on
+
+== initialization ==
+app -> robot: Setup()
+activate app
+autoactivate off
+robot -> robot: setting up variables and connection configuration
+autoactivate on
+robot -> ctrl: start observing command state changes on controller
+ctrl --> robot: OK
+robot --> app: OK
+
+alt if user wants to register custom event handler
+	app -> robot: RegisterEventHandler(unique ptr of a custom EventHandler)
+	robot --> app: OK
+end
+
+== control flow ==
+app -> robot: StartControlling()
+robot -> ctrl: preparing for control flow on controller side
+ctrl --> robot: OK
+robot --> app: OK
+ctrl -->robot: changed to SAMPLING state
+robot --> app: call OnSampling callback of event handler
+
+loop until stop requested
+	alt normal execution
+		app -> robot: ReceiveMotionState(timeout)
+		ctrl --> robot: motion state message
+		robot --> app: OK
+
+		app -> robot: GetLastMotionState()
+		robot --> app: motion state: BaseMotionState
+
+		autoactivate off
+		app -> app: execute calculations based on motion state
+		autoactivate on
+		
+		app -> robot: GetControlSignal()
+		robot --> app: control signal: BaseControlSignal&
+		autoactivate off
+		app -> app: fill control signal based on calculations with motion state
+		autoactivate on
+		
+		alt normal execution
+			app -> robot: SendControlSignal()
+			robot -> ctrl: send control signal
+			ctrl --> robot: OK
+			robot --> app: OK
+		else control mode switch requested
+			app -> robot: SwitchControlMode(desired control mode)
+			robot -> ctrl: send last control signal and switch control mode, wait for it to take effect
+			autoactivate off
+			ctrl --> robot: changed to CONTROL_MODE_SWITCH state
+			robot --> app: call OnControlModeSwitch callback of event handler
+			ctrl --> robot: changed to SAMPLING state
+			robot --> app: call OnSampling callback of event handler
+			autoactivate on
+			ctrl --> robot: OK
+			robot --> app: OK
+		else stop requested
+			app -> robot: StopControlling()
+			robot -> ctrl: send control signal with stop flag
+			ctrl --> robot: OK
+			robot --> app: OK
+			ctrl --> robot: changed to STOPPED state
+			robot --> app: call OnStopped callback of event handler
+		end
+		
+	else error occured on controller
+		ctrl --> robot: changed to ERROR state
+		robot --> app: call OnError callback of event handler
+	end
+end
+
+deactivate app
+
+@enduml

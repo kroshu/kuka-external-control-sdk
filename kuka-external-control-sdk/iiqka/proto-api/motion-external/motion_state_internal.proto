@@ -1,0 +1,34 @@
+// This material is the exclusive property of KUKA.
+// Except as expressly permitted by separate agreement, this material
+// may only be used by members of the development department of KUKA
+// for internal development purposes of KUKA.
+//
+// Copyright (C) KUKA. All Rights Reserved.
+
+syntax = "proto3";
+
+package kuka.motion.external;
+
+import "iiqka/proto-api/motion-external/utils.proto";
+import "iiqka/proto-api/motion-external/external_control_mode.proto";
+
+option csharp_namespace = "Kuka.Motion.External";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
+option java_multiple_files = true;
+option java_outer_classname = "MotionStateInternalProto";
+option java_package = "com.kuka.motion.external";
+option optimize_for = LITE_RUNTIME;
+
+// Internal message for SharedMem Communication between ecs and external sampler
+message MotionStateInternal {
+  // Flag indicating whether the command handling has stopped
+  bool ipo_stopped = 1;
+  // Currently used control mode
+  ExternalControlMode control_mode = 2;
+  // The measured joint position of the current cycle
+  JointPositions measured_positions = 3;
+  // The measured joint velocities of the current cycle
+  JointVelocities measured_velocities = 4;
+  // The measured joint torques of the current cycle
+  JointTorques measured_torques = 5;
+}
