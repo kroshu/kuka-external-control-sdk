@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        debian_version: [bullseye, bookworm]
+        debian_version: [bookworm]
     container:
       image: debian:${{ matrix.debian_version }}
 
