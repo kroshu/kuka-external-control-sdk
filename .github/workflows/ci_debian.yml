@@ -10,6 +10,7 @@ jobs:
         debian_version: [bullseye, bookworm]
     container:
       image: debian:${{ matrix.debian_version }}
+    fail-fast: false
 
     steps:
     - uses: actions/checkout@v2
