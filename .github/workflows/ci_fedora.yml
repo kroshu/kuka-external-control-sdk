@@ -1,0 +1,25 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora_version: [38, 39]
+    container:
+      image: fedora:${{ matrix.fedora_version }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        #!/bin/bash
+        apt update && apt -y install cmake build-essential pkg-config libssl-dev python3-protobuf protobuf-compiler-grpc libgrpc++-dev nanopb libnanopb-dev && cd kuka-external-control-sdk && mkdir build
+
+    - name: Build and install
+      run: cmake .. && make install
+      working-directory: ./kuka-external-control-sdk/build
