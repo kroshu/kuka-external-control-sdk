@@ -16,7 +16,6 @@ set(target_name "kuka-external-control-sdk")
 set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
 
 find_package(OpenSSL REQUIRED)
-#find_package(Protobuf REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
