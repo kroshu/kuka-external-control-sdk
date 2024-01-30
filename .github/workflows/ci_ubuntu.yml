@@ -5,10 +5,10 @@ on: [push, pull_request]
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-20.04, ubuntu-18.04]
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
-    fail-fast: false
 
     steps:
     - uses: actions/checkout@v2

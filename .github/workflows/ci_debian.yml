@@ -6,11 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         debian_version: [bullseye, bookworm]
     container:
       image: debian:${{ matrix.debian_version }}
-    fail-fast: false
 
     steps:
     - uses: actions/checkout@v2
