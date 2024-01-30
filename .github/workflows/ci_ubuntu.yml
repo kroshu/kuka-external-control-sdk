@@ -15,8 +15,8 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        apt update && apt -y install cmake build-essential pkg-config libssl-dev python3-protobuf protobuf-compiler-grpc libgrpc++-dev nanopb libnanopb-dev && cd kuka-external-control-sdk && mkdir build
+        sudo apt update && sudo apt -y install cmake build-essential pkg-config libssl-dev python3-protobuf protobuf-compiler-grpc libgrpc++-dev nanopb libnanopb-dev && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
-      run: cmake .. && make install
+      run: cmake .. && sudo make install
       working-directory: ./kuka-external-control-sdk/build
