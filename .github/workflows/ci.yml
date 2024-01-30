@@ -4,12 +4,12 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        debian_version: [bookworm]
-    container:
-      image: debian:${{ matrix.debian_version }}
+        os: [ubuntu-latest, ubuntu-20.04, ubuntu-18.04]
+        container: ['debian:bookworm', 'debian:bullseye']
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    container: ${{ matrix.container }}
 
     steps:
     - uses: actions/checkout@v2
