@@ -65,22 +65,22 @@ set(sources
 
 # Build external-control-sdk library
 
-#add_library(${target_name} SHARED ${sources})
+add_library(${target_name} SHARED ${sources})
 
-#target_link_libraries(${target_name} PUBLIC
-#  OpenSSL::SSL
-#  ${PROTOBUF_LIBRARY}
-#  ${gRPC_LIBRARIES}
-#  kuka-external-control-sdk-protobuf
-#)
+target_link_libraries(${target_name} PUBLIC
+  OpenSSL::SSL
+  ${PROTOBUF_LIBRARY}
+  ${gRPC_LIBRARIES}
+  kuka-external-control-sdk-protobuf
+)
 
-#target_include_directories(${target_name} PUBLIC
-#  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include>"
-#  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
-#  "${CMAKE_CURRENT_BINARY_DIR}"
-#)
-#target_compile_options(${target_name} PRIVATE -g)
-#target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+target_include_directories(${target_name} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
+  "${CMAKE_CURRENT_BINARY_DIR}"
+)
+target_compile_options(${target_name} PRIVATE -g)
+target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
 # Install and export
 
@@ -89,10 +89,10 @@ install(TARGETS kuka-external-control-sdk-protobuf EXPORT kuka-external-control-
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-#install(TARGETS ${target_name} EXPORT ${target_name}/
-#    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${target_name} EXPORT ${target_name}/
+    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include/
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
