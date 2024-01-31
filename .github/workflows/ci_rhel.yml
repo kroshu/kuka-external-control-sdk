@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && yum install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
+        yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && yum install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
       run: cmake .. && sudo make install
