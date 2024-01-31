@@ -6,9 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      matrix:
+        rhel_version: [8, 9]
       fail-fast: false
     container:
-      image: almalinux:8
+      image: almalinux:${{ matrix.rhel_version }}
 
     steps:
     - uses: actions/checkout@v2
@@ -16,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-8.noarch.rpm && dnf --enablerepo=powertools install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel grpc-devel grpc-plugins && cd kuka-external-control-sdk && mkdir build
+        dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-${{ matrix.rhel_version }}.noarch.rpm && dnf --enablerepo=powertools install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel grpc-devel grpc-plugins && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
       run: cmake .. && make install
