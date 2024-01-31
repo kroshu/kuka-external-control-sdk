@@ -79,7 +79,7 @@ target_include_directories(${target_name} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
   "${CMAKE_CURRENT_BINARY_DIR}"
 )
-target_compile_options(${target_name} PRIVATE -g)
+
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
 # Install and export

@@ -104,10 +104,8 @@ class Robot : public IRobot {
 
   ControlSignal control_signal_;
   MotionState last_motion_state_;
-
   kuka::motion::external::ExternalControlMode control_mode_{
       kuka::motion::external::ExternalControlMode::EXTERNAL_CONTROL_MODE_UNSPECIFIED};
-  
   std::atomic<bool> stop_monitoring_;
   std::mutex event_handler_mutex_;
 

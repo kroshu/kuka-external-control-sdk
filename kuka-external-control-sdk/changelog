@@ -1,3 +1,9 @@
+kuka-external-control-sdk (0.0.6)
+
+  * Make control mode switch reliable
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Wed, 24 Jan 2024 10:52:00 +0000
+
 kuka-external-control-sdk (0.0.5)
 
   * Replace nanopb with protobuf + arena alloc

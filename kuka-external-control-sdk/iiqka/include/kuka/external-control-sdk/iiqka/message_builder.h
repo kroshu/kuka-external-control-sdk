@@ -93,7 +93,8 @@ class ControlSignal : public BaseControlSignal {
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_command()
-          ->mutable_values()->Clear();
+          ->mutable_values()
+          ->Clear();
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_command()
@@ -105,7 +106,8 @@ class ControlSignal : public BaseControlSignal {
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_torque_command()
-          ->mutable_values()->Clear();
+          ->mutable_values()
+          ->Clear();
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_torque_command()
@@ -117,7 +119,8 @@ class ControlSignal : public BaseControlSignal {
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_velocity_command()
-          ->mutable_values()->Clear();
+          ->mutable_values()
+          ->Clear();
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_velocity_command()
@@ -129,24 +132,27 @@ class ControlSignal : public BaseControlSignal {
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_attributes()
-          ->mutable_stiffness()->Clear();
+          ->mutable_stiffness()
+          ->Clear();
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_attributes()
           ->mutable_stiffness()
           ->Add(joint_impedance_stiffness_values_.begin(),
-                   joint_impedance_stiffness_values_.begin() + dof_);
+                joint_impedance_stiffness_values_.begin() + dof_);
 
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_attributes()
-          ->mutable_damping()->Clear();
+          ->mutable_damping()
+          ->Clear();
+
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
           ->mutable_joint_attributes()
           ->mutable_damping()
           ->Add(joint_impedance_damping_values_.begin(),
-                   joint_impedance_damping_values_.begin() + dof_);
+                joint_impedance_damping_values_.begin() + dof_);
     }
 
     return controlling_arena_->GetMessage();
