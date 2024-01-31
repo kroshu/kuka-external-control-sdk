@@ -16,6 +16,7 @@
 
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <cstring>
 
 namespace os::core::udp::communication {
 

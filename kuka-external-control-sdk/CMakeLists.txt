@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 project("external-control-sdk")
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindProtobuf.cmake)
+
+
 set(artifact_name ${PROJECT_NAME})
 
 set(common_directory "common")
@@ -13,7 +16,6 @@ set(target_name "kuka-external-control-sdk")
 set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
 
 find_package(OpenSSL REQUIRED)
-find_package(Protobuf REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
