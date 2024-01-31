@@ -18,10 +18,10 @@ jobs:
 
     - name: Install protobuf for RHEL 8
       if: matrix.rhel_version == 8
-      run: dnf --enablerepo=powertools install protobuf-devel
+      run: dnf --enablerepo=powertools install -y protobuf-devel
     - name: Install protobuf for RHEL 9
       if: matrix.rhel_version == 9
-      run: dnf --enablerepo=crb install protobuf-devel
+      run: dnf --enablerepo=crb install -y protobuf-devel
     - name: Install dependencies
       run: |
         #!/bin/bash
