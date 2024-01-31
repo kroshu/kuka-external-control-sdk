@@ -1,0 +1,22 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+    container:
+      image: registry.access.redhat.com/ubi8/ubi:8.9
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        #!/bin/bash
+        yum install cmake build-essential pkg-config libssl-dev python3-protobuf protobuf-compiler-grpc libgrpc++-dev && cd kuka-external-control-sdk && mkdir build
+
+    - name: Build and install
+      run: cmake .. && sudo make install
+      working-directory: ./kuka-external-control-sdk/build
