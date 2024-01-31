@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        dnf -y install cmake gcc-c++ python3-protobuf protobuf-compiler grpc-cpp openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
+        dnf -y install cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel grpc-cpp openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
       run: cmake .. && make install
