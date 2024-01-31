@@ -34,5 +34,5 @@ But there is a low-level approach, too: one could use the protos that define the
 To see how to use the raw protos for a general control/monitoring, check out the examples in the SDK documentation. The logic is the same, only the calls are different. To see how the SDK calls are mapped to the raw proto calls, check out [this file](Raw_proto_mapping.md).
 The only requirement is to receive and send from/to the given addresses and ports via gRPC and UDP and fulfill the real-time requirements in case of the UDP communication. 
 
-<span style="color:red;font-weight:700;font-size:14px">One thing you have to be aware of in the current version is that in the received motion states, the torque values are motor-side torques, while the client is expected to send out link-side torques in each tick during torque control.</span>
+<span style="color:red;font-weight:700;font-size:14px">One thing you have to be aware of is that in the received motion states, the torque values have different sign than the client is expected to send out in each tick during torque control. (To move a joint in the positive direction, a positive torque is needed, however the motion state will contain a negative measured torque in this cases due to internal conventions).</span>
 

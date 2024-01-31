@@ -81,7 +81,7 @@ The methods of the IRobot class providing the general interface:
 - _StartControlling()_ : Start the external control session on the controller.
 - _StartMonitoring()_ : Start external monitoring: the robot will start publishing motion states.
 - _CreateMonitoringSubscription(monitoring callback)_: Creates a subscriber to the robot's motion states on the client side.
-- _CancelMonitoringSubscription_()_ : Terminates the motion state subscriber on the client side.
+- _CancelMonitoringSubscription()_ : Terminates the motion state subscriber on the client side.
 - _IsSubscribedToMonitoring()_ : Checks if the client is currently subscribed to the monitoring messages of the robot.
 - _StopControlling()_ : Stops the external control session on the controller.
 - _StopMonitoring()_ : Stops the motion state publisher on the controller.
@@ -110,13 +110,13 @@ From the user's perspective, the MotionState is a read-only object that is fille
 
 The ControlSignal is the opposite: it's a write-only object that has to be filled by the user with the goal positions, torques, joint impedance attributes, etc. in every tick. If the ControlSignal is not modified but sent out using the _SendControlSignal_ call, the internal control signal will contain the previous values.
 
-<span style="color:red;font-weight:700;font-size:14px">One thing you have to be aware of in the current version is that in the received motion states, the torque values are motor-side torques, while the client is expected to send out link-side torques in each tick during torque control.</span>
+<span style="color:red;font-weight:700;font-size:14px">One thing you have to be aware of is that in the received motion states, the torque values have different sign than the client is expected to send out in each tick during torque control. (To move a joint in the positive direction, a positive torque is needed, however the motion state will contain a negative measured torque in this cases due to internal conventions).</span>
 
 As stated in the interface description, it's possible to register an EventHandler, which reacts to events (sampling started, control mode switched, control stopped, error detected) coming from the controller as specified. For this the implemented class should derive from the default EventHandler base and override the desired functions.
 
 To change the control mode in runtime, the SwitchControlMode call has to be issued. If that succeeds, control signals of the new control mode have to be sent from the change on.
 
-Since the real-time communication follows a request-reply pattern, the _StopControlling_ and _SwitchControlMode_ methods have to be sent as a reply to a received request, otherwise an error is returned. The latter also waits at most two seconds until the control mode change occurs and returns afterwards.
+Since the real-time communication follows a request-reply pattern, the _StopControlling_ and _SwitchControlMode_ methods have to be sent as a reply to a received request, otherwise an error is returned. It's also possible for the first MotionState to arrive later directly after a switch, so it's recommended to use a higher timeout (around 1 second) in the following receive.
 Do note that depending on the network quality, these operations might have to be retried due to potential packet losses.
 
 
@@ -180,6 +180,7 @@ It's possible to update the settings using the _SetQoSProfile_ call of the SDK. 
 * The user cannot set the allowed packet losses in a timeframe to be bigger than 25 to disallow too many lost packets in a concentrated part of a larger timeframe.
 * The user cannot set the timeframe to be bigger than 1 hour.
 * If the user tries to set an invalid QoS profile, external control cannot be started until a valid profile is set.
+* If the user would like to set a QoS profile that does not allow any packet losses, only the consecutively lost packets should be set to 0!
 
 If any of the above requirements is violated, the QoS profile will not be set, and the user will have to provide a valid profile to be able to start controlling the robot. This applies only if the QoS configuration is invalid.
 
