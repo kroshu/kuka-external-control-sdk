@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
     container:
-      image: registry.access.redhat.com/ubi8/ubi:8.9
+      image: almalinux:8
 
     steps:
     - uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        yum install -y https://extras.getpagespeed.com/release-latest.rpm && yum install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
+       yum install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
       run: cmake .. && sudo make install
