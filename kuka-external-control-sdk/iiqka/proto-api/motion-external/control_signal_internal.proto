@@ -18,7 +18,6 @@ option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
 option java_multiple_files = true;
 option java_outer_classname = "ControlSignalInternalProto";
 option java_package = "com.kuka.motion.external";
-option optimize_for = LITE_RUNTIME;
 
 // Proto definition for external RT commands for internal usage on shared memory
 message ControlSignalInternal {

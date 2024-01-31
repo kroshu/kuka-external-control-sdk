@@ -17,7 +17,6 @@ option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
 option java_multiple_files = true;
 option java_outer_classname = "MotionStateInternalProto";
 option java_package = "com.kuka.motion.external";
-option optimize_for = LITE_RUNTIME;
 
 // Internal message for SharedMem Communication between ecs and external sampler
 message MotionStateInternal {
