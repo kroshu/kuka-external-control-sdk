@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        yum install cmake gcc-c++ python3-protobuf protobuf-compiler openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
+        yum install -y cmake gcc-c++ python3-protobuf protobuf-compiler openssl openssl-devel && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
       run: cmake .. && sudo make install
