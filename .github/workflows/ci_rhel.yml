@@ -19,5 +19,5 @@ jobs:
         dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-8.noarch.rpm && dnf --enablerepo=powertools install -y cmake gcc-c++ python3-protobuf protobuf-compiler protobuf-devel openssl openssl-devel grpc-devel && cd kuka-external-control-sdk && mkdir build
 
     - name: Build and install
-      run: cmake .. && sudo make install
+      run: cmake .. && make install
       working-directory: ./kuka-external-control-sdk/build
