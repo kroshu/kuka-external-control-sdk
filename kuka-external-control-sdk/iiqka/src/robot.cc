@@ -96,15 +96,13 @@ OperationStatus Robot::SetQoSProfile(QoS_Configuration qos_config) {
 
   request.add_qos_profiles();
 
-  request.mutable_qos_profiles()
-      ->at(0)
-      .mutable_rt_packet_loss_profile()
+  request.mutable_qos_profiles(0)
+      ->mutable_rt_packet_loss_profile()
       ->set_consequent_lost_packets(qos_config.consecutive_packet_loss_limit);
-  request.mutable_qos_profiles()
-      ->at(0)
-      .mutable_rt_packet_loss_profile()
+  request.mutable_qos_profiles(0)
+      ->mutable_rt_packet_loss_profile()
       ->set_lost_packets_in_timeframe(qos_config.packet_loss_in_timeframe_limit);
-  request.mutable_qos_profiles()->at(0).mutable_rt_packet_loss_profile()->set_timeframe_ms(
+  request.mutable_qos_profiles(0)->mutable_rt_packet_loss_profile()->set_timeframe_ms(
       qos_config.timeframe_ms);
 
   return OperationStatus(stub_->SetQoSProfile(&context, request, &response));
