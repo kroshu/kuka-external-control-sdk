@@ -23,7 +23,7 @@ jobs:
         sudo apt update && sudo apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev && mkdir -p kuka-external-control-sdk/build && mkdir -p kuka-external-control-sdk-examples/build
 
     - name: Build and install
-      run: cmake .. && make install
+      run: cmake .. && sudo make install
       working-directory: ./kuka-external-control-sdk/build
 
     - name: Build and install examples
