@@ -14,7 +14,6 @@ option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";
 option java_multiple_files = true;
 option java_outer_classname = "ControlSignalInternalProto";
 option java_package = "com.kuka.motion.external";
-option optimize_for = LITE_RUNTIME;
 
 
 // Type to describe the attributes specific to the joint impedance control mode.

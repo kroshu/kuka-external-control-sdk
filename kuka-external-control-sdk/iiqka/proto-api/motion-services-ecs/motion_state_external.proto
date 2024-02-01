@@ -6,6 +6,7 @@
 // Copyright (C) KUKA. All Rights Reserved.
 
 syntax = "proto3";
+option cc_enable_arenas = true;
 
 package kuka.ecs.v1;
 
@@ -17,7 +18,6 @@ option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
 option java_multiple_files = true;
 option java_outer_classname = "MotionStateExternalProto";
 option java_package = "com.kuka.ecs.v1";
-option optimize_for = LITE_RUNTIME;
 
 
 // External motion state

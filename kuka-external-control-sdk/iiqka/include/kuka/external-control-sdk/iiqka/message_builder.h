@@ -95,11 +95,13 @@ class ControlSignal : public BaseControlSignal {
           ->mutable_joint_command()
           ->mutable_values()
           ->Clear();
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_command()
-          ->mutable_values()
-          ->Add(joint_position_values_.begin(), joint_position_values_.begin() + dof_);
+      for(int i = 0; i< dof_; i++){
+        controlling_arena_->GetMessage()
+            ->mutable_control_signal()
+            ->mutable_joint_command()
+            ->mutable_values()
+            ->Add(joint_position_values_[i]);
+      }
     }
 
     if (this->has_torques_) {
@@ -108,11 +110,13 @@ class ControlSignal : public BaseControlSignal {
           ->mutable_joint_torque_command()
           ->mutable_values()
           ->Clear();
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_torque_command()
-          ->mutable_values()
-          ->Add(joint_torque_values_.begin(), joint_torque_values_.begin() + dof_);
+      for(int i = 0; i< dof_; i++){
+        controlling_arena_->GetMessage()
+            ->mutable_control_signal()
+            ->mutable_joint_torque_command()
+            ->mutable_values()
+            ->Add(joint_torque_values_[i]);
+      }
     }
 
     if (this->has_velocities_) {
@@ -121,11 +125,13 @@ class ControlSignal : public BaseControlSignal {
           ->mutable_joint_velocity_command()
           ->mutable_values()
           ->Clear();
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_velocity_command()
-          ->mutable_values()
-          ->Add(joint_velocity_values_.begin(), joint_velocity_values_.begin() + dof_);
+      for(int i = 0; i< dof_; i++){
+        controlling_arena_->GetMessage()
+            ->mutable_control_signal()
+            ->mutable_joint_velocity_command()
+            ->mutable_values()
+            ->Add(joint_velocity_values_[i]);
+      }
     }
 
     if (this->has_stiffness_and_damping) {
@@ -134,12 +140,6 @@ class ControlSignal : public BaseControlSignal {
           ->mutable_joint_attributes()
           ->mutable_stiffness()
           ->Clear();
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_attributes()
-          ->mutable_stiffness()
-          ->Add(joint_impedance_stiffness_values_.begin(),
-                joint_impedance_stiffness_values_.begin() + dof_);
 
       controlling_arena_->GetMessage()
           ->mutable_control_signal()
@@ -147,12 +147,18 @@ class ControlSignal : public BaseControlSignal {
           ->mutable_damping()
           ->Clear();
 
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_attributes()
-          ->mutable_damping()
-          ->Add(joint_impedance_damping_values_.begin(),
-                joint_impedance_damping_values_.begin() + dof_);
+      for(int i = 0; i< dof_; i++){
+        controlling_arena_->GetMessage()
+            ->mutable_control_signal()
+            ->mutable_joint_attributes()
+            ->mutable_stiffness()
+            ->Add(joint_impedance_stiffness_values_[i]);
+        controlling_arena_->GetMessage()
+            ->mutable_control_signal()
+            ->mutable_joint_attributes()
+            ->mutable_damping()
+            ->Add(joint_impedance_damping_values_[i]);
+      }
     }
 
     return controlling_arena_->GetMessage();
