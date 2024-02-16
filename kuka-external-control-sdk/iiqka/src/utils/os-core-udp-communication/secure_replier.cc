@@ -93,7 +93,6 @@ SecureReplier::ErrorCode SecureReplier::ReceiveRequestOrTimeout(
     struct epoll_event event;
     int result = epoll_wait(epoll_fd_, &event, 1,
                             ((recv_timeout.count() == 0) ? -1 : recv_timeout.count() / 1000));
-    // TODO: think over whether return error or just sink them
     if (result == 0) {
       return Replier::ErrorCode::kTimeout;
     } else if (result < 0) {

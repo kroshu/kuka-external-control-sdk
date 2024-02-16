@@ -25,15 +25,15 @@ namespace kuka::external::control::iiqka {
 class MotionState : public BaseMotionState {
  public:
   MotionState(std::size_t dof) : BaseMotionState(dof) {
-    measured_positions_.resize(dof);
-    measured_torques_.resize(dof);
-    measured_velocities_.resize(dof);
+    measured_positions_.resize(dof, 0.0);
+    measured_torques_.resize(dof, 0.0);
+    measured_velocities_.resize(dof, 0.0);
   }
   MotionState(kuka::ecs::v1::MotionStateExternal& protobuf_motion_state, uint8_t dof)
       : BaseMotionState(dof) {
-    measured_positions_.resize(dof);
-    measured_torques_.resize(dof);
-    measured_velocities_.resize(dof);
+    measured_positions_.resize(dof, 0.0);
+    measured_torques_.resize(dof, 0.0);
+    measured_velocities_.resize(dof, 0.0);
     *this = std::move(protobuf_motion_state);
   }
 
@@ -66,6 +66,7 @@ class MotionState : public BaseMotionState {
           std::begin(protobuf_motion_state.motion_state().measured_velocities().values()) + dof_,
           measured_velocities_.begin());
     }
+
     return *this;
   }
 };
@@ -74,11 +75,11 @@ class ControlSignal : public BaseControlSignal {
  public:
   ControlSignal(ArenaWrapper<kuka::ecs::v1::ControlSignalExternal>* arena, std::size_t dof)
       : BaseControlSignal(dof), controlling_arena_(arena) {
-    joint_position_values_.resize(dof);
-    joint_torque_values_.resize(dof);
-    joint_velocity_values_.resize(dof);
-    joint_impedance_stiffness_values_.resize(dof);
-    joint_impedance_damping_values_.resize(dof);
+    joint_position_values_.resize(dof, 0.0);
+    joint_torque_values_.resize(dof, 0.0);
+    joint_velocity_values_.resize(dof, 0.0);
+    joint_impedance_stiffness_values_.resize(dof, 0.0);
+    joint_impedance_damping_values_.resize(dof, 0.0);
   }
 
   kuka::ecs::v1::ControlSignalExternal* CreateProtobufControlSignal(int last_ipoc, int control_mode,
@@ -89,13 +90,14 @@ class ControlSignal : public BaseControlSignal {
     controlling_arena_->GetMessage()->mutable_control_signal()->set_control_mode(
         static_cast<kuka::motion::external::ExternalControlMode>(control_mode));
 
+    controlling_arena_->GetMessage()
+        ->mutable_control_signal()
+        ->mutable_joint_command()
+        ->mutable_values()
+        ->Clear();
+
     if (this->has_positions_) {
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_command()
-          ->mutable_values()
-          ->Clear();
-      for(int i = 0; i< dof_; i++){
+      for (int i = 0; i < dof_; i++) {
         controlling_arena_->GetMessage()
             ->mutable_control_signal()
             ->mutable_joint_command()
@@ -104,13 +106,14 @@ class ControlSignal : public BaseControlSignal {
       }
     }
 
+    controlling_arena_->GetMessage()
+        ->mutable_control_signal()
+        ->mutable_joint_torque_command()
+        ->mutable_values()
+        ->Clear();
+
     if (this->has_torques_) {
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_torque_command()
-          ->mutable_values()
-          ->Clear();
-      for(int i = 0; i< dof_; i++){
+      for (int i = 0; i < dof_; i++) {
         controlling_arena_->GetMessage()
             ->mutable_control_signal()
             ->mutable_joint_torque_command()
@@ -119,13 +122,14 @@ class ControlSignal : public BaseControlSignal {
       }
     }
 
+    controlling_arena_->GetMessage()
+        ->mutable_control_signal()
+        ->mutable_joint_velocity_command()
+        ->mutable_values()
+        ->Clear();
+
     if (this->has_velocities_) {
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_velocity_command()
-          ->mutable_values()
-          ->Clear();
-      for(int i = 0; i< dof_; i++){
+      for (int i = 0; i < dof_; i++) {
         controlling_arena_->GetMessage()
             ->mutable_control_signal()
             ->mutable_joint_velocity_command()
@@ -134,20 +138,20 @@ class ControlSignal : public BaseControlSignal {
       }
     }
 
-    if (this->has_stiffness_and_damping) {
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_attributes()
-          ->mutable_stiffness()
-          ->Clear();
+    controlling_arena_->GetMessage()
+        ->mutable_control_signal()
+        ->mutable_joint_attributes()
+        ->mutable_stiffness()
+        ->Clear();
 
-      controlling_arena_->GetMessage()
-          ->mutable_control_signal()
-          ->mutable_joint_attributes()
-          ->mutable_damping()
-          ->Clear();
+    controlling_arena_->GetMessage()
+        ->mutable_control_signal()
+        ->mutable_joint_attributes()
+        ->mutable_damping()
+        ->Clear();
 
-      for(int i = 0; i< dof_; i++){
+    if (this->has_stiffness_and_damping_) {
+      for (int i = 0; i < dof_; i++) {
         controlling_arena_->GetMessage()
             ->mutable_control_signal()
             ->mutable_joint_attributes()

@@ -53,7 +53,7 @@ class IRobot {
 
   virtual OperationStatus Setup() = 0;
 
-  virtual OperationStatus StartControlling() = 0;
+  virtual OperationStatus StartControlling(ControlMode control_mode) = 0;
   virtual OperationStatus StartMonitoring() = 0;
 
   virtual OperationStatus CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) = 0;

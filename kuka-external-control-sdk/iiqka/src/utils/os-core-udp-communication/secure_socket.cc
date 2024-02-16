@@ -23,10 +23,7 @@
 
 namespace os::core::udp::communication {
 
-int dtls_verify_callback(int /*ok*/, X509_STORE_CTX* /*ctx*/) {
-  // Here we trust god...
-  return 1;
-}
+int dtls_verify_callback(int /*ok*/, X509_STORE_CTX* /*ctx*/) { return 1; }
 
 const std::string MY_COOKIE = "MySuperSecureAndSecretCookie;)";
 
@@ -273,10 +270,7 @@ std::unique_ptr<SecureSocket> SecureSocket::CreateAcceptedSocket(SSL_CTX* ssl_ct
   return accepted_socket;
 }
 
-// TODO: some interface for ssl errors...
 std::string SecureSocket::GetSSLErrorText() const {
-  // TODO rework with ERR_get_error
-  // Did not get any messages with it, so replaced temporarily
   char ssl_err_buf[1024];
   return ERR_error_string(last_errno_, ssl_err_buf);
 }

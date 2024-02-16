@@ -4,7 +4,6 @@ project("external-control-sdk")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindProtobuf.cmake)
 
-
 set(artifact_name ${PROJECT_NAME})
 
 set(common_directory "common")

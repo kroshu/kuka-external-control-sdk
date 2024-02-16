@@ -14,18 +14,46 @@ This SDK makes it easy to develop client applications for externally controlling
 
 - Linux as the operating system
 - A compiler that supports the C++17 standard.
-- Installation of the following packages (specified for Ubuntu/debian/Mint):
+- Installation of the following packages/components:
     - cmake
-    - build-essential
-    - pkg-config
-    - libssl-dev
-    - protobuf-compiler-grpc
-    - nanopb
-    - libnanopb-dev
-    - python3-protobuf
-    - libgrpc++-dev
+    - GNU/g++ compiler
+    - OpenSSL
+    - Protobuf
+    - PkgConfig
+    - gRPC C++ module
+    - grpc_cpp_plugin
+
+Installation of the packages for the most used Linux operating systems can be done with the following commands:
+- Ubuntu (20.04, 22.04) & Debian (bullseye, bookworm):
+  ```bash
+  apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev
+  ```
+
+- RHEL & almalinux 8:
+  ```bash
+  dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-8.noarch.rpm
+  dnf install --enablerepo=powertools -y protobuf-devel cmake gcc-c++ openssl-devel grpc-devel grpc-plugins
+  ```
+
+- RHEL & almalinux 9:
+  ```bash
+  dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-9.noarch.rpm
+  dnf install --enablerepo=crb -y protobuf-devel cmake gcc-c++ openssl-devel grpc-devel grpc-plugins
+  ```
+
+- Fedora (38, 39):
+  ```bash
+  dnf install -y cmake gcc-c++ protobuf-devel grpc-devel openssl-devel
+  ```
 
 <h2>Build and installation</h2>
+
+
+To optimize the performance of the generated protobuf libraries, you can extend all .proto files with the following line:
+```
+option optimize_for = LITE_RUNTIME;
+```
+This was omitted from the sdk for backward-compatibility reasons, as older versions of the protobuf library does not support this.
 
 If all requirements are met, the SDK can be installed with cmake:
 
@@ -65,6 +93,11 @@ target_link_libraries(client_app
 )
 ```
 
+The kuka-external-control-sdk shared object filed is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+```
+
 <h2>Structure of the SDK</h2>
 
 To be able to use the SDK properly, it's important to understand how it's structured. The main building block is the Robot class and its IRobot interface, which represent the external control service running on the robot controller.
@@ -78,7 +111,7 @@ The OS-agnostic IRobot interface abstracts the OS-specific operations away from 
 The methods of the IRobot class providing the general interface:
 
 - _Setup()_ : Attempts to setup the network connection with the robot controller.
-- _StartControlling()_ : Start the external control session on the controller.
+- _StartControlling(control mode)_ : Start the external control session on the controller.
 - _StartMonitoring()_ : Start external monitoring: the robot will start publishing motion states.
 - _CreateMonitoringSubscription(monitoring callback)_: Creates a subscriber to the robot's motion states on the client side.
 - _CancelMonitoringSubscription()_ : Terminates the motion state subscriber on the client side.
@@ -147,7 +180,7 @@ With this _SetQoSProfile_ function the user can set the QoS coniguration, which 
 
 <h4>Configuration</h4>
 
-Before creating the iiQKA-specific Robot object, an initial configuration has to be provided via the namespaced Configuration class. It should contain the IP addresses of the KRC5 Micro on the KONI interface and the IP address of the client machine. Aside from that, the initial control mode has to be provided, else the controlling will fail with the 'unsupported control mode' error message.
+Before creating the iiQKA-specific Robot object, an initial configuration has to be provided via the namespaced Configuration class. It should contain the IP addresses of the KRC5 Micro on the KONI interface and the IP address of the client machine.
 
 During controlling, the UDP packets are by default sent and received through a secure DTLS layer. So the user has to provide a certificate and private key and set the path of these files in the configuration. (For generating a certificate and a private key see an example [here](https://stackoverflow.com/a/10176685) or check out the [official documentation](https://www.openssl.org/docs/manmaster/man1/openssl.html).) It's possible opt-out from the secure controlling mode by setting the 'is_secure' flag to false.
 
@@ -193,11 +226,10 @@ Here's a simple example of how the SDK can be used for controlling an iiQKA robo
     #include "kuka/external-control-sdk/iiqka/robot.h"
 
     int main(int argc, char const *argv[]) {
-    // Configure general setup - IP addresses, control mode
+    // Configure general setup - IP addresses
     kuka::external::control::iiqka::Configuration eci_config;
     eci_config.client_ip_address = "127.0.0.1"; // client ip address
     eci_config.koni_ip_address = "127.0.0.1"; // KRC IP address
-    eci_config.initial_control_mode = kuka::external::control::ControlMode::JOINT_POSITION_CONTROL;
 
     // Create interface
     kuka::external::control::iiqka::Robot rob_if(eci_config);
@@ -210,7 +242,7 @@ The next step is to call StartControlling and create a control loop. It's recomm
 
 ```cpp
 
-  rob_if->StartControlling();
+  rob_if->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL);
 
   // Degree of freedom
   size_t dof = 6;

@@ -1,3 +1,25 @@
+kuka-external-control-sdk (1.1.0)
+
+  * Move initial control mode to StartControlling argument
+  * Add support for cartesian position control
+  * Fix bug in the message builder when providing empty vector argument
+  * Extend tests
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 15 Feb 2024 14:00:00 +0000
+
+
+kuka-external-control-sdk (1.0.0)
+
+  * Add stop flag for reliable stopping
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Mon, 05 Feb 2024 10:00:00 +0000
+
+kuka-external-control-sdk (0.0.7)
+
+  * Fix build for older Linux versions
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 01 Feb 2024 11:00:00 +0000
+
 kuka-external-control-sdk (0.0.6)
 
   * Make control mode switch reliable

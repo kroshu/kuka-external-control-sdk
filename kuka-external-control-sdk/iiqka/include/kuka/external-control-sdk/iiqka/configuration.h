@@ -43,14 +43,6 @@ struct Configuration {
   // Timeout to establish network connection with the KRC.
   uint32_t connection_timeout = 5000;
 
-  /** The control mode to begin external control in.
-   *  At the present, the following modes are supported:
-   *  1 - Joint position control
-   *  2 - Joint impedance control
-   *  4 - Joint torque control
-   */
-  ControlMode initial_control_mode = ControlMode::UNSPECIFIED;
-
   // Cycle time in milliseconds Currently unused.
   const uint32_t cycle_time = 4;
 

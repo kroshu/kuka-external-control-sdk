@@ -25,8 +25,6 @@ enum class ReturnCode { UNSPECIFIED, OK, WARN, ERROR, TIMEOUT };
 
 struct OperationStatus {
   OperationStatus() = default;
-  OperationStatus(grpc::Status);
-  OperationStatus(os::core::udp::communication::Socket::ErrorCode);
   OperationStatus(ReturnCode, const char* = "\0");
 
   ReturnCode return_code = ReturnCode::UNSPECIFIED;

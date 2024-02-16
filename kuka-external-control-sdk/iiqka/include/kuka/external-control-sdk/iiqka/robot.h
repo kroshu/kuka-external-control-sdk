@@ -44,7 +44,13 @@ class Robot : public IRobot {
  public:
   virtual OperationStatus Setup() override;
 
-  virtual OperationStatus StartControlling() override;
+  /** Start controlling with the specified control mode
+   *  At the present, the following control modes are supported:
+   *  1 - Joint position control
+   *  2 - Joint impedance control
+   *  4 - Joint torque control
+   */
+  virtual OperationStatus StartControlling(ControlMode control_mode) override;
   virtual OperationStatus StartMonitoring() override;
 
   virtual OperationStatus StopControlling() override;
@@ -76,6 +82,9 @@ class Robot : public IRobot {
   void Reset();
   bool Uninitialized();
 
+  OperationStatus ConvertStatus(grpc::Status);
+  OperationStatus ConvertStatus(os::core::udp::communication::Socket::ErrorCode);
+
   virtual bool IsSubscribedToControlling();
   OperationStatus CreateControllingSubscription();
   OperationStatus CancelControllingSubscription();
@@ -95,8 +104,6 @@ class Robot : public IRobot {
 
   // Members and helper methods for implementing control.
  private:
-  OperationStatus SendControlSignal(bool stop_control);
-
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> controlling_arena_;
   ArenaWrapper<kuka::ecs::v1::MotionStateExternal> monitoring_arena_;
 
@@ -107,6 +114,7 @@ class Robot : public IRobot {
   kuka::motion::external::ExternalControlMode control_mode_{
       kuka::motion::external::ExternalControlMode::EXTERNAL_CONTROL_MODE_UNSPECIFIED};
   std::atomic<bool> stop_monitoring_;
+  bool stop_flag_;
   std::mutex event_handler_mutex_;
 
   // Members and methods necessary for network configuration and error handling.

@@ -9,12 +9,6 @@ int main(int argc, char const *argv[]) {
   // Create interface
   auto rob_if = std::make_shared<kuka::external::control::iiqka::Robot>(eci_config);
 
-  // Set QoS configurations
-  kuka::external::control::iiqka::QoS_Configuration default_qos_config;
-  // Test with weaker qos
-  default_qos_config.consecutive_packet_loss_limit = 10;
-  rob_if->SetQoSProfile(default_qos_config);
-
   // Initiate connection
   auto setup_ret = rob_if->Setup();
   if (setup_ret.return_code != kuka::external::control::ReturnCode::OK) {

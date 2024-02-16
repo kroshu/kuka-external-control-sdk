@@ -85,7 +85,6 @@ bool IsValidIP(const char* ip_address) {
 }
 
 std::optional<SocketAddress> SocketAddress::SafeConstruct(const std::string& ip, int port) {
-  // TODO check for port validity, too
   if (!IsValidIP(ip.c_str())) {
     return std::nullopt;
   }

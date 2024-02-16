@@ -5,11 +5,10 @@
 #include "kuka/external-control-sdk/iiqka/robot.h"
 
 int main(int argc, char const *argv[]) {
-  // Configure general setup - IP addresses, control mode
+  // Configure general setup - IP addresses
   kuka::external::control::iiqka::Configuration eci_config;
-  eci_config.client_ip_address = "192.168.1.150";
-  eci_config.koni_ip_address = "192.168.1.100";
-  eci_config.initial_control_mode = kuka::external::control::ControlMode::JOINT_POSITION_CONTROL;
+  eci_config.client_ip_address = "127.0.0.1";
+  eci_config.koni_ip_address = "127.0.0.1";
 
   // Create interface
   auto rob_if = std::make_shared<kuka::external::control::iiqka::Robot>(eci_config);
@@ -18,7 +17,6 @@ int main(int argc, char const *argv[]) {
   // Initiate connection
   bool use_secure_setup = false;
   if (use_secure_setup) {
-    // IMPORTANT you need to add RtEnableSecurity: true to controller config
     eci_config.is_secure = true;
     eci_config.certificate_path = "cert.pem";
     eci_config.private_key_path = "key.pem";
@@ -49,7 +47,8 @@ int main(int argc, char const *argv[]) {
   rob_if->RegisterEventHandler(std::move(control_event_handler));
 
   // Start controlling the robot
-  auto start_control_ret = rob_if->StartControlling();
+  auto start_control_ret =
+      rob_if->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL);
   if (start_control_ret.return_code != kuka::external::control::ReturnCode::OK) {
     std::cerr << "Opening control channel failed: " << start_control_ret.message << std::endl;
     return 0;
@@ -96,12 +95,18 @@ int main(int argc, char const *argv[]) {
     rob_if->GetControlSignal().AddJointPositionValues(reply_pos);
     std::cout << "Set values\n";
 
+    // Set constant joint impedance attributes before switching to impedance mode
+    if (counter == 5000) {
+      auto stiffness = std::vector<double>(6, 100);
+      auto damping = std::vector<double>(6, 0.7);
+      rob_if->GetControlSignal().AddStiffnessAndDampingValues(stiffness, damping);
+    }
+
     // Send control signal (or switch control mode in case of the 5000th message)
-    int counter_mod = counter % 2;
-    auto send_ret = counter_mod == 1
+    auto send_ret = counter == 5000
                         ? rob_if->SwitchControlMode(
-                              kuka::external::control::ControlMode(2))
-                        : rob_if->SwitchControlMode(kuka::external::control::ControlMode(1));
+                              kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
+                        : rob_if->SendControlSignal();
     std::cout << "Sent reply\n";
     if (send_ret.return_code != kuka::external::control::ReturnCode::OK) {
       std::cerr << "Send req failed with ret code: " << static_cast<int>(send_ret.return_code)
