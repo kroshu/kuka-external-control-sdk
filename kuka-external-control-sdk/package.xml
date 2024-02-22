@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>kuka_external_control_sdk</name>
+  <version>1.1.1</version>
+  <description>SDK for ExternalAPI.Control toolbox</description>
+  <author>Aron Svastits</author>
+  <maintainer email="svastits1@gmail.com">Aron Svastits</maintainer>
+  <license>Apache</license>
+
+  <export>
+    <architecture_independent/>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
