@@ -28,6 +28,7 @@ target_link_libraries(${monitoring-artifact_name}
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+      "~/.local/include"
 )
 
 install(
@@ -55,6 +56,7 @@ target_link_libraries(${control-artifact_name}
 target_include_directories(${control-artifact_name}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+      "~/.local/include"
 )
 
 install(

@@ -86,7 +86,7 @@ target_link_libraries(client_app
 )
 ```
 
-The kuka-external-control-sdk shared object filed is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
+The kuka-external-control-sdk shared object file is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
