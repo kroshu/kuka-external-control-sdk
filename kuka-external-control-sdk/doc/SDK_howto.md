@@ -55,8 +55,7 @@ If all requirements are met, the SDK can be installed with cmake:
 cd <clone of this repository>
 mkdir build && cd build
 cmake ..
-make
-sudo make install
+make install
 ```
 
 This will install the necessary headers and the library itself, which can then be used from the client application's CMake project.
