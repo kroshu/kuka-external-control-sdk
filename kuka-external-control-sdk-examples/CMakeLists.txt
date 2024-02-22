@@ -5,8 +5,8 @@ project(${DEBIAN_PROJECT_NAME}
 )
 
 # Project dependencies
-find_library(ROX_EXTERNAL_CONTROL_SDK kuka-external-control-sdk REQUIRED)
-find_library(ROX_EXTERNAL_CONTROL_SDK_PROTOBUF kuka-external-control-sdk-protobuf REQUIRED)
+find_library(ROX_EXTERNAL_CONTROL_SDK kuka-external-control-sdk PATHS "~/.local/lib" REQUIRED)
+find_library(ROX_EXTERNAL_CONTROL_SDK_PROTOBUF kuka-external-control-sdk-protobuf PATHS "~/.local/lib" REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
