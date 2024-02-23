@@ -52,6 +52,7 @@ target_compile_features(${control-artifact_name} INTERFACE cxx_std_20 PRIVATE cx
 
 target_link_libraries(${control-artifact_name} PUBLIC
   "${ROX_EXTERNAL_CONTROL_SDK}"
+  OpenSSL::SSL
   ${gRPC_LIBRARIES}
   "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
   ${PROTOBUF_LIBRARY}
