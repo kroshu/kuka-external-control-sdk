@@ -41,7 +41,7 @@ add_library(kuka-external-control-sdk-protobuf
 
 set(PROTO_BINARY_DIR ${CMAKE_INSTALL_LIBDIR})
 
-target_link_libraries(kuka-external-control-sdk-protobuf PUBLIC protobuf::libprotobuf grpc++)
+target_link_libraries(kuka-external-control-sdk-protobuf PUBLIC ${gRPC_LIBRARIES} ${PROTOBUF_LIBRARY})
 
 target_include_directories(kuka-external-control-sdk-protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 

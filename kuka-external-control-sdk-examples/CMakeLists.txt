@@ -22,10 +22,11 @@ set(monitoring-artifact_name monitoring-example)
 add_executable(${monitoring-artifact_name} ${monitoring-sources})
 target_compile_features(${monitoring-artifact_name} INTERFACE cxx_std_20 PRIVATE cxx_std_20)
 
-target_link_libraries(${monitoring-artifact_name}
+target_link_libraries(${monitoring-artifact_name} PUBLIC
   "${ROX_EXTERNAL_CONTROL_SDK}"
   ${gRPC_LIBRARIES}
   "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
+  ${PROTOBUF_LIBRARY}
 )
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
@@ -49,10 +50,11 @@ set(control-artifact_name control-example)
 add_executable(${control-artifact_name} ${control-sources})
 target_compile_features(${control-artifact_name} INTERFACE cxx_std_20 PRIVATE cxx_std_20)
 
-target_link_libraries(${control-artifact_name}
+target_link_libraries(${control-artifact_name} PUBLIC
   "${ROX_EXTERNAL_CONTROL_SDK}"
   ${gRPC_LIBRARIES}
   "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
+  ${PROTOBUF_LIBRARY}
 )
 
 target_include_directories(${control-artifact_name}
