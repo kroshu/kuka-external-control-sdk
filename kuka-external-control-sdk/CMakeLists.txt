@@ -12,7 +12,11 @@ set(iiqka_directory "iiqka")
 set(utils_directory "utils")
 set(proto_api_directory "proto-api")
 set(target_name "kuka-external-control-sdk")
-set(CMAKE_INSTALL_INCLUDEDIR "/usr/include")
+list(APPEND CMAKE_PREFIX_PATH "~/.local/lib")
+
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "~/.local" CACHE PATH "default install path" FORCE )
+endif()
 
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -96,13 +100,13 @@ install(TARGETS ${target_name} EXPORT ${target_name}/
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include/
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include/
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${iiqka_directory}
-      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")

@@ -1,3 +1,9 @@
+kuka-external-control-sdk (1.1.1)
+
+  * Modify installation directory
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 22 Feb 2024 16:00:00 +0000
+
 kuka-external-control-sdk (1.1.0)
 
   * Move initial control mode to StartControlling argument

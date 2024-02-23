@@ -5,7 +5,8 @@ project(${DEBIAN_PROJECT_NAME}
 )
 
 # Project dependencies
-find_library(ROX_EXTERNAL_CONTROL_SDK kuka-external-control-sdk REQUIRED)
+find_library(ROX_EXTERNAL_CONTROL_SDK kuka-external-control-sdk PATHS "~/.local/lib" REQUIRED)
+find_library(ROX_EXTERNAL_CONTROL_SDK_PROTOBUF kuka-external-control-sdk-protobuf PATHS "~/.local/lib" REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
@@ -22,11 +23,12 @@ target_compile_features(${monitoring-artifact_name} INTERFACE cxx_std_20 PRIVATE
 target_link_libraries(${monitoring-artifact_name}
   "${ROX_EXTERNAL_CONTROL_SDK}"
   ${gRPC_LIBRARIES}
-  kuka-external-control-sdk-protobuf
+  "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
 )
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+      "~/.local/include"
 )
 
 install(
@@ -48,12 +50,13 @@ target_compile_features(${control-artifact_name} INTERFACE cxx_std_20 PRIVATE cx
 target_link_libraries(${control-artifact_name}
   "${ROX_EXTERNAL_CONTROL_SDK}"
   ${gRPC_LIBRARIES}
-  kuka-external-control-sdk-protobuf
+  "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
 )
 
 target_include_directories(${control-artifact_name}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+      "~/.local/include"
 )
 
 install(

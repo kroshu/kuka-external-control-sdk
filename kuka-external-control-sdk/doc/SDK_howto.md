@@ -55,8 +55,7 @@ If all requirements are met, the SDK can be installed with cmake:
 cd <clone of this repository>
 mkdir build && cd build
 cmake ..
-make
-sudo make install
+make install
 ```
 
 This will install the necessary headers and the library itself, which can then be used from the client application's CMake project.
@@ -87,7 +86,7 @@ target_link_libraries(client_app
 )
 ```
 
-The kuka-external-control-sdk shared object filed is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
+The kuka-external-control-sdk shared object file is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 ```
