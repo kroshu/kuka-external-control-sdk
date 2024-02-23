@@ -26,7 +26,7 @@ pkg_check_modules(gRPC REQUIRED grpc++)
 set(motion_external_proto_api_path "${CMAKE_CURRENT_LIST_DIR}/iiqka/proto-api/motion-external")
 set(motion_services_ecs_proto_api_path "${CMAKE_CURRENT_LIST_DIR}/iiqka/proto-api/motion-services-ecs")
 
-add_library(kuka-external-control-sdk-protobuf SHARED
+add_library(kuka-external-control-sdk-protobuf
 "${motion_external_proto_api_path}/control_attributes.proto"
 "${motion_external_proto_api_path}/utils.proto"
 "${motion_external_proto_api_path}/external_control_mode.proto"
@@ -70,7 +70,7 @@ set(sources
 
 # Build external-control-sdk library
 
-add_library(${target_name} SHARED ${sources})
+add_library(${target_name} ${sources})
 
 target_link_libraries(${target_name} PUBLIC
   OpenSSL::SSL
