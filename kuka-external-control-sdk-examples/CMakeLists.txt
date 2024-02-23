@@ -11,6 +11,8 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 
+link_directories("~/.local/lib")
+
 # Monitoring example
 set(monitoring-sources
   src/monitoring_example.cc
