@@ -10,6 +10,8 @@ find_library(ROX_EXTERNAL_CONTROL_SDK_PROTOBUF kuka-external-control-sdk-protobu
 find_package(PkgConfig REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(Protobuf REQUIRED)
+find_package(Threads REQUIRED)
+
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 
@@ -30,6 +32,7 @@ target_link_libraries(${monitoring-artifact_name} PUBLIC
   ${gRPC_LIBRARIES}
   "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
   ${PROTOBUF_LIBRARY}
+  Threads::Threads
 )
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
@@ -59,6 +62,7 @@ target_link_libraries(${control-artifact_name} PUBLIC
   ${gRPC_LIBRARIES}
   "${ROX_EXTERNAL_CONTROL_SDK_PROTOBUF}"
   ${PROTOBUF_LIBRARY}
+  Threads::Threads
 )
 
 target_include_directories(${control-artifact_name}
