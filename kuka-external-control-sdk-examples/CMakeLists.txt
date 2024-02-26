@@ -9,6 +9,7 @@ find_library(ROX_EXTERNAL_CONTROL_SDK kuka-external-control-sdk PATHS "~/.local/
 find_library(ROX_EXTERNAL_CONTROL_SDK_PROTOBUF kuka-external-control-sdk-protobuf PATHS "~/.local/lib" REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(Protobuf REQUIRED)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 
