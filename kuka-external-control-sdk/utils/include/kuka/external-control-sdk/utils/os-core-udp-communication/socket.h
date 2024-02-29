@@ -90,10 +90,12 @@ class Socket {
 
   /* join a multicast group with the given `multicast_address` to able receive
    * the packets*/
-  int JoinMulticastGroup(const SocketAddress &multicast_address, const SocketAddress& interface_address = SocketAddress());
+  int JoinMulticastGroup(const SocketAddress &multicast_address,
+                         const SocketAddress &interface_address = SocketAddress());
 
   /* leave a multicast group with the given `multicast_address`*/
-  int LeaveMulticastGroup(const SocketAddress &multicast_address, const SocketAddress& interface_address = SocketAddress());
+  int LeaveMulticastGroup(const SocketAddress &multicast_address,
+                          const SocketAddress &interface_address = SocketAddress());
 
   /* sets the given `ttl`for multicast sending (IP packet property) */
   int SetTTLForMulticast(int ttl = 1);
@@ -156,6 +158,7 @@ class Socket {
   virtual std::string GetLastErrorText() const;
   bool IsReadable() const;
   std::pair<ErrorCode, int> GetLastSocketError() const;
+  bool IsDGRAM() const;
 
  protected:
   virtual int SetError(ErrorCode code, int err_no = 0);

@@ -8,15 +8,19 @@ set(artifact_name ${PROJECT_NAME})
 
 set(common_directory "common")
 set(iiqka_directory "iiqka")
-
+set(common_directory "common")
 set(utils_directory "utils")
 set(proto_api_directory "proto-api")
+
 set(target_name "kuka-external-control-sdk")
-list(APPEND CMAKE_PREFIX_PATH "~/.local/lib")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "~/.local" CACHE PATH "default install path" FORCE )
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE )
 endif()
+
+set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake/kuka-external-control-sdk)
+
 
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -26,7 +30,7 @@ pkg_check_modules(gRPC REQUIRED grpc++)
 set(motion_external_proto_api_path "${CMAKE_CURRENT_LIST_DIR}/iiqka/proto-api/motion-external")
 set(motion_services_ecs_proto_api_path "${CMAKE_CURRENT_LIST_DIR}/iiqka/proto-api/motion-services-ecs")
 
-add_library(kuka-external-control-sdk-protobuf SHARED
+add_library(kuka-external-control-sdk-protobuf STATIC
 "${motion_external_proto_api_path}/control_attributes.proto"
 "${motion_external_proto_api_path}/utils.proto"
 "${motion_external_proto_api_path}/external_control_mode.proto"
@@ -41,9 +45,13 @@ add_library(kuka-external-control-sdk-protobuf SHARED
 
 set(PROTO_BINARY_DIR ${CMAKE_INSTALL_LIBDIR})
 
-target_link_libraries(kuka-external-control-sdk-protobuf PUBLIC protobuf::libprotobuf grpc++)
+target_link_libraries(kuka-external-control-sdk-protobuf PUBLIC  ${gRPC_LIBRARIES}
+${PROTOBUF_LIBRARY})
 
-target_include_directories(kuka-external-control-sdk-protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
+target_include_directories(kuka-external-control-sdk-protobuf PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
+)
 
 protobuf_generate(
     TARGET kuka-external-control-sdk-protobuf
@@ -59,30 +67,31 @@ protobuf_generate(
 
 set(sources
   ${PROTO_SRCS}
-  ${common_directory}/src/operation_status.cc
-  ${iiqka_directory}/src/${utils_directory}/os-core-udp-communication/subscriber.cc
-  ${iiqka_directory}/src/${utils_directory}/os-core-udp-communication/replier.cc
-  ${iiqka_directory}/src/${utils_directory}/os-core-udp-communication/secure_replier.cc
-  ${iiqka_directory}/src/${utils_directory}/os-core-udp-communication/socket.cc
-  ${iiqka_directory}/src/${utils_directory}/os-core-udp-communication/secure_socket.cc
+  ${common_directory}/src/status.cc
+  ${utils_directory}/src/os-core-udp-communication/subscriber.cc
+  ${utils_directory}/src/os-core-udp-communication/requester.cc
+  ${utils_directory}/src/os-core-udp-communication/publisher.cc
+  ${utils_directory}/src/os-core-udp-communication/replier.cc
+  ${utils_directory}/src/os-core-udp-communication/secure_replier.cc
+  ${utils_directory}/src/os-core-udp-communication/socket.cc
+  ${utils_directory}/src/os-core-udp-communication/secure_socket.cc
   ${iiqka_directory}/src/robot.cc
 )
 
 # Build external-control-sdk library
 
-add_library(${target_name} SHARED ${sources})
+add_library(${target_name} STATIC ${sources})
 
 target_link_libraries(${target_name} PUBLIC
   OpenSSL::SSL
-  ${PROTOBUF_LIBRARY}
-  ${gRPC_LIBRARIES}
   kuka-external-control-sdk-protobuf
 )
 
 target_include_directories(${target_name} PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include>"
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
-  "${CMAKE_CURRENT_BINARY_DIR}"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${utils_directory}/include>"
+  "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
@@ -94,10 +103,12 @@ install(TARGETS kuka-external-control-sdk-protobuf EXPORT kuka-external-control-
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(TARGETS ${target_name} EXPORT ${target_name}/
+install(TARGETS ${target_name} kuka-external-control-sdk-protobuf EXPORT MyExport
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+install(EXPORT MyExport NAMESPACE Kuka:: FILE kuka-external-control-sdkConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
@@ -108,5 +119,9 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include/
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${iiqka_directory}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+      FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${utils_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")

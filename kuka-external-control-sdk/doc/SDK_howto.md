@@ -108,7 +108,7 @@ The methods of the IRobot class providing the general interface:
 - _StartMonitoring()_ : Start external monitoring: the robot will start publishing motion states.
 - _CreateMonitoringSubscription(monitoring callback)_: Creates a subscriber to the robot's motion states on the client side.
 - _CancelMonitoringSubscription()_ : Terminates the motion state subscriber on the client side.
-- _IsSubscribedToMonitoring()_ : Checks if the client is currently subscribed to the monitoring messages of the robot.
+- _HasMonitoringSubscription()_ : Checks if the client is currently subscribed to the monitoring messages of the robot.
 - _StopControlling()_ : Stops the external control session on the controller.
 - _StopMonitoring()_ : Stops the motion state publisher on the controller.
 - _SendControlSignal()_ : Sends out the control signal to the controller.
@@ -226,7 +226,7 @@ Here's a simple example of how the SDK can be used for controlling an iiQKA robo
 
     // Create interface
     kuka::external::control::iiqka::Robot rob_if(eci_config);
-    OperationStatus setup_ret = rob_if->Setup();
+    Status setup_ret = rob_if->Setup();
 ```
 
 The above code creates a configuration which will be used for creating the instance of the client library's Robot object. After that, the sockets used for communicating with the robot can be created, allowing us to start controlling or monitoring later. Note that the configuration with which the Robot instance is created can not be modified later for the given object.

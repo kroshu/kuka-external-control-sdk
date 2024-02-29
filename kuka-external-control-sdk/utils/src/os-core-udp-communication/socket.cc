@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -168,7 +168,8 @@ int Socket::SetReceiveTimeout(const std::chrono::microseconds& timeout) {
   return setsockopt(socket_fd_, SOL_SOCKET, SO_RCVTIMEO, (char*)&time, sizeof(struct timeval));
 }
 
-int Socket::JoinMulticastGroup(const SocketAddress& multicast_address, const SocketAddress& interface_address) {
+int Socket::JoinMulticastGroup(const SocketAddress& multicast_address,
+                               const SocketAddress& interface_address) {
   if (!IsActive()) {
     return SetError(ErrorCode::kNotActive);
   }
@@ -178,7 +179,8 @@ int Socket::JoinMulticastGroup(const SocketAddress& multicast_address, const Soc
   return setsockopt(socket_fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*)&mreq, sizeof(mreq));
 }
 
-int Socket::LeaveMulticastGroup(const SocketAddress& multicast_address, const SocketAddress& interface_address) {
+int Socket::LeaveMulticastGroup(const SocketAddress& multicast_address,
+                                const SocketAddress& interface_address) {
   if (!IsActive()) {
     return SetError(ErrorCode::kNotActive);
   }
@@ -281,7 +283,8 @@ int Socket::Receive(unsigned char* buffer, int buffer_size, int flags) {
   if (!IsActive()) {
     return SetError(ErrorCode::kNotActive);
   }
-  if (local_address_ == std::nullopt) {
+
+  if (IsDGRAM() && local_address_ == std::nullopt) {
     return SetError(ErrorCode::kNotBound);
   }
   int received_bytes = recv(socket_fd_, buffer, buffer_size, flags);
@@ -370,6 +373,13 @@ std::pair<Socket::ErrorCode, int> Socket::GetLastSocketError() const {
 }
 
 bool Socket::IsReadable() const { throw "NOT IMPLEMENTED"; }
+
+bool Socket::IsDGRAM() const {
+  int type;
+  socklen_t type_len = sizeof(type);
+  getsockopt(socket_fd_, SOL_SOCKET, SO_TYPE, &type, &type_len);
+  return type == SOCK_DGRAM;
+}
 
 int Socket::SetError(ErrorCode code, int) {
   last_error_state_ = code;

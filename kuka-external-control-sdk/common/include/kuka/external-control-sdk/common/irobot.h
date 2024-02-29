@@ -21,7 +21,7 @@
 #include <utility>
 
 #include "message_builder.h"
-#include "operation_status.h"
+#include "status.h"
 
 namespace kuka::external::control {
 
@@ -51,26 +51,26 @@ class IRobot {
  public:
   virtual ~IRobot() = default;
 
-  virtual OperationStatus Setup() = 0;
+  virtual Status Setup() = 0;
 
-  virtual OperationStatus StartControlling(ControlMode control_mode) = 0;
-  virtual OperationStatus StartMonitoring() = 0;
+  virtual Status StartControlling(ControlMode control_mode) = 0;
+  virtual Status StartMonitoring() = 0;
 
-  virtual OperationStatus CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) = 0;
-  virtual OperationStatus CancelMonitoringSubscription() = 0;
-  virtual bool IsSubscribedToMonitoring() = 0;
+  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) = 0;
+  virtual Status CancelMonitoringSubscription() = 0;
+  virtual bool HasMonitoringSubscription() = 0;
 
-  virtual OperationStatus StopControlling() = 0;
-  virtual OperationStatus StopMonitoring() = 0;
+  virtual Status StopControlling() = 0;
+  virtual Status StopMonitoring() = 0;
 
-  virtual OperationStatus SendControlSignal() = 0;
-  virtual OperationStatus ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
+  virtual Status SendControlSignal() = 0;
+  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
 
   virtual BaseControlSignal& GetControlSignal() = 0;
   virtual BaseMotionState& GetLastMotionState() = 0;
 
-  virtual OperationStatus SwitchControlMode(ControlMode control_mode) = 0;
-  virtual OperationStatus RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) = 0;
+  virtual Status SwitchControlMode(ControlMode control_mode) = 0;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) = 0;
 };
 
 }  // namespace kuka::external::control

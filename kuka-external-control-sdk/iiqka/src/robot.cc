@@ -17,7 +17,7 @@
 #include <grpcpp/create_channel.h>
 
 #include "iiqka/proto-api/motion-services-ecs/control_signal_external.pb.h"
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/secure_socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_socket.h"
 
 using namespace std::chrono_literals;
 using namespace kuka::external::control;
@@ -38,7 +38,7 @@ Robot::Robot(Configuration config)
   event_handler_ = std::make_unique<EventHandler>();
 }
 
-OperationStatus Robot::Setup() {
+Status Robot::Setup() {
   Reset();
   auto replier_address = os::core::udp::communication::SocketAddress::SafeConstruct(
       config_.client_ip_address.c_str(), config_.udp_replier_port);
@@ -50,7 +50,7 @@ OperationStatus Robot::Setup() {
       os::core::udp::communication::SocketAddress::SafeConstruct(config_.client_ip_address);
 
   if (!replier_address || !subscriber_address || !interface_address) {
-    return OperationStatus(ReturnCode::ERROR, "Invalid IP in configuration");
+    return Status(ReturnCode::ERROR, "Invalid IP in configuration");
   }
 
   if (config_.is_secure) {
@@ -83,10 +83,9 @@ OperationStatus Robot::Setup() {
   return SetupUDPChannel();
 }
 
-OperationStatus Robot::SetQoSProfile(QoS_Configuration qos_config) {
+Status Robot::SetQoSProfile(QoS_Configuration qos_config) {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "SetQoSProfile failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR, "SetQoSProfile failed: network connection not initialized.");
   }
 
   kuka::ecs::v1::SetQoSProfileRequest request;
@@ -105,10 +104,10 @@ OperationStatus Robot::SetQoSProfile(QoS_Configuration qos_config) {
   return ConvertStatus(stub_->SetQoSProfile(&context, request, &response));
 }
 
-OperationStatus Robot::StartControlling(ControlMode control_mode) {
+Status Robot::StartControlling(ControlMode control_mode) {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "StartControlling failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR,
+                  "StartControlling failed: network connection not initialized.");
   }
   kuka::ecs::v1::OpenControlChannelRequest request;
   kuka::ecs::v1::OpenControlChannelResponse response;
@@ -123,28 +122,27 @@ OperationStatus Robot::StartControlling(ControlMode control_mode) {
 
   stop_flag_ = false;
 
-  OperationStatus op_status =
-      ConvertStatus(stub_->OpenControlChannel(&context, request, &response));
+  Status op_status = ConvertStatus(stub_->OpenControlChannel(&context, request, &response));
 
   if (op_status.return_code == ReturnCode::ERROR) {
     return op_status;
   }
 
   return event_handler_set_
-             ? OperationStatus(ReturnCode::OK)
-             : OperationStatus(ReturnCode::WARN,
-                               "Warning: StartControlling called with default event handler.");
+             ? Status(ReturnCode::OK)
+             : Status(ReturnCode::WARN,
+                      "Warning: StartControlling called with default event handler.");
 }
 
-OperationStatus Robot::StopControlling() {
+Status Robot::StopControlling() {
   stop_flag_ = true;
   return SendControlSignal();
 }
 
-OperationStatus Robot::CreateControllingSubscription() {
+Status Robot::CreateControllingSubscription() {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "ObserveControlState failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR,
+                  "ObserveControlState failed: network connection not initialized.");
   }
 
   observer_context_ = std::make_unique<grpc::ClientContext>();
@@ -177,25 +175,24 @@ OperationStatus Robot::CreateControllingSubscription() {
     }
   });
 
-  return OperationStatus(ReturnCode::OK);
+  return Status(ReturnCode::OK);
 }
 
-OperationStatus Robot::CancelControllingSubscription() {
-  if (!IsSubscribedToControlling()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "StopObservingControlState failed: observing is not in progress.");
+Status Robot::CancelControllingSubscription() {
+  if (!HasControllingSubscription()) {
+    return Status(ReturnCode::ERROR,
+                  "StopObservingControlState failed: observing is not in progress.");
   }
 
   observer_context_->TryCancel();
   observer_thread_.join();
 
-  return OperationStatus(ReturnCode::OK);
+  return Status(ReturnCode::OK);
 }
 
-OperationStatus Robot::StartMonitoring() {
+Status Robot::StartMonitoring() {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "StartMonitoring failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR, "StartMonitoring failed: network connection not initialized.");
   }
 
   kuka::ecs::v1::StartMonitoringRequest request;
@@ -205,11 +202,10 @@ OperationStatus Robot::StartMonitoring() {
   return ConvertStatus(stub_->StartMonitoring(&context, request, &response));
 }
 
-OperationStatus Robot::CreateMonitoringSubscription(
+Status Robot::CreateMonitoringSubscription(
     std::function<void(BaseMotionState&)> handle_motion_states_) {
-  if (IsSubscribedToMonitoring()) {
-    return OperationStatus(ReturnCode::WARN,
-                           "Subscribe failed: already subscribed to motion states.");
+  if (HasMonitoringSubscription()) {
+    return Status(ReturnCode::WARN, "Subscribe failed: already subscribed to motion states.");
   }
 
   stop_monitoring_ = false;
@@ -233,13 +229,12 @@ OperationStatus Robot::CreateMonitoringSubscription(
     }
   });
 
-  return OperationStatus(ReturnCode::OK);
+  return Status(ReturnCode::OK);
 }
 
-OperationStatus Robot::StopMonitoring() {
+Status Robot::StopMonitoring() {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "StopMonitoring failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR, "StopMonitoring failed: network connection not initialized.");
   }
 
   kuka::ecs::v1::StopMonitoringRequest request;
@@ -249,10 +244,9 @@ OperationStatus Robot::StopMonitoring() {
   return ConvertStatus(stub_->StopMonitoring(&context, request, &response));
 }
 
-OperationStatus Robot::CancelMonitoringSubscription() {
-  if (!IsSubscribedToMonitoring()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "Unsubscribe failed: not subscribed to motion states.");
+Status Robot::CancelMonitoringSubscription() {
+  if (!HasMonitoringSubscription()) {
+    return Status(ReturnCode::ERROR, "Unsubscribe failed: not subscribed to motion states.");
   }
 
   stop_monitoring_ = true;
@@ -260,37 +254,36 @@ OperationStatus Robot::CancelMonitoringSubscription() {
     monitoring_thread_.join();
   }
 
-  return OperationStatus(ReturnCode::OK);
+  return Status(ReturnCode::OK);
 }
 
-OperationStatus Robot::SendControlSignal() {
+Status Robot::SendControlSignal() {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "SendControlSignal failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR,
+                  "SendControlSignal failed: network connection not initialized.");
   }
 
   kuka::ecs::v1::ControlSignalExternal* protobuf_control_signal =
       control_signal_.CreateProtobufControlSignal(last_ipoc_, control_mode_, stop_flag_);
   if (protobuf_control_signal->has_control_signal() == false && !stop_flag_) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "SendControlSignal failed: please fill out the control signal first.");
+    return Status(ReturnCode::ERROR,
+                  "SendControlSignal failed: please fill out the control signal first.");
   }
 
   std::size_t size = protobuf_control_signal->ByteSizeLong();
   uint8_t encode_buffer[4096];
 
   if (!controlling_arena_.SerializeExistingMessageToArray(encode_buffer, size)) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "SendControlSignal failed: failed to serialize to array.");
+    return Status(ReturnCode::ERROR, "SendControlSignal failed: failed to serialize to array.");
   }
 
   return ConvertStatus(replier_socket_->SendReply(encode_buffer, size));
 }
 
-OperationStatus Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
+Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
   if (Uninitialized()) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "ReceiveMotionState failed: network connection not initialized.");
+    return Status(ReturnCode::ERROR,
+                  "ReceiveMotionState failed: network connection not initialized.");
   }
 
   auto recv_ret = replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
@@ -311,20 +304,20 @@ OperationStatus Robot::ReceiveMotionState(std::chrono::milliseconds receive_requ
 BaseControlSignal& Robot::GetControlSignal() { return control_signal_; };
 BaseMotionState& Robot::GetLastMotionState() { return last_motion_state_; };
 
-OperationStatus Robot::SwitchControlMode(ControlMode control_mode) {
+Status Robot::SwitchControlMode(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);
   return SendControlSignal();
 }
 
-bool Robot::IsSubscribedToMonitoring() { return monitoring_thread_.joinable(); }
-bool Robot::IsSubscribedToControlling() {
+bool Robot::HasMonitoringSubscription() { return monitoring_thread_.joinable(); }
+bool Robot::HasControllingSubscription() {
   return observer_context_ != nullptr && observer_thread_.joinable();
 }
 
-OperationStatus Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   if (event_handler == nullptr) {
-    return OperationStatus(ReturnCode::ERROR,
-                           "RegisterEventHandler failed: please provide a valid pointer.");
+    return Status(ReturnCode::ERROR,
+                  "RegisterEventHandler failed: please provide a valid pointer.");
   }
 
   std::lock_guard<std::mutex> lck(event_handler_mutex_);
@@ -332,12 +325,12 @@ OperationStatus Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& even
   event_handler_ = std::move(event_handler);
   event_handler_set_ = true;
 
-  return OperationStatus(ReturnCode::OK);
+  return Status(ReturnCode::OK);
 };
 
 void Robot::Reset() {
-  if (IsSubscribedToMonitoring()) CancelMonitoringSubscription();
-  if (IsSubscribedToControlling()) CancelControllingSubscription();
+  if (HasMonitoringSubscription()) CancelMonitoringSubscription();
+  if (HasControllingSubscription()) CancelControllingSubscription();
   stub_.reset();
   replier_socket_.reset();
   subscriber_socket_.reset();
@@ -347,8 +340,8 @@ bool Robot::Uninitialized() {
   return stub_ == nullptr || replier_socket_ == nullptr || subscriber_socket_ == nullptr;
 }
 
-OperationStatus Robot::ConvertStatus(grpc::Status grpc_status) {
-  OperationStatus op_status;
+Status Robot::ConvertStatus(grpc::Status grpc_status) {
+  Status op_status;
   switch (grpc_status.error_code()) {
     case grpc::StatusCode::OK:
       op_status.return_code = ReturnCode::OK;
@@ -360,9 +353,9 @@ OperationStatus Robot::ConvertStatus(grpc::Status grpc_status) {
   return op_status;
 }
 
-OperationStatus Robot::ConvertStatus(os::core::udp::communication::Socket::ErrorCode code) {
+Status Robot::ConvertStatus(os::core::udp::communication::Socket::ErrorCode code) {
   using namespace os::core::udp::communication;
-  OperationStatus op_status;
+  Status op_status;
 
   char errno_msg[256] = "Socket error: ";
 
@@ -408,7 +401,7 @@ void Robot::SetupGRPCChannel() {
                           grpc::InsecureChannelCredentials()));
 }
 
-OperationStatus Robot::SetupUDPChannel() {
+Status Robot::SetupUDPChannel() {
   auto replier_setup = ConvertStatus(replier_socket_->Setup());
 
   if (replier_setup.return_code == ReturnCode::OK) {

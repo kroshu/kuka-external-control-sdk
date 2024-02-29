@@ -12,15 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/common/operation_status.h"
+#ifndef KUKA_EXTERNAL_CONTROL__STATUS_H_
+#define KUKA_EXTERNAL_CONTROL__STATUS_H_
 
-#include <cstring>
+#include <grpcpp/impl/codegen/status.h>
+#include <string.h>
+
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace kuka::external::control {
+enum class ReturnCode { UNSPECIFIED, OK, WARN, ERROR, TIMEOUT };
 
-OperationStatus::OperationStatus(ReturnCode param_return_code, const char* param_message) {
-  return_code = param_return_code;
-  strcpy(&message[0], param_message);
-}
+struct Status {
+  Status() = default;
+  Status(ReturnCode, const char* = "\0");
+
+  ReturnCode return_code = ReturnCode::UNSPECIFIED;
+  char message[256] = {};
+};
 
 }  // namespace kuka::external::control
+
+#endif  // KUKA_EXTERNAL_CONTROL__STATUS_H_

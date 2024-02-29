@@ -26,7 +26,8 @@ class Subscriber {
   typedef Socket::ErrorCode ErrorCode;
 
  public:  //<ctor>
-  Subscriber(const SocketAddress& sub_address, const SocketAddress& interface_address, bool is_multicast);
+  Subscriber(const SocketAddress& sub_address, const SocketAddress& interface_address,
+             bool is_multicast);
   virtual ~Subscriber() = default;
   ErrorCode Setup();
 

@@ -1,8 +1,7 @@
 #include <cmath>
 
 #include "event-handlers/control_event_handler.hpp"
-#include "kuka/external-control-sdk/common/message_builder.h"
-#include "kuka/external-control-sdk/iiqka/robot.h"
+#include "kuka/external-control-sdk/iiqka/sdk.h"
 
 int main(int argc, char const *argv[]) {
   // Configure general setup - IP addresses
@@ -13,7 +12,7 @@ int main(int argc, char const *argv[]) {
   // Create interface
   auto rob_if = std::make_shared<kuka::external::control::iiqka::Robot>(eci_config);
 
-  kuka::external::control::OperationStatus setup_ret;
+  kuka::external::control::Status setup_ret;
   // Initiate connection
   bool use_secure_setup = false;
   if (use_secure_setup) {
