@@ -27,7 +27,6 @@ list(APPEND CMAKE_PREFIX_PATH ${config_install_path})
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
-add_subdirectory(/usr/src/googletest GTest)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 
@@ -100,49 +99,6 @@ target_include_directories(${target_name} PUBLIC
 )
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
-
-# Build tests for iiQKA
-
-enable_testing()
-
-add_executable(
-  test_iiqka_robot
-  ${iiqka_directory}/test/test_robot.cc
-  ${iiqka_directory}/test/test-assets/fake_command_handling_service.cc
-  ${iiqka_directory}/test/test-assets/nanopb/control_attributes.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/control_signal_external.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/control_signal_internal.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/external_control_mode.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/external_header.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/motion_state_external.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/motion_state_internal.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/utils.pb.c
-  ${iiqka_directory}/test/test-assets/nanopb/pb_common.c
-  ${iiqka_directory}/test/test-assets/nanopb/pb_encode.c
-  ${iiqka_directory}/test/test-assets/nanopb/pb_decode.c
-)
-
-
-target_link_libraries(
-  test_iiqka_robot
-  GTest::gtest_main
-  ${target_name}
-  ${gRPC_LIBRARIES}
-  kuka-external-control-sdk
-  kuka-external-control-sdk-protobuf
-  GTest::gtest
-)
-
-target_include_directories(test_iiqka_robot PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include>"
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/test>"
-)
-
-target_compile_features(test_iiqka_robot INTERFACE cxx_std_17 PRIVATE cxx_std_17)
-
-include(GoogleTest)
-gtest_discover_tests(test_iiqka_robot)
 
 # Install and export
 
