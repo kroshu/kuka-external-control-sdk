@@ -11,6 +11,8 @@ set(iiqka_directory "iiqka")
 set(common_directory "common")
 set(utils_directory "utils")
 set(proto_api_directory "proto-api")
+set(test_directory "test")
+set(sdk_config_install_path ${CMAKE_INSTALL_PREFIX}/lib/cmake/kuka-external-control-sdk)
 
 set(target_name "kuka-external-control-sdk")
 
@@ -19,11 +21,13 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}/lib/cmake/kuka-external-control-sdk)
+list(APPEND CMAKE_PREFIX_PATH ${config_install_path})
 
 
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(Threads REQUIRED)
+add_subdirectory(/usr/src/googletest GTest)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 
@@ -69,6 +73,8 @@ set(sources
   ${PROTO_SRCS}
   ${common_directory}/src/status.cc
   ${utils_directory}/src/os-core-udp-communication/subscriber.cc
+  ${utils_directory}/src/os-core-udp-communication/requester.cc
+  ${utils_directory}/src/os-core-udp-communication/publisher.cc
   ${utils_directory}/src/os-core-udp-communication/replier.cc
   ${utils_directory}/src/os-core-udp-communication/secure_replier.cc
   ${utils_directory}/src/os-core-udp-communication/socket.cc
@@ -81,6 +87,7 @@ set(sources
 add_library(${target_name} STATIC ${sources})
 
 target_link_libraries(${target_name} PUBLIC
+  Threads::Threads
   OpenSSL::SSL
   kuka-external-control-sdk-protobuf
 )
@@ -94,19 +101,61 @@ target_include_directories(${target_name} PUBLIC
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
+# Build tests for iiQKA
+
+enable_testing()
+
+add_executable(
+  test_iiqka_robot
+  ${iiqka_directory}/test/test_robot.cc
+  ${iiqka_directory}/test/test-assets/fake_command_handling_service.cc
+  ${iiqka_directory}/test/test-assets/nanopb/control_attributes.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/control_signal_external.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/control_signal_internal.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/external_control_mode.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/external_header.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/motion_state_external.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/motion_state_internal.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/utils.pb.c
+  ${iiqka_directory}/test/test-assets/nanopb/pb_common.c
+  ${iiqka_directory}/test/test-assets/nanopb/pb_encode.c
+  ${iiqka_directory}/test/test-assets/nanopb/pb_decode.c
+)
+
+
+target_link_libraries(
+  test_iiqka_robot
+  GTest::gtest_main
+  ${target_name}
+  ${gRPC_LIBRARIES}
+  kuka-external-control-sdk
+  kuka-external-control-sdk-protobuf
+  GTest::gtest
+)
+
+target_include_directories(test_iiqka_robot PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${iiqka_directory}/test>"
+)
+
+target_compile_features(test_iiqka_robot INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+
+include(GoogleTest)
+gtest_discover_tests(test_iiqka_robot)
+
 # Install and export
 
-install(TARGETS kuka-external-control-sdk-protobuf EXPORT kuka-external-control-sdk-protobuf/
+install(TARGETS ${target_name} kuka-external-control-sdk-protobuf EXPORT SdkExport
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(TARGETS ${target_name} kuka-external-control-sdk-protobuf EXPORT MyExport
-    ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(EXPORT SdkExport NAMESPACE Kuka:: FILE kuka-external-control-sdkTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-external-control-sdk)
 
-install(EXPORT MyExport NAMESPACE Kuka:: FILE kuka-external-control-sdkConfig.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-external-control-sdkConfig.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-external-control-sdk
+        )
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${common_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include

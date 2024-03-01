@@ -3,14 +3,9 @@ cmake_minimum_required(VERSION 3.13)
 project("kuka-external-control-examples")
 
 # Project dependencies
-list(APPEND CMAKE_PREFIX_PATH "~/.local/lib")
+list(APPEND CMAKE_PREFIX_PATH "~/.local/lib/cmake")
 
-find_package(OpenSSL REQUIRED)
 find_package(kuka-external-control-sdk CONFIG REQUIRED)
-find_package(PkgConfig REQUIRED)
-find_package(Threads REQUIRED)
-
-pkg_check_modules(gRPC REQUIRED grpc++)
 
 # Monitoring example
 set(monitoring-sources
@@ -23,18 +18,10 @@ target_compile_features(${monitoring-artifact_name} INTERFACE cxx_std_20 PRIVATE
 
 target_link_libraries(${monitoring-artifact_name} PUBLIC
   Kuka::kuka-external-control-sdk
-  Threads::Threads
 )
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-)
-
-install(
-    TARGETS ${monitoring-artifact_name}
-    CONFIGURATIONS RELEASE DEBUG
-    EXPORT ${monitoring-artifact_name}-target
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Control example
@@ -48,7 +35,6 @@ target_compile_features(${control-artifact_name} INTERFACE cxx_std_20 PRIVATE cx
 
 target_link_libraries(${control-artifact_name} PUBLIC
 Kuka::kuka-external-control-sdk
-Threads::Threads
 )
 
 target_include_directories(${control-artifact_name}
@@ -56,9 +42,3 @@ target_include_directories(${control-artifact_name}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 )
 
-install(
-    TARGETS ${control-artifact_name}
-    CONFIGURATIONS RELEASE DEBUG
-    EXPORT ${control-artifact_name}-target
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
