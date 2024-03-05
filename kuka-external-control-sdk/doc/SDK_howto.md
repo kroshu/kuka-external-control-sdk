@@ -1,9 +1,3 @@
-<style>
-h2   {font-size: 1.7em;}
-h3   {font-size: 1.4em;}
-h4   {font-size: 1.17em;}
-</style>
-
 <h1>KUKA.iiQKA.ExternalAPI.Control SDK</h1>
 
 KUKA.iiQKA.ExternalAPI.Control is an option package on iiQKA 1.2. It allows you to connect remotely to a KUKA KR C5 Micro running this option package and externally control an LBR iisy 3, LBR iisy 11, or LBR iisy 15.
@@ -62,7 +56,7 @@ cd <clone of this repository>
 mkdir build && cd build
 cmake ..
 make
-sudo make install
+make install
 ```
 
 This will install the necessary headers and the library itself, which can then be used from the client application's CMake project.
