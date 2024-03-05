@@ -11,7 +11,6 @@ set(iiqka_directory "iiqka")
 set(common_directory "common")
 set(utils_directory "utils")
 set(proto_api_directory "proto-api")
-set(test_directory "test")
 set(sdk_config_install_path ${CMAKE_INSTALL_PREFIX}/lib/cmake/kuka-external-control-sdk)
 
 set(target_name "kuka-external-control-sdk")
