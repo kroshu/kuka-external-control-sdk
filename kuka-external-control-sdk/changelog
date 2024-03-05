@@ -1,8 +1,10 @@
-kuka-external-control-sdk (1.1.1)
+kuka-external-control-sdk (1.2.0)
 
-  * Modify installation directory
+  * Make installation without sudo possible 
+  * Propagate transitive dependencies
+  * Rename OperationStatus and the subscription methods
 
- -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 22 Feb 2024 16:00:00 +0000
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Thu, 05 Mar 2024 13:12:00 +0000
 
 kuka-external-control-sdk (1.1.0)
 

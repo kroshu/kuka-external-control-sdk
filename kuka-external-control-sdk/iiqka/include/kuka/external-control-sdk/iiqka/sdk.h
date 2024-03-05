@@ -12,21 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto3";
+#ifndef EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
+#define EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
 
-package kuka.ecs.v1;
+#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/common/message_builder.h"
+#include "kuka/external-control-sdk/common/status.h"
+#include "kuka/external-control-sdk/iiqka/configuration.h"
+#include "kuka/external-control-sdk/iiqka/message_builder.h"
+#include "kuka/external-control-sdk/iiqka/robot.h"
 
-option csharp_namespace = "Kuka.Ecs.V1";
-option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
-option java_multiple_files = true;
-option java_outer_classname = "ExternalHeaderProto";
-option java_package = "com.kuka.ecs.v1";
-
-
-// Proto definition for external RT commands
-message ExternalHeader {
-  // Message Id
-  uint32 message_id = 1;
-  // Interpolator message identifier
-  uint32 ipoc = 2;
-}
+#endif  // EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_

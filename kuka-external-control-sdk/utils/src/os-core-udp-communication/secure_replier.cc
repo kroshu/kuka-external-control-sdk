@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/secure_replier.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
 
 #include <sys/epoll.h>
 #include <unistd.h>
+
 #include <cstring>
 
 namespace os::core::udp::communication {

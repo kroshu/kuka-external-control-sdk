@@ -27,9 +27,9 @@
 #include "iiqka/proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
 #include "iiqka/proto-api/motion-services-ecs/motion_state_external.pb.h"
 #include "kuka/external-control-sdk/common/irobot.h"
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/replier.h"
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/secure_replier.h"
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/subscriber.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 #include "message_builder.h"
 
 namespace kuka::external::control::iiqka {
@@ -42,7 +42,7 @@ class Robot : public IRobot {
 
   // Interface implementation
  public:
-  virtual OperationStatus Setup() override;
+  virtual Status Setup() override;
 
   /** Start controlling with the specified control mode
    *  At the present, the following control modes are supported:
@@ -50,44 +50,41 @@ class Robot : public IRobot {
    *  2 - Joint impedance control
    *  4 - Joint torque control
    */
-  virtual OperationStatus StartControlling(ControlMode control_mode) override;
-  virtual OperationStatus StartMonitoring() override;
+  virtual Status StartControlling(ControlMode control_mode) override;
+  virtual Status StartMonitoring() override;
 
-  virtual OperationStatus StopControlling() override;
-  virtual OperationStatus StopMonitoring() override;
+  virtual Status StopControlling() override;
+  virtual Status StopMonitoring() override;
 
-  virtual OperationStatus CreateMonitoringSubscription(
-      std::function<void(BaseMotionState&)>) override;
-  virtual OperationStatus CancelMonitoringSubscription() override;
+  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
+  virtual Status CancelMonitoringSubscription() override;
 
-  virtual bool IsSubscribedToMonitoring() override;
+  virtual bool HasMonitoringSubscription() override;
 
-  virtual OperationStatus SendControlSignal() override;
-  virtual OperationStatus ReceiveMotionState(
-      std::chrono::milliseconds receive_request_timeout) override;
+  virtual Status SendControlSignal() override;
+  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
   virtual BaseControlSignal& GetControlSignal() override;
   virtual BaseMotionState& GetLastMotionState() override;
 
-  virtual OperationStatus SwitchControlMode(ControlMode control_mode) override;
-  virtual OperationStatus RegisterEventHandler(
-      std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status SwitchControlMode(ControlMode control_mode) override;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
   // ECI-specific features
  public:
-  OperationStatus SetQoSProfile(QoS_Configuration);
+  Status SetQoSProfile(QoS_Configuration);
 
   // Members used for keeping track of the state.
  private:
   void Reset();
   bool Uninitialized();
 
-  OperationStatus ConvertStatus(grpc::Status);
-  OperationStatus ConvertStatus(os::core::udp::communication::Socket::ErrorCode);
+  Status ConvertStatus(grpc::Status);
+  Status ConvertStatus(os::core::udp::communication::Socket::ErrorCode);
 
-  virtual bool IsSubscribedToControlling();
-  OperationStatus CreateControllingSubscription();
-  OperationStatus CancelControllingSubscription();
+  virtual bool HasControllingSubscription();
+  Status CreateControllingSubscription();
+  Status CancelControllingSubscription();
 
   std::unique_ptr<kuka::ecs::v1::ExternalControlService::Stub> stub_{nullptr};
 
@@ -121,7 +118,7 @@ class Robot : public IRobot {
  private:
   Configuration config_;
   void SetupGRPCChannel();
-  OperationStatus SetupUDPChannel();
+  Status SetupUDPChannel();
 };
 
 }  // namespace kuka::external::control::iiqka

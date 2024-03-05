@@ -1,4 +1,4 @@
-#include "kuka/external-control-sdk/iiqka/robot.h"
+#include "kuka/external-control-sdk/iiqka/sdk.h"
 
 int main(int argc, char const *argv[]) {
   // Configure general setup - IP addresses

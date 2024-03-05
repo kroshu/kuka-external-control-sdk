@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/iiqka/utils/os-core-udp-communication/replier.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 
 #include <cstring>
 

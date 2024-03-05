@@ -36,5 +36,5 @@ jobs:
       working-directory: ./kuka-external-control-sdk/build
 
     - name: Build and install examples
-      run: cmake .. && make install
+      run: cmake .. && make
       working-directory: ./kuka-external-control-sdk-examples/build
