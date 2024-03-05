@@ -8,11 +8,8 @@ set(artifact_name ${PROJECT_NAME})
 
 set(common_directory "common")
 set(iiqka_directory "iiqka")
-set(common_directory "common")
 set(utils_directory "utils")
 set(proto_api_directory "proto-api")
-set(sdk_config_install_path ${CMAKE_INSTALL_PREFIX}/lib/cmake/kuka-external-control-sdk)
-
 set(target_name "kuka-external-control-sdk")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -21,8 +18,6 @@ endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
-list(APPEND CMAKE_PREFIX_PATH ${config_install_path})
-
 
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)

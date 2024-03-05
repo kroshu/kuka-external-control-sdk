@@ -72,24 +72,16 @@ project(${DEBIAN_PROJECT_NAME}
 )
 
 # Project dependencies
-find_library(kuka-external-control-sdk REQUIRED) # ignore if using the raw protos
-find_package(PkgConfig REQUIRED)
-
-pkg_check_modules(gRPC REQUIRED grpc++)
+find_package(kuka-external-control-sdk REQUIRED)
 
 add_executable(client_app client_application.cc)
 
 target_link_libraries(client_app
-  kuka-external-control-sdk # ignore if using the raw protos
-  ${gRPC_LIBRARIES}
-  kuka-external-control-sdk-protobuf
+  kuka-external-control-sdk
 )
 ```
 
-The kuka-external-control-sdk shared object file is installed under `/usr/local/lib`, on some Linux distros it is necessary to add this path to the `$LD_LIBRARY_PATH`:
-```bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-```
+By default, the kuka-external-control-sdk library is installed under `~/.local/lib`, and the config is under `~/.local/lib/cmake`, so make sure to add it to the CMAKE_PREFIX_PATH to be able to find the package.
 
 <h2>Structure of the SDK</h2>
 
@@ -97,7 +89,7 @@ To be able to use the SDK properly, it's important to understand how it's struct
 
 <h3>Structure of the SDK - OS agnostic robot interface</h3>
 
-The OS-agnostic IRobot interface abstracts the OS-specific operations away from the user (for modularity reasons) and provides a possibility for external control in a general way.
+The IRobot interface abstracts the OS-specific operations away from the user (for modularity reasons) and provides a possibility for external control in a general way.
 
 <h4>Basic structure</h4>
 
@@ -215,8 +207,7 @@ If any of the above requirements is violated, the QoS profile will not be set, a
 Here's a simple example of how the SDK can be used for controlling an iiQKA robot.
 
 ```cpp
-    #include "kuka/external-control-sdk/common/message_builder.h"
-    #include "kuka/external-control-sdk/iiqka/robot.h"
+    #include "kuka/external-control-sdk/iiqka/sdk.h"
 
     int main(int argc, char const *argv[]) {
     // Configure general setup - IP addresses

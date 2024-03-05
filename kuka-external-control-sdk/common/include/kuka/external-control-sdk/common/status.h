@@ -15,9 +15,6 @@
 #ifndef KUKA_EXTERNAL_CONTROL__STATUS_H_
 #define KUKA_EXTERNAL_CONTROL__STATUS_H_
 
-#include <grpcpp/impl/codegen/status.h>
-#include <string.h>
-
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace kuka::external::control {
