@@ -55,7 +55,6 @@ If all requirements are met, the SDK can be installed with cmake:
 cd <clone of this repository>
 mkdir build && cd build
 cmake ..
-make
 make install
 ```
 
