@@ -3,7 +3,7 @@ name: CI Debian
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 
