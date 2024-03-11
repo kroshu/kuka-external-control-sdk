@@ -27,7 +27,7 @@ The enabled safety configurations and limits also apply to external movement. An
 
 After successfully setting up the environment, there are two ways two use the product.
 
-The easier way is to use the SDK we provide on top of the toolbox, you can check the [documentation](README.md) of it to get started.
+The easier way is to use the SDK we provide on top of the toolbox, you can check the [documentation](../../README.md) of it to get started.
 
 But there is a low-level approach, too: one could use the protos that define the messages being sent. They are provided with the kuka-external-control-sdk-protobuf library installed with the SDK. To compile the proto files and generate the ones needed for development check out the instructions for your desired programming language [here](https://github.com/protocolbuffers/protobuf#readme).
 
