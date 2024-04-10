@@ -121,3 +121,8 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${iiqka_directory}
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${utils_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
+
+# Install package.xml file so this package can be processed by ROS toolings
+# See REP 136 for details
+# Installing this in non-ROS environments won't have any effect, but it won't harm, either.
+install(FILES package.xml DESTINATION share/kuka_external_control_sdk)
