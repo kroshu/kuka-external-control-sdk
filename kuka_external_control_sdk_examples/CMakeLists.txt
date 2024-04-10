@@ -42,3 +42,7 @@ target_include_directories(${control-artifact_name}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 )
 
+# Install package.xml file so this package can be processed by ROS toolings
+# See REP 136 for details
+# Installing this in non-ROS environments won't have any effect, but it won't harm, either.
+install(FILES package.xml DESTINATION share/external_control_sdk)
