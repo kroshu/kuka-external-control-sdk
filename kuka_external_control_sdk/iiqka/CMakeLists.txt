@@ -67,8 +67,6 @@ set(sources
   ${PROTO_SRCS}
   ${common_directory}/src/status.cc
   ${utils_directory}/src/os-core-udp-communication/subscriber.cc
-  ${utils_directory}/src/os-core-udp-communication/requester.cc
-  ${utils_directory}/src/os-core-udp-communication/publisher.cc
   ${utils_directory}/src/os-core-udp-communication/replier.cc
   ${utils_directory}/src/os-core-udp-communication/secure_replier.cc
   ${utils_directory}/src/os-core-udp-communication/socket.cc
