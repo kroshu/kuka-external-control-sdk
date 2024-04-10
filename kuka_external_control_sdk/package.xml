@@ -12,6 +12,7 @@
   <buildtool_depend>cmake</buildtool_depend>
 
   <depend>libgrpc</depend>
+  <depend>libssl-dev</depend>
 
   <exec_depend>ament_cmake</exec_depend>
 
