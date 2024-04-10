@@ -17,8 +17,8 @@ option cc_enable_arenas = true;
 
 package kuka.ecs.v1;
 
-import "iiqka/proto-api/motion-services-ecs/external_header.proto";
-import "iiqka/proto-api/motion-external/motion_state_internal.proto";
+import "proto-api/motion-services-ecs/external_header.proto";
+import "proto-api/motion-external/motion_state_internal.proto";
 
 option csharp_namespace = "Kuka.Ecs.V1";
 option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";

@@ -23,9 +23,9 @@
 
 #include "arena_wrapper.h"
 #include "configuration.h"
-#include "iiqka/proto-api/motion-services-ecs/control_signal_external.pb.h"
-#include "iiqka/proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
-#include "iiqka/proto-api/motion-services-ecs/motion_state_external.pb.h"
+#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
+#include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
+#include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
@@ -104,7 +104,7 @@ class Robot : public IRobot {
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> controlling_arena_;
   ArenaWrapper<kuka::ecs::v1::MotionStateExternal> monitoring_arena_;
 
-  int last_ipoc_;
+  uint32_t last_ipoc_;
 
   ControlSignal control_signal_;
   MotionState last_motion_state_;

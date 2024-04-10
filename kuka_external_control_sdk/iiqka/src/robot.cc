@@ -16,7 +16,7 @@
 
 #include <grpcpp/create_channel.h>
 
-#include "iiqka/proto-api/motion-services-ecs/control_signal_external.pb.h"
+#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_socket.h"
 
 using namespace std::chrono_literals;

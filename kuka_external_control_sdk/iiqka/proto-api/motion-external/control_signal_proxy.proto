@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package kuka.motion.external;
 
-import "iiqka/proto-api/motion-external/control_signal_internal.proto";
+import "proto-api/motion-external/control_signal_internal.proto";
 
 option csharp_namespace = "Kuka.Motion.External";
 option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/motion/external";

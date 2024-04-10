@@ -16,8 +16,8 @@ syntax = "proto3";
 
 package kuka.ecs.v1;
 
-import "iiqka/proto-api/motion-services-ecs/qos_profile_settings.proto";
-import "iiqka/proto-api/motion-external/external_control_mode.proto";
+import "proto-api/motion-services-ecs/qos_profile_settings.proto";
+import "proto-api/motion-external/external_control_mode.proto";
 
 option csharp_namespace = "Kuka.Ecs.V1";
 option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";

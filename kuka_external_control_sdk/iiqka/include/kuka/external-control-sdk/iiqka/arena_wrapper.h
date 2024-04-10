@@ -80,7 +80,7 @@ struct ArenaWrapper {
   const std::size_t kBufferSize = 8000;
   const std::size_t kInitialBlockSize = kBufferSize;
   const std::size_t kResetArenaThreshold =
-      6000;  // reset before exceeding the block size to avoid dynamic allocations
+      6000;
 };
 
 }  // namespace kuka::external::control::iiqka

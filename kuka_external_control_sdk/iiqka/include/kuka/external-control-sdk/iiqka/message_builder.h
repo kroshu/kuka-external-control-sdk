@@ -16,8 +16,8 @@
 #define KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
 
 #include "arena_wrapper.h"
-#include "iiqka/proto-api/motion-services-ecs/control_signal_external.pb.h"
-#include "iiqka/proto-api/motion-services-ecs/motion_state_external.pb.h"
+#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
+#include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 #include "kuka/external-control-sdk/common/message_builder.h"
 
 namespace kuka::external::control::iiqka {
@@ -38,32 +38,36 @@ class MotionState : public BaseMotionState {
   }
 
   MotionState& operator=(kuka::ecs::v1::MotionStateExternal&& protobuf_motion_state) {
-    this->has_positions_ = protobuf_motion_state.has_motion_state()
-                               ? protobuf_motion_state.motion_state().has_measured_positions()
+
+    auto& pb_ms = protobuf_motion_state.motion_state();
+    bool has_pb_ms = protobuf_motion_state.has_motion_state();
+
+    this->has_positions_ = has_pb_ms
+                               ? pb_ms.has_measured_positions()
                                : false;
-    this->has_torques_ = protobuf_motion_state.has_motion_state()
-                             ? protobuf_motion_state.motion_state().has_measured_torques()
+    this->has_torques_ = has_pb_ms
+                             ? pb_ms.has_measured_torques()
                              : false;
-    this->has_velocities_ = protobuf_motion_state.has_motion_state()
-                                ? protobuf_motion_state.motion_state().has_measured_velocities()
+    this->has_velocities_ = has_pb_ms
+                                ? pb_ms.has_measured_velocities()
                                 : false;
     if (this->has_positions_) {
       std::move(
-          std::begin(protobuf_motion_state.motion_state().measured_positions().values()),
-          std::begin(protobuf_motion_state.motion_state().measured_positions().values()) + dof_,
+          std::begin(pb_ms.measured_positions().values()),
+          std::begin(pb_ms.measured_positions().values()) + std::min((int)dof_, pb_ms.measured_positions().values_size()),
           measured_positions_.begin());
     }
 
     if (this->has_torques_) {
-      std::move(std::begin(protobuf_motion_state.motion_state().measured_torques().values()),
-                std::begin(protobuf_motion_state.motion_state().measured_torques().values()) + dof_,
+      std::move(std::begin(pb_ms.measured_torques().values()),
+                std::begin(pb_ms.measured_torques().values()) + std::min((int)dof_, pb_ms.measured_torques().values_size()),
                 measured_torques_.begin());
     }
 
     if (this->has_velocities_) {
       std::move(
-          std::begin(protobuf_motion_state.motion_state().measured_velocities().values()),
-          std::begin(protobuf_motion_state.motion_state().measured_velocities().values()) + dof_,
+          std::begin(pb_ms.measured_velocities().values()),
+          std::begin(pb_ms.measured_velocities().values()) + std::min((int)dof_, pb_ms.measured_velocities().values_size()),
           measured_velocities_.begin());
     }
 

@@ -165,9 +165,9 @@ With this _SetQoSProfile_ function the user can set the QoS coniguration, which 
 
 <h4>Configuration</h4>
 
-Before creating the iiQKA-specific Robot object, an initial configuration has to be provided via the namespaced Configuration class. It should contain the IP addresses of the KRC5 Micro on the KONI interface and the IP address of the client machine.
+Before creating the iiQKA-specific Robot object, an initial configuration has to be provided via the namespaced Configuration class. It should contain the IP addresses of the KRC5 Micro on the KONI interface and the IP address of the client machine. It's also possible to enable a secure version of robot control by setting the is_secure flag to true.
 
-During controlling, the UDP packets are by default sent and received through a secure DTLS layer. So the user has to provide a certificate and private key and set the path of these files in the configuration. (For generating a certificate and a private key see an example [here](https://stackoverflow.com/a/10176685) or check out the [official documentation](https://www.openssl.org/docs/manmaster/man1/openssl.html).) It's possible opt-out from the secure controlling mode by setting the 'is_secure' flag to false.
+During secure controlling, the UDP packets are by default sent and received through a secure DTLS layer. So the user has to provide a certificate and private key and set the path of these files in the configuration. For generating a certificate and a private key see an example [here](https://stackoverflow.com/a/10176685) or check out the [official documentation](https://www.openssl.org/docs/manmaster/man1/openssl.html).
 
 The currently supported control modes are:
  - Joint position control

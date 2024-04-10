@@ -1,3 +1,10 @@
+kuka-external-control-sdk (1.2.1)
+
+  * Add message builder tests
+  * Make ipoc unsigned
+
+ -- Team Apollo <KUKA-HU-RD-TeamApollo@kuka.com>  Tue, 02 Apr 2024 13:12:00 +0000
+
 kuka-external-control-sdk (1.2.0)
 
   * Make installation without sudo possible 
