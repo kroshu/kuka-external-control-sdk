@@ -13,6 +13,7 @@
 
   <depend>libgrpc</depend>
   <depend>libssl-dev</depend>
+  <depend>pkg-config</depend>
 
   <exec_depend>ament_cmake</exec_depend>
 
