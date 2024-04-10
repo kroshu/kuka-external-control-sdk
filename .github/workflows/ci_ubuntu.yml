@@ -20,12 +20,12 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        sudo apt update && sudo apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev && mkdir -p kuka-external-control-sdk/build && mkdir -p kuka-external-control-sdk-examples/build
+        sudo apt update && sudo apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev && mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
       run: cmake .. && make install
-      working-directory: ./kuka-external-control-sdk/build
+      working-directory: ./kuka_external_control_sdk/build
 
     - name: Build and install examples
       run: cmake .. && make
-      working-directory: ./kuka-external-control-sdk-examples/build
+      working-directory: ./kuka_external_control_sdk_examples/build
