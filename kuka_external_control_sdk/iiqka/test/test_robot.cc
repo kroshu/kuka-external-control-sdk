@@ -50,7 +50,7 @@ TEST_F(iiQKARobot, TestSetupInvalidIP) {
   robot_ = std::make_unique<kuka::external::control::iiqka::Robot>(eci_config_);
 
   auto setup_ret = robot_->Setup().return_code;
-  EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
+  EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::ERROR);
 }
 
 TEST_F(iiQKARobot, TestSetupValidIP) {
