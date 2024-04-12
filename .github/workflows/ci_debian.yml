@@ -23,12 +23,16 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev && mkdir -p kuka-external-control-sdk/build && mkdir -p kuka-external-control-sdk-examples/build
+        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev&& mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
-      run: cmake .. && make install
-      working-directory: ./kuka-external-control-sdk/build
+      run: cmake -DBUILD_TESTING=1 .. && make install
+      working-directory: ./kuka_external_control_sdk/build
+
+    - name: Run tests
+      run: ./test_robot && ./test_message_builder
+      working-directory: ./kuka_external_control_sdk/build/iiqka
 
     - name: Build and install examples
-      run: cmake .. && make
-      working-directory: ./kuka-external-control-sdk-examples/build
+      run: cmake -DBUILD_TESTING=1 .. && make
+      working-directory: ./kuka_external_control_sdk_examples/build
