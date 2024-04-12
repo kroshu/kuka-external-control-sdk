@@ -3,7 +3,7 @@
 <package format="3">
   <name>kuka_external_control_sdk</name>
   <version>1.2.1</version>
-  <description>Client library for KUKA external control interfaces</description>
+  <description>Client libraries for external control interfaces of KUKA</description>
   <maintainer email="kovacsge.work@gmail.com">Gergely Kovacs</maintainer>
   <maintainer email="szitanics@gmail.com">Mark Szitanics</maintainer>
   <maintainer email="svastits1@gmail.com">Aron Svastits</maintainer>
