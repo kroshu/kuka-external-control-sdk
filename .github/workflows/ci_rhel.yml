@@ -32,9 +32,9 @@ jobs:
         dnf install -y https://repo.almalinux.org/almalinux/almalinux-release-synergy-latest-${{ matrix.rhel_version }}.noarch.rpm && dnf install -y cmake gcc-c++ openssl-devel grpc-devel grpc-plugins && mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
-      run: cmake .. && make install
+      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make install
       working-directory: ./kuka_external_control_sdk/build
 
     - name: Build and install examples
-      run: cmake .. && make
+      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make
       working-directory: ./kuka_external_control_sdk_examples/build

@@ -26,9 +26,9 @@ jobs:
         apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev && mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
-      run: cmake .. && make install
+      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make install
       working-directory: ./kuka_external_control_sdk/build
 
     - name: Build and install examples
-      run: cmake .. && make
+      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make
       working-directory: ./kuka_external_control_sdk_examples/build
