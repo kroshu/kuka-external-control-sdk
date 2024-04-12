@@ -100,7 +100,6 @@ target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 # Build tests for iiQKA
 
 if(CMAKE_TESTING_ENABLED)
-  # add_subdirectory(/usr/src/googletest GTest)
   find_package(GTest)
   enable_testing()
   add_executable(
