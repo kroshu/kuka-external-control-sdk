@@ -23,9 +23,13 @@ jobs:
         sudo apt update && sudo apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev&& mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
-      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make install
+      run: cmake -DBUILD_TESTING=1 .. && make install
       working-directory: ./kuka_external_control_sdk/build
 
+    - name: Run tests
+      run: ./test_robot && ./test_message_builder
+      working-directory: ./kuka_external_control_sdk/build/iiqka
+
     - name: Build and install examples
-      run: cmake -DCMAKE_TESTING_ENABLED=1 .. && make
+      run: cmake -DBUILD_TESTING=1 .. && make
       working-directory: ./kuka_external_control_sdk_examples/build
