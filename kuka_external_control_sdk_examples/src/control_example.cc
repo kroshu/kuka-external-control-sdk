@@ -80,7 +80,7 @@ int main(int argc, char const *argv[]) {
     // Add sine to goal positions
     for (int i = 0; i < dof; ++i) {
       if (counter == 0) {
-        start_pos[i] = actual_state.GetMeasuredPositions()->at(i);
+        start_pos[i] = actual_state.GetMeasuredPositions()[i];
       }
       reply_pos[i] = start_pos[i] + sin_ipoc;
     }
@@ -91,14 +91,15 @@ int main(int argc, char const *argv[]) {
 
     sin_ipoc = -sin(counter * 0.0004);
     // Set values in control signal
-    rob_if->GetControlSignal().AddJointPositionValues(reply_pos);
+    rob_if->GetControlSignal().AddJointPositionValues(reply_pos.begin(), reply_pos.end());
     std::cout << "Set values\n";
 
     // Set constant joint impedance attributes before switching to impedance mode
     if (counter == 5000) {
       auto stiffness = std::vector<double>(6, 100);
       auto damping = std::vector<double>(6, 0.7);
-      rob_if->GetControlSignal().AddStiffnessAndDampingValues(stiffness, damping);
+      rob_if->GetControlSignal().AddStiffnessAndDampingValues(stiffness.begin(), stiffness.end(),
+                                                              damping.begin(), damping.end());
     }
 
     // Send control signal (or switch control mode in case of the 5000th message)

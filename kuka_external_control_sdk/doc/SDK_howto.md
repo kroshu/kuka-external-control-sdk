@@ -101,7 +101,7 @@ The methods of the IRobot class providing the general interface:
 - _CreateMonitoringSubscription(monitoring callback)_: Creates a subscriber to the robot's motion states on the client side.
 - _CancelMonitoringSubscription()_ : Terminates the motion state subscriber on the client side.
 - _HasMonitoringSubscription()_ : Checks if the client is currently subscribed to the monitoring messages of the robot.
-- _StopControlling()_ : Stops the external control session on the controller.
+- _StopControlling()_ : Stops the external control session on the controller. (The stop signal has to be sent as response to a motion state, the function also waits for a new request, if none is currently active.)
 - _StopMonitoring()_ : Stops the motion state publisher on the controller.
 - _SendControlSignal()_ : Sends out the control signal to the controller.
 - _ReceiveMotionState(timeout)_ : Attempts to receive the current motion state of the robot within the provided timeout.
@@ -239,7 +239,7 @@ The next step is to call StartControlling and create a control loop. It's recomm
 
     // ... calculate next control signal based on the actual state
 
-    rob_if->GetControlSignal().AddJointPositionValues(/* calculated joint position values */);
+    rob_if->GetControlSignal().AddJointPositionValues(/* calculated joint position values with begin and end iterators*/);
     rob_if->SendControlSignal(); // or call rob_if->SwitchControlMode() instead to change the control mode, or StopControlling() to stop the control session.
   }
 ```

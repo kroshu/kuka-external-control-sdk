@@ -51,14 +51,14 @@ void FakeCommandHandlingService::Setup(const std::string& service_ip) {
     motion_state_external_.mutable_motion_state()->mutable_measured_positions()->add_values(0.0);
 
   for (int i = 0; i < 6; ++i)
-    motion_state_external_.mutable_motion_state()->mutable_measured_velocities()->add_values(0.0);
-
-  for (int i = 0; i < 6; ++i) 
     motion_state_external_.mutable_motion_state()->mutable_measured_torques()->add_values(12.0);
 
   for (int i = 0; i < 6; ++i) {
-    prev_control_signal_external_.mutable_control_signal()->mutable_joint_attributes()->add_stiffness(30.0);
-    prev_control_signal_external_.mutable_control_signal()->mutable_joint_attributes()->add_damping(0.7);
+    prev_control_signal_external_.mutable_control_signal()
+        ->mutable_joint_attributes()
+        ->add_stiffness(30.0);
+    prev_control_signal_external_.mutable_control_signal()->mutable_joint_attributes()->add_damping(
+        0.7);
   }
 }
 
@@ -85,11 +85,12 @@ void FakeCommandHandlingService::Setup(const std::string& service_ip) {
         requester->Setup() == os::core::udp::communication::Publisher::ErrorCode::kSuccess;
 
     while (controlling_active_) {
-        uint8_t out_buff_arr[3072] = {0};
+      uint8_t out_buff_arr[3072] = {0};
 
-        if (!motion_state_external_.SerializeToArray(out_buff_arr, motion_state_external_.ByteSizeLong())) {
-          return;
-        }
+      if (!motion_state_external_.SerializeToArray(out_buff_arr,
+                                                   motion_state_external_.ByteSizeLong())) {
+        return;
+      }
 
       requester->SendRequest(out_buff_arr, motion_state_external_.ByteSizeLong());
 
@@ -134,7 +135,8 @@ void FakeCommandHandlingService::Setup(const std::string& service_ip) {
       while (monitoring_active_) {
         uint8_t out_buff_arr[3072] = {0};
 
-        if (!motion_state_external_.SerializeToArray(out_buff_arr, motion_state_external_.ByteSizeLong())) {
+        if (!motion_state_external_.SerializeToArray(out_buff_arr,
+                                                     motion_state_external_.ByteSizeLong())) {
           return;
         }
         publisher_->Send(out_buff_arr, motion_state_external_.ByteSizeLong());

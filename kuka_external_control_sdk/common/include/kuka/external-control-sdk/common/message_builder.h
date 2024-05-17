@@ -15,6 +15,8 @@
 #ifndef KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 #define KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 
+#include <iterator>
+#include <map>
 #include <optional>
 #include <vector>
 
@@ -24,17 +26,14 @@ class BaseMotionState {
  public:
   BaseMotionState(std::size_t dof) : dof_(dof) {}
 
-  std::vector<double> const* GetMeasuredPositions() {
-    return has_positions_ ? &measured_positions_ : nullptr;
-  }
-  std::vector<double> const* GetMeasuredTorques() {
-    return has_torques_ ? &measured_torques_ : nullptr;
-  }
-  std::vector<double> const* GetMeasuredVelocities() {
-    return has_velocities_ ? &measured_velocities_ : nullptr;
-  }
-  std::vector<double> const* GetMeasuredCartesianPositions() {
-    return has_cartesian_positions_ ? &measured_cartesian_positions_ : nullptr;
+  std::vector<double> const& GetMeasuredPositions() { return measured_positions_; }
+
+  std::vector<double> const& GetMeasuredTorques() { return measured_torques_; }
+
+  std::vector<double> const& GetMeasuredVelocities() { return measured_velocities_; }
+
+  std::vector<double> const& GetMeasuredCartesianPositions() {
+    return measured_cartesian_positions_;
   }
 
  protected:
@@ -55,58 +54,50 @@ class BaseControlSignal {
  public:
   BaseControlSignal(std::size_t dof) : dof_(dof) {}
 
-  void AddJointPositionValues(std::vector<double>& joint_position_values) {
-    if (joint_position_values.size() > 0) {
+  template <typename InputIt>
+  void AddJointPositionValues(InputIt first, InputIt last) {
+    if (first != last) {
       has_positions_ = true;
-      std::vector<double>::iterator end_it =
-          joint_position_values.begin() + std::min(joint_position_values.size(), dof_);
-      joint_position_values_.assign(joint_position_values.begin(), end_it);
-    }
-  };
-
-  void AddTorqueValues(std::vector<double>& joint_torque_values) {
-    if (joint_torque_values.size() > 0) {
-      has_torques_ = true;
-      std::vector<double>::iterator end_it =
-          joint_torque_values.begin() + std::min(joint_torque_values.size(), dof_);
-      joint_torque_values_.assign(joint_torque_values.begin(), end_it);
-    }
-  };
-
-  void AddVelocityValues(std::vector<double>& joint_velocity_values) {
-    if (joint_velocity_values.size() > 0) {
-      has_velocities_ = true;
-      std::vector<double>::iterator end_it =
-          joint_velocity_values.begin() + std::min(joint_velocity_values.size(), dof_);
-      joint_velocity_values_.assign(joint_velocity_values.begin(), end_it);
+      AddValues(joint_position_values_, first, last);
     }
   }
 
-  void AddStiffnessAndDampingValues(std::vector<double>& stiffness_values,
-                                    std::vector<double>& damping_values) {
-    if (stiffness_values.size() > 0) {
-      has_stiffness_and_damping_ = true;
-      std::vector<double>::iterator s_end_it =
-          stiffness_values.begin() + std::min(stiffness_values.size(), dof_);
-      joint_impedance_stiffness_values_.assign(stiffness_values.begin(), s_end_it);
+  template <typename InputIt>
+  void AddTorqueValues(InputIt first, InputIt last) {
+    if (first != last) {
+      has_torques_ = true;
+      AddValues(joint_torque_values_, first, last);
     }
+  }
 
-    if (damping_values.size() > 0) {
-      has_stiffness_and_damping_ = true;
-      std::vector<double>::iterator d_end_it =
-          damping_values.begin() + std::min(damping_values.size(), dof_);
-      joint_impedance_damping_values_.assign(damping_values.begin(), d_end_it);
+  template <typename InputIt>
+  void AddVelocityValues(InputIt first, InputIt last) {
+    if (first != last) {
+      has_velocities_ = true;
+      AddValues(joint_velocity_values_, first, last);
     }
-  };
+  }
 
-  void AddCartesianPositionValues(std::vector<double>& cartesian_position_values) {
-    if (cartesian_position_values.size() > 0) {
+  template <typename InputIt>
+  void AddStiffnessAndDampingValues(InputIt first_stiffness, InputIt last_stiffness,
+                                    InputIt first_damping, InputIt last_damping) {
+    if (first_damping != last_damping) {
+      has_stiffness_and_damping_ = true;
+      AddValues(joint_impedance_stiffness_values_, first_stiffness, last_stiffness);
+    }
+    if (first_stiffness != last_stiffness) {
+      has_stiffness_and_damping_ = true;
+      AddValues(joint_impedance_damping_values_, first_damping, last_damping);
+    }
+  }
+
+  template <typename InputIt>
+  void AddCartesianPositionValues(InputIt first, InputIt last) {
+    if (first != last) {
       has_cartesian_positions_ = true;
-      std::vector<double>::iterator end_it =
-          cartesian_position_values_.begin() + std::min(cartesian_position_values_.size(), dof_);
-      cartesian_position_values_.assign(cartesian_position_values_.begin(), end_it);
+      AddValues(cartesian_position_values_, first, last);
     }
-  };
+  }
 
  protected:
   bool has_positions_ = false;
@@ -123,6 +114,21 @@ class BaseControlSignal {
   std::vector<double> cartesian_position_values_;
 
   std::size_t dof_ = 0;
+
+ private:
+  template <typename InputIt>
+  void AddValues(std::vector<double>& output, InputIt first, InputIt last) {
+    for (size_t i = 0; i < dof_ && first != last; ++i, ++first) {
+      AddToVector(output[i], *first);
+    }
+  }
+
+  void AddToVector(double& vector_pos, double value) { vector_pos = value; }
+
+  template <typename KeyType>
+  void AddToVector(double& vector_pos, const std::pair<const KeyType, double>& pair) {
+    vector_pos = pair.second;
+  }
 };
 }  // namespace kuka::external::control
 

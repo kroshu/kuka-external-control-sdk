@@ -44,15 +44,15 @@ struct Configuration {
   uint32_t connection_timeout = 5000;
 
   // Cycle time in milliseconds Currently unused.
-  const uint32_t cycle_time = 4;
+  static const uint32_t cycle_time{4};
 
   // Receive timeout for monitoring in milliseconds.
   uint32_t monitoring_timeout = 6;
 
   // Ports open on the KRC to enable external control. These values are fixed.
-  const unsigned short udp_replier_port = 44444;
-  const unsigned short ecs_grpc_port = 49335;
-  const unsigned short udp_subscriber_port = 44446;
+  static const unsigned short udp_replier_port{44444};
+  static const unsigned short ecs_grpc_port{49335};
+  static const unsigned short udp_subscriber_port{44446};
 
   // Multicast address to which packets get published in monitoring mode.
   const std::string udp_subscriber_multicast_address = "239.255.123.250";

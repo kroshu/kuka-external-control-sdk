@@ -16,8 +16,8 @@
 
 #include <grpcpp/create_channel.h>
 
-#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_socket.h"
+#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 
 using namespace std::chrono_literals;
 using namespace kuka::external::control;
@@ -136,6 +136,13 @@ Status Robot::StartControlling(ControlMode control_mode) {
 
 Status Robot::StopControlling() {
   stop_flag_ = true;
+  if (!replier_socket_->IsRequestActive()) {
+    // Wait for next motion state, if no request is active to be able to send valid stop signal
+    // Timeout is default 6 ms
+    if (this->ReceiveMotionState(std::chrono::milliseconds(kStopRecvTimeout)).return_code !=
+        kuka::external::control::ReturnCode::OK)
+      return Status(ReturnCode::ERROR, "Failed to receive before sending stop signal");
+  }
   return SendControlSignal();
 }
 
