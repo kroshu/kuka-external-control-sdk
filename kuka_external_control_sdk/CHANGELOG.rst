@@ -2,6 +2,11 @@
 Changelog for package kuka_external_control_sdk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Change motion state variables from pointer to reference
+* Rework control signal Add methods to accept stl iterators
+
 1.2.1 (2024.04.02)
 ------------------
 * Add message builder tests
