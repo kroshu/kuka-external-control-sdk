@@ -18,7 +18,7 @@
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace kuka::external::control {
-enum class ReturnCode { UNSPECIFIED, OK, WARN, ERROR, TIMEOUT };
+enum class ReturnCode { UNSPECIFIED, OK, WARN, ERROR, TIMEOUT, UNSUPPORTED };
 
 struct Status {
   Status() = default;

@@ -15,60 +15,47 @@
 #ifndef KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
 #define KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
 
+#include <limits>
+
 #include "arena_wrapper.h"
+#include "kuka/external-control-sdk/common/message_builder.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
-#include "kuka/external-control-sdk/common/message_builder.h"
 
 namespace kuka::external::control::iiqka {
 
 class MotionState : public BaseMotionState {
  public:
+  // Measured velocities are not provided by the controller, vector should remain empty
   MotionState(std::size_t dof) : BaseMotionState(dof) {
-    measured_positions_.resize(dof, 0.0);
-    measured_torques_.resize(dof, 0.0);
-    measured_velocities_.resize(dof, 0.0);
+    measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
   }
   MotionState(kuka::ecs::v1::MotionStateExternal& protobuf_motion_state, uint8_t dof)
       : BaseMotionState(dof) {
-    measured_positions_.resize(dof, 0.0);
-    measured_torques_.resize(dof, 0.0);
-    measured_velocities_.resize(dof, 0.0);
+    measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     *this = std::move(protobuf_motion_state);
   }
 
   MotionState& operator=(kuka::ecs::v1::MotionStateExternal&& protobuf_motion_state) {
-
     auto& pb_ms = protobuf_motion_state.motion_state();
     bool has_pb_ms = protobuf_motion_state.has_motion_state();
 
-    this->has_positions_ = has_pb_ms
-                               ? pb_ms.has_measured_positions()
-                               : false;
-    this->has_torques_ = has_pb_ms
-                             ? pb_ms.has_measured_torques()
-                             : false;
-    this->has_velocities_ = has_pb_ms
-                                ? pb_ms.has_measured_velocities()
-                                : false;
+    this->has_positions_ = has_pb_ms ? pb_ms.has_measured_positions() : false;
+    this->has_torques_ = has_pb_ms ? pb_ms.has_measured_torques() : false;
     if (this->has_positions_) {
-      std::move(
-          std::begin(pb_ms.measured_positions().values()),
-          std::begin(pb_ms.measured_positions().values()) + std::min((int)dof_, pb_ms.measured_positions().values_size()),
-          measured_positions_.begin());
+      std::move(std::begin(pb_ms.measured_positions().values()),
+                std::begin(pb_ms.measured_positions().values()) +
+                    std::min((int)dof_, pb_ms.measured_positions().values_size()),
+                measured_positions_.begin());
     }
 
     if (this->has_torques_) {
       std::move(std::begin(pb_ms.measured_torques().values()),
-                std::begin(pb_ms.measured_torques().values()) + std::min((int)dof_, pb_ms.measured_torques().values_size()),
+                std::begin(pb_ms.measured_torques().values()) +
+                    std::min((int)dof_, pb_ms.measured_torques().values_size()),
                 measured_torques_.begin());
-    }
-
-    if (this->has_velocities_) {
-      std::move(
-          std::begin(pb_ms.measured_velocities().values()),
-          std::begin(pb_ms.measured_velocities().values()) + std::min((int)dof_, pb_ms.measured_velocities().values_size()),
-          measured_velocities_.begin());
     }
 
     return *this;

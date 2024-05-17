@@ -23,14 +23,14 @@
 
 #include "arena_wrapper.h"
 #include "configuration.h"
-#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
-#include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
-#include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 #include "message_builder.h"
+#include "proto-api/motion-services-ecs/control_signal_external.pb.h"
+#include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
+#include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 
 namespace kuka::external::control::iiqka {
 
@@ -39,6 +39,14 @@ class Robot : public IRobot {
  public:
   Robot(Configuration);
   virtual ~Robot() override { Reset(); }
+
+  // delete copy constructor and copy assignment operator
+  Robot(const Robot&) = delete;
+  Robot& operator=(const Robot&) = delete;
+
+  // delete move constructor and move assignment operator
+  Robot(Robot&&) = delete;
+  Robot& operator=(Robot&&) = delete;
 
   // Interface implementation
  public:
@@ -119,6 +127,8 @@ class Robot : public IRobot {
   Configuration config_;
   void SetupGRPCChannel();
   Status SetupUDPChannel();
+
+  const int kStopRecvTimeout{6};
 };
 
 }  // namespace kuka::external::control::iiqka
