@@ -2,8 +2,8 @@
 Changelog for package kuka_external_control_sdk_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.1 (2024-05-21)
+------------------
 * fix gtest dependency
 
 1.3.0 (2024-05-17)
