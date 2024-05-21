@@ -99,7 +99,7 @@ target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
 # Build tests for iiQKA
 
-if(BUILD_TESTING)
+# if(BUILD_TESTING)
   find_package(GTest)
   enable_testing()
   add_executable(
@@ -146,7 +146,7 @@ if(BUILD_TESTING)
   include(GoogleTest)
   gtest_discover_tests(test_robot)
   gtest_discover_tests(test_message_builder)
-endif()
+# endif()
 
 # Install and export
 
