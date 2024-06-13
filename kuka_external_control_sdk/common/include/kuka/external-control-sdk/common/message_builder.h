@@ -18,6 +18,7 @@
 #include <iterator>
 #include <map>
 #include <optional>
+#include <type_traits>
 #include <vector>
 
 namespace kuka::external::control {
@@ -35,19 +36,24 @@ class BaseMotionState {
   std::vector<double> const& GetMeasuredCartesianPositions() {
     return measured_cartesian_positions_;
   }
+  std::vector<double> const& GetMeasuredTwist() { return measured_twist_; }
 
  protected:
   bool has_positions_ = false;
   bool has_torques_ = false;
   bool has_velocities_ = false;
   bool has_cartesian_positions_ = false;
+  bool has_twist_ = false;
 
   std::vector<double> measured_positions_;
   std::vector<double> measured_torques_;
   std::vector<double> measured_velocities_;
   std::vector<double> measured_cartesian_positions_;
+  std::vector<double> measured_twist_;
 
   std::size_t dof_;
+  std::size_t twist_dof_ = 6;
+  std::size_t cart_pos_dof_ = 7;
 };
 
 class BaseControlSignal {
@@ -98,6 +104,14 @@ class BaseControlSignal {
       AddValues(cartesian_position_values_, first, last);
     }
   }
+  template <typename InputIt>
+   void AddTwistValues(InputIt first, InputIt last) {
+      has_twist_ = true;
+      dof_=twist_dof_;
+      if (first != last) {
+      AddValues(twist_values_, first, last);
+    }
+  };
 
  protected:
   bool has_positions_ = false;
@@ -105,6 +119,7 @@ class BaseControlSignal {
   bool has_velocities_ = false;
   bool has_stiffness_and_damping_ = false;
   bool has_cartesian_positions_ = false;
+  bool has_twist_ = false;
 
   std::vector<double> joint_position_values_;
   std::vector<double> joint_torque_values_;
@@ -112,8 +127,11 @@ class BaseControlSignal {
   std::vector<double> joint_impedance_stiffness_values_;
   std::vector<double> joint_impedance_damping_values_;
   std::vector<double> cartesian_position_values_;
+  std::vector<double> twist_values_;
 
   std::size_t dof_ = 0;
+  std::size_t twist_dof_ = 6;
+  std::size_t cart_pos_dof_ = 7;
 
  private:
   template <typename InputIt>

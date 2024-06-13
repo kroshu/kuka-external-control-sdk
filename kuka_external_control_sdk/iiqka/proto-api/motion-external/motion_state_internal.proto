@@ -37,4 +37,10 @@ message MotionStateInternal {
   JointVelocities measured_velocities = 4;
   // The measured joint torques of the current cycle
   JointTorques measured_torques = 5;
+  // The measured cartesian position of the TCP in the current cycle
+  Transform measured_cartesian_position = 6;
+  // The measured cartesian velocities (twist)  of the TCP in the current cycle
+  Twist measured_twist = 7;
+  // The measured cartesian torques (wrench) of the TCP in the current cycle
+  JointTorques measured_wrench = 8;
 }

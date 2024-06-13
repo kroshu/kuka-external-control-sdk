@@ -30,11 +30,16 @@ class MotionState : public BaseMotionState {
   MotionState(std::size_t dof) : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_twist_.resize(twist_dof_, std::numeric_limits<double>::quiet_NaN());
+    measured_cartesian_positions_.resize(cart_pos_dof_, std::numeric_limits<double>::quiet_NaN());
   }
   MotionState(kuka::ecs::v1::MotionStateExternal& protobuf_motion_state, uint8_t dof)
       : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_twist_.resize(twist_dof_, std::numeric_limits<double>::quiet_NaN());
+    measured_cartesian_positions_.resize(cart_pos_dof_, std::numeric_limits<double>::quiet_NaN());
+
     *this = std::move(protobuf_motion_state);
   }
 
@@ -44,6 +49,8 @@ class MotionState : public BaseMotionState {
 
     this->has_positions_ = has_pb_ms ? pb_ms.has_measured_positions() : false;
     this->has_torques_ = has_pb_ms ? pb_ms.has_measured_torques() : false;
+    this->has_twist_ = has_pb_ms ? pb_ms.has_measured_twist() : false;
+    this->has_cartesian_positions_ = has_pb_ms ? pb_ms.has_measured_cartesian_position() : false;
     if (this->has_positions_) {
       std::move(std::begin(pb_ms.measured_positions().values()),
                 std::begin(pb_ms.measured_positions().values()) +
@@ -56,6 +63,31 @@ class MotionState : public BaseMotionState {
                 std::begin(pb_ms.measured_torques().values()) +
                     std::min((int)dof_, pb_ms.measured_torques().values_size()),
                 measured_torques_.begin());
+    }
+    
+    if (this->has_twist_) {
+      measured_twist_[0] = protobuf_motion_state.motion_state().measured_twist().linear().x();
+      measured_twist_[1] = protobuf_motion_state.motion_state().measured_twist().linear().y();
+      measured_twist_[2] = protobuf_motion_state.motion_state().measured_twist().linear().z();
+      measured_twist_[3] = protobuf_motion_state.motion_state().measured_twist().angular().x();
+      measured_twist_[4] = protobuf_motion_state.motion_state().measured_twist().angular().y();
+      measured_twist_[5] = protobuf_motion_state.motion_state().measured_twist().angular().z();
+    }
+    if (this->has_cartesian_positions_) {
+      measured_cartesian_positions_[0] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().translation().x();
+      measured_cartesian_positions_[1] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().translation().y();
+      measured_cartesian_positions_[2] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().translation().z();
+      measured_cartesian_positions_[3] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().rotation().x();
+      measured_cartesian_positions_[4] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().rotation().y();
+      measured_cartesian_positions_[5] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().rotation().z();
+      measured_cartesian_positions_[6] =
+          protobuf_motion_state.motion_state().measured_cartesian_position().rotation().w();
     }
 
     return *this;
@@ -71,6 +103,8 @@ class ControlSignal : public BaseControlSignal {
     joint_velocity_values_.resize(dof, 0.0);
     joint_impedance_stiffness_values_.resize(dof, 0.0);
     joint_impedance_damping_values_.resize(dof, 0.0);
+    cartesian_position_values_.resize(cart_pos_dof_, 0.0);
+    twist_values_.resize(twist_dof_, 0.0);
   }
 
   kuka::ecs::v1::ControlSignalExternal* CreateProtobufControlSignal(int last_ipoc, int control_mode,
@@ -154,6 +188,41 @@ class ControlSignal : public BaseControlSignal {
             ->mutable_damping()
             ->Add(joint_impedance_damping_values_[i]);
       }
+    }
+
+    controlling_arena_->GetMessage()->mutable_control_signal()->mutable_twist_command()->Clear();
+
+    if (this->has_twist_) {
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_linear()
+          ->set_x(twist_values_.at(0));
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_linear()
+          ->set_y(twist_values_.at(1));
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_linear()
+          ->set_z(twist_values_.at(2));
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_angular()
+          ->set_x(twist_values_.at(3));
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_angular()
+          ->set_y(twist_values_.at(4));
+      controlling_arena_->GetMessage()
+          ->mutable_control_signal()
+          ->mutable_twist_command()
+          ->mutable_angular()
+          ->set_z(twist_values_.at(5));
     }
 
     return controlling_arena_->GetMessage();
