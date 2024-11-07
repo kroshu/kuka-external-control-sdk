@@ -16,6 +16,7 @@ syntax = "proto3";
 
 package kuka.ecs.v1;
 
+import "proto-api/motion-services-ecs/signal_config_external.proto";
 import "proto-api/motion-services-ecs/qos_profile_settings.proto";
 import "proto-api/motion-external/external_control_mode.proto";
 
@@ -38,6 +39,8 @@ service ExternalControlService {
   rpc StopMonitoring(StopMonitoringRequest) returns (StopMonitoringResponse);
   // Set values for the used QoS profiles
   rpc SetQoSProfile(SetQoSProfileRequest) returns (SetQoSProfileResponse);
+  // Get configured signals
+  rpc GetSignalConfiguration(GetSignalConfigurationRequest) returns (GetSignalConfigurationResponse);
 }
 
 // Start control request message
@@ -55,6 +58,8 @@ message OpenControlChannelRequest
   string ip_address = 5;
   // Variable defining whether secure communication is used
   bool is_secure = 6;
+  // List of the signals to use in external control
+  repeated SetSignalForControl set_signals_for_control = 7;
 }
 
 // Start control response
@@ -85,6 +90,15 @@ message SetQoSProfileRequest {
 // Set QoS Profile Response
 message SetQoSProfileResponse {
   // Empty
+}
+// Get Configured Signals Request
+message GetSignalConfigurationRequest {
+  // Empty
+}
+// Get Configured Signals Response
+message GetSignalConfigurationResponse {
+  // List of the maped signals that can be used in external control
+  repeated SignalConfigExternal signal_config_external = 1;
 }
 // Observe Control StateRequest
 message ObserveControlStateRequest {

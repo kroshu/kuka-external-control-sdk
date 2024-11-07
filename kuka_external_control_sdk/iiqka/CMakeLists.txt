@@ -40,7 +40,9 @@ add_library(kuka-external-control-sdk-protobuf STATIC
 "${motion_services_ecs_proto_api_path}/external_header.proto"
 "${motion_services_ecs_proto_api_path}/qos_profile_settings.proto"
 "${motion_services_ecs_proto_api_path}/control_signal_external.proto"
-"${motion_services_ecs_proto_api_path}/motion_state_external.proto")
+"${motion_services_ecs_proto_api_path}/motion_state_external.proto"
+"${motion_services_ecs_proto_api_path}/signal_config_external.proto"
+"${motion_services_ecs_proto_api_path}/signal_value_external.proto")
 
 set(PROTO_BINARY_DIR ${CMAKE_INSTALL_LIBDIR})
 

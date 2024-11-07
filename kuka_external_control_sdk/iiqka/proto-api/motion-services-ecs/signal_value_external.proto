@@ -13,27 +13,32 @@
 // limitations under the License.
 
 syntax = "proto3";
-option cc_enable_arenas = true;
 
 package kuka.ecs.v1;
 
-import "proto-api/motion-services-ecs/external_header.proto";
-import "proto-api/motion-services-ecs/signal_value_external.proto";
-import "proto-api/motion-external/control_signal_internal.proto";
 
 option csharp_namespace = "Kuka.Ecs.V1";
 option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
 option java_multiple_files = true;
-option java_outer_classname = "ControlSignalExternalProto";
+option java_outer_classname = "SignalValueExternalProto";
 option java_package = "com.kuka.ecs.v1";
 
-
-// Proto definition for external RT commands
-message ControlSignalExternal {
-  // Message Header
-  ExternalHeader header = 1;
-  // Internal control signal
-  kuka.motion.external.ControlSignalInternal control_signal = 2;
-  // Contains the values for the configured IOs
-  repeated SignalValueExternal signal_values = 3;
+// Signal value for external control
+message SignalValueExternal
+{
+  // Required. External signal id.
+  uint32 signal_id = 1;
+  // Signal value based on the signals type.
+  // One of
+  oneof signal_type
+  {
+    // Boolean
+    bool bool_value = 2;
+    // Double
+    double double_value = 3;
+    //Raw
+    fixed64 raw_value = 4;
+  }
 }
+
+

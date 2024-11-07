@@ -18,6 +18,7 @@ option cc_enable_arenas = true;
 package kuka.ecs.v1;
 
 import "proto-api/motion-services-ecs/external_header.proto";
+import "proto-api/motion-services-ecs/signal_value_external.proto";
 import "proto-api/motion-external/motion_state_internal.proto";
 
 option csharp_namespace = "Kuka.Ecs.V1";
@@ -33,6 +34,6 @@ message MotionStateExternal {
   ExternalHeader header = 1;
   // The measured joint position of the current cycle
   kuka.motion.external.MotionStateInternal motion_state = 2;
-  // IO handling
-  // repeated IOValue io_values = 4;
+  // Contains the values for the configured IOs
+  repeated SignalValueExternal signal_values = 3;
 }

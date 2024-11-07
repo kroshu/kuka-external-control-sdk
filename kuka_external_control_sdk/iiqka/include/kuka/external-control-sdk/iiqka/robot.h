@@ -20,6 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <variant>
+#include <vector>
 
 #include "arena_wrapper.h"
 #include "configuration.h"
@@ -36,20 +37,20 @@ namespace kuka::external::control::iiqka {
 
 class Robot : public IRobot {
   // Special methods
- public:
+public:
   Robot(Configuration);
   virtual ~Robot() override { Reset(); }
 
   // delete copy constructor and copy assignment operator
-  Robot(const Robot&) = delete;
-  Robot& operator=(const Robot&) = delete;
+  Robot(const Robot &) = delete;
+  Robot &operator=(const Robot &) = delete;
 
   // delete move constructor and move assignment operator
-  Robot(Robot&&) = delete;
-  Robot& operator=(Robot&&) = delete;
+  Robot(Robot &&) = delete;
+  Robot &operator=(Robot &&) = delete;
 
   // Interface implementation
- public:
+public:
   virtual Status Setup() override;
 
   /** Start controlling with the specified control mode
@@ -64,26 +65,31 @@ class Robot : public IRobot {
   virtual Status StopControlling() override;
   virtual Status StopMonitoring() override;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
+  virtual Status CreateMonitoringSubscription(
+      std::function<void(BaseMotionState &)>) override;
   virtual Status CancelMonitoringSubscription() override;
 
   virtual bool HasMonitoringSubscription() override;
 
   virtual Status SendControlSignal() override;
-  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
+  virtual Status ReceiveMotionState(
+      std::chrono::milliseconds receive_request_timeout) override;
 
-  virtual BaseControlSignal& GetControlSignal() override;
-  virtual BaseMotionState& GetLastMotionState() override;
+  virtual BaseControlSignal &GetControlSignal() override;
+  virtual BaseMotionState &GetLastMotionState() override;
 
   virtual Status SwitchControlMode(ControlMode control_mode) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status
+  RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) override;
 
   // ECI-specific features
- public:
+public:
   Status SetQoSProfile(QoS_Configuration);
+  Status GetSignalConfigurationuration(
+      std::vector<Signal_Configuration> &signal_config);
 
   // Members used for keeping track of the state.
- private:
+private:
   void Reset();
   bool Uninitialized();
 
@@ -96,11 +102,13 @@ class Robot : public IRobot {
 
   std::unique_ptr<kuka::ecs::v1::ExternalControlService::Stub> stub_{nullptr};
 
-  std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{nullptr};
-  std::unique_ptr<os::core::udp::communication::Subscriber> subscriber_socket_{nullptr};
+  std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{
+      nullptr};
+  std::unique_ptr<os::core::udp::communication::Subscriber> subscriber_socket_{
+      nullptr};
 
   // Members and methods used for implementing observer functionality.
- private:
+private:
   std::unique_ptr<grpc::ClientContext> observer_context_;
   std::thread observer_thread_;
   std::thread monitoring_thread_;
@@ -108,7 +116,7 @@ class Robot : public IRobot {
   bool event_handler_set_ = false;
 
   // Members and helper methods for implementing control.
- private:
+private:
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> controlling_arena_;
   ArenaWrapper<kuka::ecs::v1::MotionStateExternal> monitoring_arena_;
 
@@ -117,13 +125,14 @@ class Robot : public IRobot {
   ControlSignal control_signal_;
   MotionState last_motion_state_;
   kuka::motion::external::ExternalControlMode control_mode_{
-      kuka::motion::external::ExternalControlMode::EXTERNAL_CONTROL_MODE_UNSPECIFIED};
+      kuka::motion::external::ExternalControlMode::
+          EXTERNAL_CONTROL_MODE_UNSPECIFIED};
   std::atomic<bool> stop_monitoring_;
   bool stop_flag_;
   std::mutex event_handler_mutex_;
 
   // Members and methods necessary for network configuration and error handling.
- private:
+private:
   Configuration config_;
   void SetupGRPCChannel();
   Status SetupUDPChannel();
@@ -131,5 +140,5 @@ class Robot : public IRobot {
   const int kStopRecvTimeout{6};
 };
 
-}  // namespace kuka::external::control::iiqka
-#endif  // EXTERNAL_CONTROL_SDK__IIQKA_ROBOT_INTERFACE_H_
+} // namespace kuka::external::control::iiqka
+#endif // EXTERNAL_CONTROL_SDK__IIQKA_ROBOT_INTERFACE_H_

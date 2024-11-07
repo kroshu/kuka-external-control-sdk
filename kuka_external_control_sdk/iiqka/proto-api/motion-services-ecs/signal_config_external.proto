@@ -1,0 +1,83 @@
+// Copyright 2023 KUKA Deutschland GmbH
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package kuka.ecs.v1;
+
+option csharp_namespace = "Kuka.Ecs.V1";
+option go_package = "golang.rd.kuka.com/motion-api/proto/kuka/ecs/v1";
+option java_multiple_files = true;
+option java_outer_classname = "SignalConfigExternalProto";
+option java_package = "com.kuka.ecs.v1";
+
+// Type to discribe a signal. Shorter version of the original signal discription.
+message SignalConfig
+{
+  // Required. The display name of the signal.
+  string name = 1;
+  // Direction of the signal.
+  SignalDirection direction = 2;
+  // Datatype of the signal.
+  SignalValueType data_type = 3;
+
+  // Specifies the signals direction
+  enum SignalDirection
+  {
+    // Direction unknown
+    SIGNAL_DIRECTION_UNSPECIFIED = 0;
+
+    // Signal is an input
+    INPUT = 1;
+
+    // Signal is an output
+    OUTPUT = 2;
+  }
+
+  // Enum for the different value types of a signal
+  enum SignalValueType
+  {
+    // Signal value type is unspecified.
+    SIGNAL_VALUE_TYPE_UNSPECIFIED = 0;
+
+    // The value type for a single digital signal.
+    BOOL = 1;
+
+    // The value type for a set of digital signals.
+    RAW = 2;
+
+    // The value type for a numeric signal.
+    NUMBER = 3;
+  }
+}
+
+// Additional information for the signal to the external control
+message SignalConfigExternal
+{
+  // Required. Id of the signal.
+  uint32 signal_id = 1;
+  // Is signal used for control.
+  bool is_signal_used = 2;
+  // Required. Signal type discription
+  SignalConfig signal_config = 3;
+}
+
+// Type to discribe whether a signal is used in
+message SetSignalForControl
+{
+  // Required. Id of the signal.
+  uint32 signal_id = 1;
+  // Signal used for external control
+  bool is_signal_used = 2;
+}
