@@ -26,23 +26,14 @@
 
 namespace kuka::external::control::iiqka {
 
-enum class SignalDirection {
-  SIGNAL_DIRECTION_UNSPECIFIED = 0,
-  INPUT = 1,
-  OUTPUT = 2
-};
-enum class SignalValueType {
-  SIGNAL_VALUE_TYPE_UNSPECIFIED = 0,
-  BOOL = 1,
-  RAW = 2,
-  NUMBER = 3
-};
+enum class SignalDirection { UNSPECIFIED = 0, INPUT = 1, OUTPUT = 2 };
+enum class SignalValueType { UNSPECIFIED = 0, BOOL = 1, RAW = 2, NUMBER = 3 };
 
 class Signal_Configuration {
 public:
   Signal_Configuration() = default;
   Signal_Configuration(
-      kuka::ecs::v1::SignalConfigExternal &protobuf_signal_config) {
+      const kuka::ecs::v1::SignalConfigExternal &protobuf_signal_config) {
     *this = std::move(protobuf_signal_config);
   }
   ~Signal_Configuration() = default;
@@ -54,12 +45,12 @@ public:
   SignalDirection const &GetDirection() const { return direction_; }
   SignalValueType const &GetValueType() const { return value_type_; }
 
-  kuka::ecs::v1::SetSignalForControl SetSignalForControl() {
-    auto ret_val = kuka::ecs::v1::SetSignalForControl();
-    ret_val.set_signal_id(signal_id_);
-    ret_val.set_is_signal_used(is_signal_used_);
-    return ret_val;
-  }
+  // kuka::ecs::v1::SetSignalForControl SetSignalForControl() {
+  //   auto ret_val = kuka::ecs::v1::SetSignalForControl();
+  //   ret_val.set_signal_id(signal_id_);
+  //   ret_val.set_is_signal_used(is_signal_used_);
+  //   return ret_val;
+  // }
 
   Signal_Configuration &
   operator=(kuka::ecs::v1::SignalConfigExternal &&protobuf_signal_config) {
@@ -77,7 +68,7 @@ public:
       case kuka::ecs::v1::SignalConfig::OUTPUT:
         this->direction_ = SignalDirection::OUTPUT;
       default:
-        this->direction_ = SignalDirection::SIGNAL_DIRECTION_UNSPECIFIED;
+        this->direction_ = SignalDirection::UNSPECIFIED;
         break;
       }
       switch (pb_sc.data_type()) {
@@ -91,7 +82,7 @@ public:
         this->value_type_ = SignalValueType::NUMBER;
         break;
       default:
-        this->value_type_ = SignalValueType::SIGNAL_VALUE_TYPE_UNSPECIFIED;
+        this->value_type_ = SignalValueType::UNSPECIFIED;
         break;
       }
     }
@@ -102,8 +93,8 @@ private:
   std::size_t signal_id_;
   bool is_signal_used_ = false;
   std::string name_;
-  SignalDirection direction_ = SignalDirection::SIGNAL_DIRECTION_UNSPECIFIED;
-  SignalValueType value_type_ = SignalValueType::SIGNAL_VALUE_TYPE_UNSPECIFIED;
+  SignalDirection direction_ = SignalDirection::UNSPECIFIED;
+  SignalValueType value_type_ = SignalValueType::UNSPECIFIED;
 };
 
 class MotionState : public BaseMotionState {

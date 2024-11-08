@@ -85,8 +85,8 @@ public:
   // ECI-specific features
 public:
   Status SetQoSProfile(QoS_Configuration);
-  Status GetSignalConfigurationuration(
-      std::vector<Signal_Configuration> &signal_config);
+  Status GetSignalConfiguration(
+      std::shared_ptr<std::vector<Signal_Configuration>> &signal_config_ptr);
 
   // Members used for keeping track of the state.
 private:
@@ -138,6 +138,9 @@ private:
   Status SetupUDPChannel();
 
   const int kStopRecvTimeout{6};
+
+  // Members and methods necessary for signal hadling
+  std::shared_ptr<std::vector<Signal_Configuration>> signal_configuration_ptr_{nullptr};
 };
 
 } // namespace kuka::external::control::iiqka

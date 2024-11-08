@@ -95,8 +95,8 @@ Status Robot::Setup() {
   return SetupUDPChannel();
 }
 
-Status Robot::GetSignalConfigurationuration(
-    std::vector<Signal_Configuration> &signal_configuration) {
+Status Robot::GetSignalConfiguration(
+    std::shared_ptr<std::vector<Signal_Configuration>> &signal_config) {
   if (Uninitialized()) {
     return Status(ReturnCode::ERROR, "GetSignal_Configurationuration failed: "
                                      "network connection not initialized.");
@@ -105,6 +105,7 @@ Status Robot::GetSignalConfigurationuration(
   kuka::ecs::v1::GetSignalConfigurationRequest request;
   kuka::ecs::v1::GetSignalConfigurationResponse response;
   grpc::ClientContext context;
+  signal_configuration_ptr_ = signal_config;
 
   Status ret_val = ConvertStatus(
       stub_->GetSignalConfiguration(&context, request, &response));
@@ -112,9 +113,10 @@ Status Robot::GetSignalConfigurationuration(
   if (ret_val.return_code != ReturnCode::OK) {
     return ret_val;
   }
+  signal_configuration_ptr_->clear();
 
   for (auto &&signal : response.signal_config_external()) {
-    signal_configuration.emplace_back(Signal_Configuration(signal));
+    signal_configuration_ptr_->emplace_back(Signal_Configuration(signal));
   }
 
   return ret_val;
@@ -162,6 +164,11 @@ Status Robot::StartControlling(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);
   request.set_external_control_mode(control_mode_);
   request.set_is_secure(config_.is_secure);
+  request.clear_set_signals_for_control();
+  // for (auto &&signal :*signal_configuration_ptr_) {
+  //   auto signal_for_control_ptr = request.add_set_signals_for_control();
+  //   signal_for_control_ptr->set_signal_id()
+  // }
 
   stop_flag_ = false;
 
