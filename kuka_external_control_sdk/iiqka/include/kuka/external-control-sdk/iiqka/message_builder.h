@@ -40,7 +40,12 @@ public:
 
   std::size_t const &GetSignalId() const { return signal_id_; }
   bool const &IsSignalUsed() const { return is_signal_used_; }
-  void SetSignalToUse(bool signal_used) { is_signal_used_ = signal_used; }
+  void SetSignalToUse(bool signal_used) {
+    is_signal_used_ = signal_used;
+    is_changed_ = true;
+  }
+  bool const &IsChanged() const { return is_changed_; }
+  void ClearChanged() { is_changed_ = false; }
   std::string const &GetName() const { return name_; }
   SignalDirection const &GetDirection() const { return direction_; }
   SignalValueType const &GetValueType() const { return value_type_; }
@@ -92,6 +97,7 @@ public:
 private:
   std::size_t signal_id_;
   bool is_signal_used_ = false;
+  bool is_changed_ = false;
   std::string name_;
   SignalDirection direction_ = SignalDirection::UNSPECIFIED;
   SignalValueType value_type_ = SignalValueType::UNSPECIFIED;

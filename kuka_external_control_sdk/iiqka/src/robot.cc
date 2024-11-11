@@ -96,7 +96,7 @@ Status Robot::Setup() {
 }
 
 Status Robot::GetSignalConfiguration(
-    std::shared_ptr<std::vector<Signal_Configuration>> &signal_config) {
+    std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config) {
   if (Uninitialized()) {
     return Status(ReturnCode::ERROR, "GetSignal_Configurationuration failed: "
                                      "network connection not initialized.");
@@ -105,7 +105,7 @@ Status Robot::GetSignalConfiguration(
   kuka::ecs::v1::GetSignalConfigurationRequest request;
   kuka::ecs::v1::GetSignalConfigurationResponse response;
   grpc::ClientContext context;
-  signal_configuration_ptr_ = signal_config;
+  signal_config_list_ptr_ = signal_config;
 
   Status ret_val = ConvertStatus(
       stub_->GetSignalConfiguration(&context, request, &response));
@@ -113,10 +113,10 @@ Status Robot::GetSignalConfiguration(
   if (ret_val.return_code != ReturnCode::OK) {
     return ret_val;
   }
-  signal_configuration_ptr_->clear();
+  signal_config_list_ptr_->clear();
 
   for (auto &&signal : response.signal_config_external()) {
-    signal_configuration_ptr_->emplace_back(Signal_Configuration(signal));
+    signal_config_list_ptr_->emplace_back(Signal_Configuration(signal));
   }
 
   return ret_val;
@@ -165,11 +165,14 @@ Status Robot::StartControlling(ControlMode control_mode) {
   request.set_external_control_mode(control_mode_);
   request.set_is_secure(config_.is_secure);
   request.clear_set_signals_for_control();
-  // for (auto &&signal :*signal_configuration_ptr_) {
-  //   auto signal_for_control_ptr = request.add_set_signals_for_control();
-  //   signal_for_control_ptr->set_signal_id()
-  // }
-
+  for (auto &&signal : *signal_config_list_ptr_) {
+    if (signal.IsChanged()) {
+      auto signal_for_control_ptr = request.add_set_signals_for_control();
+      signal_for_control_ptr->set_signal_id(signal.GetSignalId());
+      signal_for_control_ptr->set_is_signal_used(signal.IsSignalUsed());
+      signal.ClearChanged();
+    }
+  }
   stop_flag_ = false;
 
   Status op_status =
@@ -335,9 +338,8 @@ Status Robot::SendControlSignal() {
       control_signal_.CreateProtobufControlSignal(last_ipoc_, control_mode_,
                                                   stop_flag_);
   if (protobuf_control_signal->has_control_signal() == false && !stop_flag_) {
-    return Status(
-        ReturnCode::ERROR,
-        "SendControlSignal failed: please fill out the control signal first.");
+    return Status(ReturnCode::ERROR, "SendControlSignal failed: please fill "
+                                     "out the control signal first.");
   }
 
   std::size_t size = protobuf_control_signal->ByteSizeLong();

@@ -86,7 +86,7 @@ public:
 public:
   Status SetQoSProfile(QoS_Configuration);
   Status GetSignalConfiguration(
-      std::shared_ptr<std::vector<Signal_Configuration>> &signal_config_ptr);
+      std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config);
 
   // Members used for keeping track of the state.
 private:
@@ -140,7 +140,8 @@ private:
   const int kStopRecvTimeout{6};
 
   // Members and methods necessary for signal hadling
-  std::shared_ptr<std::vector<Signal_Configuration>> signal_configuration_ptr_{nullptr};
+  std::shared_ptr<std::vector<Signal_Configuration>> signal_config_list_ptr_{
+      nullptr};
 };
 
 } // namespace kuka::external::control::iiqka
