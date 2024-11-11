@@ -105,7 +105,7 @@ Status Robot::GetSignalConfiguration(
   kuka::ecs::v1::GetSignalConfigurationRequest request;
   kuka::ecs::v1::GetSignalConfigurationResponse response;
   grpc::ClientContext context;
-  signal_config_list_ptr_ = signal_config;
+  signal_config_list_ptr_ = shared_signal_config;
 
   Status ret_val = ConvertStatus(
       stub_->GetSignalConfiguration(&context, request, &response));
