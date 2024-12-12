@@ -22,86 +22,8 @@
 #include "kuka/external-control-sdk/common/message_builder.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
-#include "proto-api/motion-services-ecs/signal_config_external.pb.h"
 
 namespace kuka::external::control::iiqka {
-
-enum class SignalDirection { UNSPECIFIED = 0, INPUT = 1, OUTPUT = 2 };
-enum class SignalValueType { UNSPECIFIED = 0, BOOL = 1, RAW = 2, NUMBER = 3 };
-
-class Signal_Configuration {
-public:
-  Signal_Configuration() = default;
-  Signal_Configuration(
-      const kuka::ecs::v1::SignalConfigExternal &protobuf_signal_config) {
-    *this = std::move(protobuf_signal_config);
-  }
-  ~Signal_Configuration() = default;
-
-  std::size_t const &GetSignalId() const { return signal_id_; }
-  bool const &IsSignalUsed() const { return is_signal_used_; }
-  void SetSignalToUse(bool signal_used) {
-    is_signal_used_ = signal_used;
-    is_changed_ = true;
-  }
-  bool const &IsChanged() const { return is_changed_; }
-  void ClearChanged() { is_changed_ = false; }
-  std::string const &GetName() const { return name_; }
-  SignalDirection const &GetDirection() const { return direction_; }
-  SignalValueType const &GetValueType() const { return value_type_; }
-
-  // kuka::ecs::v1::SetSignalForControl SetSignalForControl() {
-  //   auto ret_val = kuka::ecs::v1::SetSignalForControl();
-  //   ret_val.set_signal_id(signal_id_);
-  //   ret_val.set_is_signal_used(is_signal_used_);
-  //   return ret_val;
-  // }
-
-  Signal_Configuration &
-  operator=(kuka::ecs::v1::SignalConfigExternal &&protobuf_signal_config) {
-    auto &pb_sc = protobuf_signal_config.signal_config();
-    bool has_pb_sc = protobuf_signal_config.has_signal_config();
-
-    this->signal_id_ = protobuf_signal_config.signal_id();
-    this->is_signal_used_ = protobuf_signal_config.has_signal_config();
-    if (has_pb_sc) {
-      this->name_ = pb_sc.name();
-      switch (pb_sc.direction()) {
-      case kuka::ecs::v1::SignalConfig::INPUT:
-        this->direction_ = SignalDirection::INPUT;
-        break;
-      case kuka::ecs::v1::SignalConfig::OUTPUT:
-        this->direction_ = SignalDirection::OUTPUT;
-      default:
-        this->direction_ = SignalDirection::UNSPECIFIED;
-        break;
-      }
-      switch (pb_sc.data_type()) {
-      case kuka::ecs::v1::SignalConfig::BOOL:
-        this->value_type_ = SignalValueType::BOOL;
-        break;
-      case kuka::ecs::v1::SignalConfig::RAW:
-        this->value_type_ = SignalValueType::RAW;
-        break;
-      case kuka::ecs::v1::SignalConfig::NUMBER:
-        this->value_type_ = SignalValueType::NUMBER;
-        break;
-      default:
-        this->value_type_ = SignalValueType::UNSPECIFIED;
-        break;
-      }
-    }
-    return *this;
-  }
-
-private:
-  std::size_t signal_id_;
-  bool is_signal_used_ = false;
-  bool is_changed_ = false;
-  std::string name_;
-  SignalDirection direction_ = SignalDirection::UNSPECIFIED;
-  SignalValueType value_type_ = SignalValueType::UNSPECIFIED;
-};
 
 class MotionState : public BaseMotionState {
 public:
@@ -110,12 +32,14 @@ public:
   MotionState(std::size_t dof) : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_signal_values_.resize(kMotionState_SignalValueMaxCount);
   }
   MotionState(kuka::ecs::v1::MotionStateExternal &protobuf_motion_state,
               uint8_t dof)
       : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_signal_values_.resize(kMotionState_SignalValueMaxCount);
     *this = std::move(protobuf_motion_state);
   }
 
@@ -126,6 +50,8 @@ public:
 
     this->has_positions_ = has_pb_ms ? pb_ms.has_measured_positions() : false;
     this->has_torques_ = has_pb_ms ? pb_ms.has_measured_torques() : false;
+    this->has_signal_values_ =
+        protobuf_motion_state.signal_values_size() != 0 ? true : false;
     if (this->has_positions_) {
       std::move(
           std::begin(pb_ms.measured_positions().values()),
@@ -139,6 +65,14 @@ public:
                 std::begin(pb_ms.measured_torques().values()) +
                     std::min((int)dof_, pb_ms.measured_torques().values_size()),
                 measured_torques_.begin());
+    }
+
+    if (this->has_signal_values_) {
+      // std::move(std::begin(protobuf_motion_state.signal_values()),
+      //           std::begin(protobuf_motion_state.signal_values()) +
+      //               /*std::min((int)kMotionState_SignalValueMaxCount,*/
+      //               protobuf_motion_state.signal_values_size() /*)*/,
+      //           measured_signal_values_.begin());
     }
 
     return *this;
@@ -155,6 +89,7 @@ public:
     joint_velocity_values_.resize(dof, 0.0);
     joint_impedance_stiffness_values_.resize(dof, 0.0);
     joint_impedance_damping_values_.resize(dof, 0.0);
+    signal_values_.resize(kControlSignal_SignalValueMaxCount);
   }
 
   kuka::ecs::v1::ControlSignalExternal *
@@ -242,6 +177,29 @@ public:
             ->mutable_joint_attributes()
             ->mutable_damping()
             ->Add(joint_impedance_damping_values_[i]);
+      }
+    }
+
+    controlling_arena_->GetMessage()->mutable_signal_values()->Clear();
+
+    if (this->has_signal_values_) {
+      for (auto &&signal : signal_values_) {
+        auto pb_sv =
+            controlling_arena_->GetMessage()->mutable_signal_values()->Add();
+        pb_sv->set_signal_id(signal.GetSignalID());
+        switch (signal.GetValueType()) {
+        case SignalValue::SignalValueType::BOOL_VALUE:
+          pb_sv->set_bool_value(signal.GetBoolValue());
+          break;
+        case SignalValue::SignalValueType::DOUBLE_VALUE:
+          pb_sv->set_double_value(signal.GetDoubleValue());
+          break;
+        case SignalValue::SignalValueType::RAW_VALUE:
+          pb_sv->set_raw_value(signal.GetRawValue());
+          break;
+        default:
+          break;
+        }
       }
     }
 

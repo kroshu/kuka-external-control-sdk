@@ -101,7 +101,6 @@ Status Robot::GetSignalConfiguration(
     return Status(ReturnCode::ERROR, "GetSignal_Configurationuration failed: "
                                      "network connection not initialized.");
   }
-
   kuka::ecs::v1::GetSignalConfigurationRequest request;
   kuka::ecs::v1::GetSignalConfigurationResponse response;
   grpc::ClientContext context;
@@ -109,13 +108,12 @@ Status Robot::GetSignalConfiguration(
 
   Status ret_val = ConvertStatus(
       stub_->GetSignalConfiguration(&context, request, &response));
-
   if (ret_val.return_code != ReturnCode::OK) {
     return ret_val;
   }
   signal_config_list_ptr_->clear();
-
   for (auto &&signal : response.signal_config_external()) {
+    strcpy(ret_val.message, std::to_string(signal.signal_id()).c_str());
     signal_config_list_ptr_->emplace_back(Signal_Configuration(signal));
   }
 
@@ -164,10 +162,10 @@ Status Robot::StartControlling(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);
   request.set_external_control_mode(control_mode_);
   request.set_is_secure(config_.is_secure);
-  request.clear_set_signals_for_control();
+  request.clear_set_signals();
   for (auto &&signal : *signal_config_list_ptr_) {
     if (signal.IsChanged()) {
-      auto signal_for_control_ptr = request.add_set_signals_for_control();
+      auto signal_for_control_ptr = request.add_set_signals();
       signal_for_control_ptr->set_signal_id(signal.GetSignalId());
       signal_for_control_ptr->set_is_signal_used(signal.IsSignalUsed());
       signal.ClearChanged();
@@ -361,7 +359,6 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
         ReturnCode::ERROR,
         "ReceiveMotionState failed: network connection not initialized.");
   }
-
   auto recv_ret =
       replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess) {

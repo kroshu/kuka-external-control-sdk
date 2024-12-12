@@ -59,7 +59,7 @@ message OpenControlChannelRequest
   // Variable defining whether secure communication is used
   bool is_secure = 6;
   // List of the signals to use in external control
-  repeated SetSignalForControl set_signals_for_control = 7;
+  repeated SetSignal set_signals = 7;
 }
 
 // Start control response
