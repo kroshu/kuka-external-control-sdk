@@ -85,6 +85,7 @@ public:
   // ECI-specific features
 public:
   Status SetQoSProfile(QoS_Configuration);
+  // This might have to be moved to IRobot
   Status GetSignalConfiguration(
       std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config);
 

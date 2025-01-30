@@ -22,6 +22,7 @@
 #include "kuka/external-control-sdk/common/message_builder.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
+#include "signal_value.h"
 
 namespace kuka::external::control::iiqka {
 
@@ -46,6 +47,7 @@ public:
   MotionState &
   operator=(kuka::ecs::v1::MotionStateExternal &&protobuf_motion_state) {
     auto &pb_ms = protobuf_motion_state.motion_state();
+    auto &pb_sv = protobuf_motion_state.signal_values();
     bool has_pb_ms = protobuf_motion_state.has_motion_state();
 
     this->has_positions_ = has_pb_ms ? pb_ms.has_measured_positions() : false;
@@ -68,8 +70,13 @@ public:
     }
 
     if (this->has_signal_values_) {
-      // std::move(std::begin(protobuf_motion_state.signal_values()),
-      //           std::begin(protobuf_motion_state.signal_values()) +
+      for (size_t i = 0; i < protobuf_motion_state.signal_values_size(); i++) {
+        measured_signal_values_[i] =
+            std::move(protobuf_motion_state.mutable_signal_values()->at(i));
+      }
+
+      // std::move(std::begin(pb_sv),
+      //           std::begin(pb_sv) +
       //               /*std::min((int)kMotionState_SignalValueMaxCount,*/
       //               protobuf_motion_state.signal_values_size() /*)*/,
       //           measured_signal_values_.begin());
@@ -77,6 +84,9 @@ public:
 
     return *this;
   }
+
+private:
+  std::vector<SignalValue> measured_signal_values_;
 };
 
 class ControlSignal : public BaseControlSignal {
@@ -208,6 +218,7 @@ public:
 
 private:
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> *controlling_arena_;
+  std::vector<SignalValue> signal_values_;
 };
 
 } // namespace kuka::external::control::iiqka

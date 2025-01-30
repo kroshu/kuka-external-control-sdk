@@ -15,72 +15,13 @@
 #ifndef KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 #define KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 
+#include "signal_value.h"
 #include <iterator>
 #include <map>
 #include <optional>
 #include <vector>
 
-#include "proto-api/motion-services-ecs/signal_value_external.pb.h"
-
 namespace kuka::external::control {
-
-static constexpr size_t kMotionState_SignalValueMaxCount{100};
-static constexpr size_t kControlSignal_SignalValueMaxCount{10};
-
-class SignalValue {
-public:
-  enum class SignalValueType {
-    UNSPECIFIED = 0,
-    BOOL_VALUE = 1,
-    DOUBLE_VALUE = 2,
-    RAW_VALUE = 3
-  };
-  SignalValue() = default;
-  SignalValue(kuka::ecs::v1::SignalValueExternal protobuf_signal_value) {
-    *this = std::move(protobuf_signal_value);
-  }
-  SignalValue &
-  operator=(kuka::ecs::v1::SignalValueExternal &protobuf_signal_value) {
-    this->signal_id_ = protobuf_signal_value.signal_id();
-
-    switch (protobuf_signal_value.signal_type_case()) {
-    case kuka::ecs::v1::SignalValueExternal::kBoolValue:
-      this->value_type_ = SignalValueType::BOOL_VALUE;
-      this->value_.bool_value_ = protobuf_signal_value.bool_value();
-      break;
-    case kuka::ecs::v1::SignalValueExternal::kDoubleValue:
-      this->value_type_ = SignalValueType::DOUBLE_VALUE;
-      this->value_.double_value_ = protobuf_signal_value.double_value();
-      break;
-    case kuka::ecs::v1::SignalValueExternal::kRawValue:
-      this->value_type_ = SignalValueType::RAW_VALUE;
-      this->value_.raw_value_ = protobuf_signal_value.raw_value();
-      break;
-    default:
-      this->value_type_ = SignalValueType::UNSPECIFIED;
-      break;
-    }
-    return *this;
-  }
-  uint32_t const &GetSignalID() const { return signal_id_; }
-  SignalValueType const &GetValueType() const { return value_type_; }
-  bool const &GetBoolValue() const { return value_.bool_value_; }
-  void SetBoolValue(bool &value) { value_.bool_value_ = value; }
-  double const &GetDoubleValue() const { return value_.double_value_; }
-  void SetDoubleValue(double &value) { value_.double_value_ = value; }
-  uint64_t const &GetRawValue() const { return value_.raw_value_; }
-  void SetRawValue(uint64_t &value) { value_.raw_value_ = value; }
-
-private:
-  uint32_t signal_id_;
-  SignalValueType value_type_ = SignalValueType::UNSPECIFIED;
-  union {
-    bool bool_value_;
-    double double_value_;
-    uint64_t raw_value_;
-  } value_;
-};
-
 class BaseMotionState {
 public:
   BaseMotionState(std::size_t dof) : dof_(dof) {}
@@ -99,7 +40,7 @@ public:
     return measured_cartesian_positions_;
   }
 
-  std::vector<SignalValue> const &GetSignalValues() {
+  std::vector<std::shared_ptr<BaseSignalValue>> const &GetSignalValues() {
     return measured_signal_values_;
   }
 
@@ -114,7 +55,7 @@ protected:
   std::vector<double> measured_torques_;
   std::vector<double> measured_velocities_;
   std::vector<double> measured_cartesian_positions_;
-  std::vector<SignalValue> measured_signal_values_;
+  std::vector<std::shared_ptr<BaseSignalValue>> measured_signal_values_;
 
   std::size_t dof_;
 };
@@ -173,10 +114,14 @@ public:
   template <typename InputIt>
   void AddSignalValues(InputIt first, InputIt last) {
     has_signal_values_ = true;
-    for (size_t i = 0; i < kControlSignal_SignalValueMaxCount && first != last;
+    for (size_t i = 0; i < signal_values_.size() && first != last;
          ++i, ++first) {
-      signal_values_[i] = *first;
+      signal_values_[i] = first;
     }
+  }
+
+  std::vector<std::shared_ptr<BaseSignalValue>> const &GetSignalValues() {
+    return signal_values_;
   }
 
 protected:
@@ -193,7 +138,7 @@ protected:
   std::vector<double> joint_impedance_stiffness_values_;
   std::vector<double> joint_impedance_damping_values_;
   std::vector<double> cartesian_position_values_;
-  std::vector<SignalValue> signal_values_;
+  std::vector<std::shared_ptr<BaseSignalValue>> signal_values_;
 
   std::size_t dof_ = 0;
 
