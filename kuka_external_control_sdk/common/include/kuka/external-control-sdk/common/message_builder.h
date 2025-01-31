@@ -120,7 +120,7 @@ public:
     }
   }
 
-  std::vector<std::shared_ptr<BaseSignalValue>> const &GetSignalValues() {
+  std::vector<std::shared_ptr<BaseSignalValue>> const &GetSignalValues() const {
     return signal_values_;
   }
 

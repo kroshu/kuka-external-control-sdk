@@ -26,7 +26,7 @@ class SignalValue : public BaseSignalValue {
 public:
   SignalValue() : BaseSignalValue(){};
 
-  ~SignalValue();
+  ~SignalValue() = default;
   // goes to child
   SignalValue(kuka::ecs::v1::SignalValueExternal &protobuf_signal_value)
       : BaseSignalValue() {

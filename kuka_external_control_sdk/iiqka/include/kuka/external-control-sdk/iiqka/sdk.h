@@ -22,4 +22,4 @@
 #include "kuka/external-control-sdk/iiqka/message_builder.h"
 #include "kuka/external-control-sdk/iiqka/robot.h"
 
-#endif  // EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
+#endif // EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
