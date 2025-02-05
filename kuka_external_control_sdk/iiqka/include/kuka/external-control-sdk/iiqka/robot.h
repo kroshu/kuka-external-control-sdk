@@ -75,8 +75,8 @@ public:
   virtual Status ReceiveMotionState(
       std::chrono::milliseconds receive_request_timeout) override;
 
-  virtual BaseControlSignal &GetControlSignal() override;
-  virtual BaseMotionState &GetLastMotionState() override;
+  virtual std::shared_ptr<BaseControlSignal> GetControlSignal() override;
+  virtual std::shared_ptr<BaseMotionState> GetLastMotionState() override;
 
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status
@@ -123,8 +123,8 @@ private:
 
   uint32_t last_ipoc_;
 
-  ControlSignal control_signal_;
-  MotionState last_motion_state_;
+  std::shared_ptr<ControlSignal> control_signal_;
+  std::shared_ptr<MotionState> last_motion_state_;
   kuka::motion::external::ExternalControlMode control_mode_{
       kuka::motion::external::ExternalControlMode::
           EXTERNAL_CONTROL_MODE_UNSPECIFIED};

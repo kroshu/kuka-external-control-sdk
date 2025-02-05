@@ -24,9 +24,10 @@ using namespace kuka::external::control;
 
 namespace kuka::external::control::iiqka {
 
-Robot::Robot(Configuration config)
-    : control_signal_(&controlling_arena_, config.dof),
-      last_motion_state_(config.dof) {
+Robot::Robot(Configuration config) {
+  control_signal_ =
+      std::make_shared<ControlSignal>(&controlling_arena_, config.dof);
+  last_motion_state_ = std::make_shared<MotionState>(config.dof);
   config_.koni_ip_address = config.koni_ip_address;
   config_.client_ip_address = config.client_ip_address;
   config_.is_secure = config.is_secure;
@@ -333,8 +334,8 @@ Status Robot::SendControlSignal() {
   }
 
   kuka::ecs::v1::ControlSignalExternal *protobuf_control_signal =
-      control_signal_.CreateProtobufControlSignal(last_ipoc_, control_mode_,
-                                                  stop_flag_);
+      control_signal_->CreateProtobufControlSignal(last_ipoc_, control_mode_,
+                                                   stop_flag_);
   if (protobuf_control_signal->has_control_signal() == false && !stop_flag_) {
     return Status(ReturnCode::ERROR, "SendControlSignal failed: please fill "
                                      "out the control signal first.");
@@ -369,15 +370,19 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
       recv_ret = os::core::udp::communication::Socket::ErrorCode::kError;
     } else {
       last_ipoc_ = monitoring_arena_.GetMessage()->header().ipoc();
-      last_motion_state_ = std::move(*monitoring_arena_.GetMessage());
+      *last_motion_state_ = std::move(*monitoring_arena_.GetMessage());
     }
   }
 
   return ConvertStatus(recv_ret);
 }
 
-BaseControlSignal &Robot::GetControlSignal() { return control_signal_; };
-BaseMotionState &Robot::GetLastMotionState() { return last_motion_state_; };
+std::shared_ptr<BaseControlSignal> Robot::GetControlSignal() {
+  return control_signal_;
+};
+std::shared_ptr<BaseMotionState> Robot::GetLastMotionState() {
+  return last_motion_state_;
+};
 
 Status Robot::SwitchControlMode(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);

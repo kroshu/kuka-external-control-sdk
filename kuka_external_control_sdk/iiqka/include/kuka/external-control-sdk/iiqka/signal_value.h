@@ -27,13 +27,17 @@ public:
   SignalValue() : BaseSignalValue(){};
 
   ~SignalValue() = default;
-  // goes to child
+  SignalValue(SignalValue &&) = default;
   SignalValue(kuka::ecs::v1::SignalValueExternal &protobuf_signal_value)
       : BaseSignalValue() {
     *this = std::move(protobuf_signal_value);
   }
-  // SignalValue(SignalValue&&) = default;
-  // goes to child
+  // SignalValue(BaseSignalValue &&base_signal_value)
+  //     : BaseSignalValue(base_signal_value) {}
+  // SignalValue &
+  // operator=(const std::shared_ptr<BaseSignalValue> base_signal_value) {
+  //   //return static_cast<SignalValue>(*base_signal_value.get());
+  // }
   SignalValue &
   operator=(kuka::ecs::v1::SignalValueExternal &&protobuf_signal_value) {
     this->signal_id_ = protobuf_signal_value.signal_id();

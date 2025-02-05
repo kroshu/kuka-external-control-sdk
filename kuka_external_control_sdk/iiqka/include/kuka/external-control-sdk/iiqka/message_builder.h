@@ -33,14 +33,16 @@ public:
   MotionState(std::size_t dof) : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
-    measured_signal_values_.resize(kMotionState_SignalValueMaxCount);
+    measured_signal_values_.resize(kMotionState_SignalValueMaxCount,
+                                   std::make_shared<SignalValue>());
   }
   MotionState(kuka::ecs::v1::MotionStateExternal &protobuf_motion_state,
               uint8_t dof)
       : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
-    measured_signal_values_.resize(kMotionState_SignalValueMaxCount);
+    measured_signal_values_.resize(kMotionState_SignalValueMaxCount,
+                                   std::make_shared<SignalValue>());
     *this = std::move(protobuf_motion_state);
   }
 
@@ -70,8 +72,12 @@ public:
     }
 
     if (this->has_signal_values_) {
+      // std::copy(protobuf_motion_state.mutable_signal_values()->begin(),
+      //           protobuf_motion_state.mutable_signal_values()->end(),
+      //           measured_signal_values_.begin())
+
       for (size_t i = 0; i < protobuf_motion_state.signal_values_size(); i++) {
-        measured_signal_values_[i] =
+        *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(i)) =
             std::move(protobuf_motion_state.mutable_signal_values()->at(i));
       }
 
@@ -84,9 +90,6 @@ public:
 
     return *this;
   }
-
-private:
-  std::vector<SignalValue> measured_signal_values_;
 };
 
 class ControlSignal : public BaseControlSignal {
@@ -99,7 +102,8 @@ public:
     joint_velocity_values_.resize(dof, 0.0);
     joint_impedance_stiffness_values_.resize(dof, 0.0);
     joint_impedance_damping_values_.resize(dof, 0.0);
-    signal_values_.resize(kControlSignal_SignalValueMaxCount);
+    signal_values_.resize(kControlSignal_SignalValueMaxCount,
+                          std::make_shared<SignalValue>());
   }
 
   template <typename InputIt>
@@ -110,8 +114,6 @@ public:
       signal_values_[i] = first;
     }
   }
-
-  std::vector<SignalValue> const &GetSignalValues() { return signal_values_; }
 
   kuka::ecs::v1::ControlSignalExternal *
   CreateProtobufControlSignal(int last_ipoc, int control_mode,
@@ -207,16 +209,16 @@ public:
       for (auto &&signal : signal_values_) {
         auto pb_sv =
             controlling_arena_->GetMessage()->mutable_signal_values()->Add();
-        pb_sv->set_signal_id(signal.GetSignalID());
-        switch (signal.GetValueType()) {
+        pb_sv->set_signal_id(signal->GetSignalID());
+        switch (signal->GetValueType()) {
         case SignalValue::SignalValueType::BOOL_VALUE:
-          pb_sv->set_bool_value(signal.GetBoolValue());
+          pb_sv->set_bool_value(signal->GetBoolValue());
           break;
         case SignalValue::SignalValueType::DOUBLE_VALUE:
-          pb_sv->set_double_value(signal.GetDoubleValue());
+          pb_sv->set_double_value(signal->GetDoubleValue());
           break;
         case SignalValue::SignalValueType::RAW_VALUE:
-          pb_sv->set_raw_value(signal.GetRawValue());
+          pb_sv->set_raw_value(signal->GetRawValue());
           break;
         default:
           break;
@@ -229,7 +231,6 @@ public:
 
 private:
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> *controlling_arena_;
-  std::vector<SignalValue> signal_values_;
 };
 
 } // namespace kuka::external::control::iiqka

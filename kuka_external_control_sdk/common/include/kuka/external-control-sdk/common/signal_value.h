@@ -26,6 +26,7 @@ public:
     LONG_VALUE = 4
   };
   BaseSignalValue() = default;
+  // BaseSignalValue(BaseSignalValue &&) = default;
   ~BaseSignalValue() = default;
 
   uint32_t const &GetSignalID() const { return signal_id_; }
