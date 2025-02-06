@@ -106,15 +106,6 @@ public:
                           std::make_shared<SignalValue>());
   }
 
-  template <typename InputIt>
-  void AddSignalValues(InputIt first, InputIt last) {
-    has_signal_values_ = true;
-    for (size_t i = 0; i < kMotionState_SignalValueMaxCount && first != last;
-         ++i, ++first) {
-      signal_values_[i] = first;
-    }
-  }
-
   kuka::ecs::v1::ControlSignalExternal *
   CreateProtobufControlSignal(int last_ipoc, int control_mode,
                               bool stop_control = false) {

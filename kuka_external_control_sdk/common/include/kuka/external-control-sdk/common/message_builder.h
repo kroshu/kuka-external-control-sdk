@@ -112,13 +112,34 @@ public:
   }
 
   template <typename InputIt>
-  void AddSignalValues(InputIt first, InputIt last); // {
-  //    has_signal_values_ = true;
-  //    for (size_t i = 0; i < signal_values_.size() && first != last;
-  //         ++i, ++first) {
-  //      signal_values_[i] = first;
-  //    }
-  //  }
+  void AddSignalValues(InputIt first, InputIt last) {
+    has_signal_values_ = true;
+    // TODO (Komaromi): insted of signal_values_.size() get a max value somehow
+    for (size_t i = 0; i < signal_values_.size() && first != last;
+         ++i, ++first) {
+      auto signal = signal_values_.at(i);
+      switch (signal->GetValueType()) {
+      case BaseSignalValue::SignalValueType::BOOL_VALUE:
+        signal->SetBoolValue(static_cast<bool &>(*first));
+        break;
+
+      case BaseSignalValue::SignalValueType::DOUBLE_VALUE:
+        signal->SetDoubleValue(*first);
+        break;
+
+      case BaseSignalValue::SignalValueType::RAW_VALUE:
+        signal->SetRawValue(static_cast<uint64_t &>(*first));
+        break;
+
+      case BaseSignalValue::SignalValueType::LONG_VALUE:
+        signal->SetLongValue(static_cast<int64_t &>(*first));
+        break;
+
+      default:
+        break;
+      }
+    }
+  }
 
   std::vector<std::shared_ptr<BaseSignalValue>> const &GetSignalValues() const {
     return signal_values_;
