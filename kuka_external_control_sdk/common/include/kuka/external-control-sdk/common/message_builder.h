@@ -119,20 +119,21 @@ public:
          ++i, ++first) {
       auto signal = signal_values_.at(i);
       switch (signal->GetValueType()) {
+
       case BaseSignalValue::SignalValueType::BOOL_VALUE:
-        signal->SetBoolValue(static_cast<bool &>(*first));
+        signal->SetBoolValue(const_cast<bool &>(first->get()->GetBoolValue()));
         break;
 
       case BaseSignalValue::SignalValueType::DOUBLE_VALUE:
-        signal->SetDoubleValue(*first);
+        signal->SetDoubleValue(const_cast<double &>(first->get()->GetDoubleValue()));
         break;
 
       case BaseSignalValue::SignalValueType::RAW_VALUE:
-        signal->SetRawValue(static_cast<uint64_t &>(*first));
+        signal->SetRawValue(const_cast<uint64_t &>(first->get()->GetRawValue()));
         break;
 
       case BaseSignalValue::SignalValueType::LONG_VALUE:
-        signal->SetLongValue(static_cast<int64_t &>(*first));
+        signal->SetLongValue(const_cast<int64_t &>(first->get()->GetLongValue()));
         break;
 
       default:

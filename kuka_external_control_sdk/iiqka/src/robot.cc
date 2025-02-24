@@ -96,6 +96,7 @@ Status Robot::Setup() {
   return SetupUDPChannel();
 }
 
+// TODO (Komaromi): Should be seperated to two. ReceiveIOConfig() and GetIOConfig just like the motion state and control signal
 Status Robot::GetSignalConfiguration(
     std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config) {
   if (Uninitialized()) {

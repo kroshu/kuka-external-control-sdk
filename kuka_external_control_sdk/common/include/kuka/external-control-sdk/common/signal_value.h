@@ -33,12 +33,21 @@ public:
   SignalValueType const &GetValueType() const { return value_type_; }
   bool const &GetBoolValue() const { return value_.bool_value_; }
   void SetBoolValue(bool &value) { value_.bool_value_ = value; }
+  void SetBoolValue(double &value) {
+    value_.bool_value_ = static_cast<bool>(value);
+  }
   double const &GetDoubleValue() const { return value_.double_value_; }
   void SetDoubleValue(double &value) { value_.double_value_ = value; }
   uint64_t const &GetRawValue() const { return value_.raw_value_; }
   void SetRawValue(uint64_t &value) { value_.raw_value_ = value; }
+  void SetRawValue(double &value) {
+    value_.raw_value_ = static_cast<uint64_t>(value);
+  }
   int64_t const &GetLongValue() const { return value_.long_value_; }
   void SetLongValue(int64_t &value) { value_.long_value_ = value; }
+  void SetLongValue(double &value) {
+    value_.long_value_ = static_cast<int64_t>(value);
+  }
 
 protected:
   uint32_t signal_id_;
