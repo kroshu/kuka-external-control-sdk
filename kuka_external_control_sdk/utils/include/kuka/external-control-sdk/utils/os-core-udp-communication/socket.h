@@ -152,6 +152,9 @@ class Socket {
   /* freeing up the socket */
   virtual int Close();
 
+  /* shutting down both incoming and outgoing communication of the socket */
+  virtual int Shutdown();
+
  public:
   int GetSocketFd() const;
   bool IsActive() const;

@@ -1,0 +1,18 @@
+&ACCESS  RV
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+&REL 4
+DEFDAT  EKI_COMMUNICATION
+
+   CHAR InterfaceName[64]
+   InterfaceName[]="EkiKSSinterface"
+
+   INT ROS_EKI_Conn_Flag=105
+   INT ROS_EKI_Recv_Flag=110
+
+   DECL BOOL connection_flag=FALSE
+
+   DECL EventType last_event=#None
+
+   DECL BOOL first_pub_after_start=FALSE
+
+ENDDAT

@@ -363,6 +363,14 @@ int Socket::Close() {
   return SetError(ErrorCode::kNotActive);
 }
 
+int Socket::Shutdown() {
+  if (IsActive()) {
+    ::shutdown(socket_fd_, SHUT_RDWR);
+    return SetError(ErrorCode::kSuccess);
+  }
+  return SetError(ErrorCode::kNotActive);
+}
+
 int Socket::GetSocketFd() const { return socket_fd_; }
 bool Socket::IsActive() const { return socket_fd_ >= 0; }
 

@@ -1,0 +1,313 @@
+&ACCESS RV3
+DEF program_handler ( )
+   ; Software License Agreement (BSD License)
+   ;
+   ; Copyright (c) 2022, Kuka Robotics Corp
+   ; All rights reserved.
+   ;
+   ; Redistribution and use in source and binary forms, with or without
+   ; modification, are permitted provided that the following conditions are met:
+   ;
+   ;      * Redistributions of source code must retain the above copyright
+   ;        notice, this list of conditions and the following disclaimer.
+   ;      * Redistributions in binary form must reproduce the above copyright
+   ;        notice, this list of conditions and the following disclaimer in the
+   ;        documentation and/or other materials provided with the distribution.
+   ;      * Neither the name of the copyright holder, nor the names of its
+   ;        contributors may be used to endorse or promote products derived
+   ;        from this software without specific prior written permission.
+   ;
+   ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   ; POSSIBILITY OF SUCH DAMAGE.
+END
+
+GLOBAL DEFFCT BOOL StartProgram(ProgName: IN)
+   ;FOLD Help
+      ; Selects the robot program for running.  If mode is EXT and drives are on, the program will run too.  In all other cases, the program must be started with the start signal or button.
+      ;
+      ; @Inputs
+      ;   @param ProgName
+      ;      E.G.  "/R1/test()"
+      ;
+      ; @Outputs
+      ;   None
+      ;
+      ; @Return
+      ;    TRUE - Successfully selected program (this also start program in EXT mode)
+      ;    FALSE - Failed to select program
+      ;         KSS01422 $PRONAME[] value invalid = progname and path invalid;
+      ;
+   ;ENDFOLD
+   CHAR ProgName[]
+   CHAR s[256]
+   INT k
+
+   ; Check to see if a program is already selected - should not happen
+   IF ($PRO_STATE1 <> #P_FREE) THEN
+      ; If a program is already selected, log error and return
+      MsgNotify("Program %1 is already selected", "PC", , $PRO_NAME1[], 1)
+      RETURN FALSE
+   ENDIF
+
+   ; Select the new program
+   s[] = "RUN/"
+   k = strAdd(s[], ProgName[])
+
+   CWRITE($CMD,StmtState,CmdMode,s[])
+   IF (WaitForStateTransition(#P_FREE, 1000) <> TRUE) THEN
+      MsgNotify("Timeout selecting program %1", "PC", , ProgName[], 5)
+      RETURN FALSE
+   ENDIF
+
+   RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT BOOL CancelProgram()
+   ;FOLD Help
+      ; Cancels the robot program.  If no program is selected, this does not return an error.
+      ; @Return
+      ;    TRUE - Successfully cancelled program (or no program was selected)
+      ;    FALSE - Timeout occured while trying to cancel program
+      ;
+   ;ENDFOLD
+
+   ; Check to see if no program is selected
+   IF ($PRO_STATE1 == #P_FREE) THEN
+      RETURN TRUE
+   ENDIF
+
+   IF ($PRO_STATE1 == #P_ACTIVE) THEN
+      MsgNotify("STOP", "PC", 0, " ", 0)
+      CWRITE($CMD,StmtState,CmdMode,"STOP 1")
+      IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
+         MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+         RETURN FALSE
+      ENDIF
+   ENDIF
+
+   ; Cancel the program
+   MsgNotify("CANCEL")
+   CWRITE($CMD,StmtState,CmdMode,"CANCEL 1")
+   IF (WaitForState(#P_FREE, 1000) <> TRUE) THEN
+      MsgNotify("Timeout cancelling program", "PC", 0, " ", 4)
+      RETURN FALSE
+   ENDIF
+
+   RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT BOOL ResetProgram()
+   ;FOLD Help
+      ; Resets the robot program.  If the program is already reset, this does not return an error.
+      ;
+      ;
+      ; @Return
+      ;    TRUE - Successfully reset program
+      ;    FALSE - Timeout occured while trying to reset program
+   ;ENDFOLD
+
+   ; If program is already reset, just return
+   IF ($PRO_STATE1 == #P_RESET) THEN
+      RETURN TRUE
+   ENDIF
+
+   ; Check for no program selected
+   IF ($PRO_STATE1 == #P_FREE) THEN
+      MsgNotify("No program selected", "PC", 0, " ", 7)
+      RETURN FALSE
+   ENDIF
+
+   ; If the program is running, stop it
+   IF ($PRO_STATE1 == #P_ACTIVE) THEN
+      CWRITE($CMD,StmtState,CmdMode,"STOP 1")
+      IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
+         MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+         RETURN FALSE
+      ENDIF
+   ENDIF
+
+   ; Reset the program
+   CWRITE($CMD,StmtState,CmdMode,"RESET 1")
+   IF (WaitForState(#P_RESET, 1000) <> TRUE) THEN
+      MsgNotify("Timeout resetting program", "PC", 0, " ", 8)
+      RETURN FALSE
+   ENDIF
+
+   RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT BOOL StopProgram()
+   ;FOLD Help
+      ; Stops the robot program.  If the program is not running or no program is selected, this does not return an error.
+      ;
+      ; @Return
+      ;    TRUE - Successfully stopped program
+      ;    FALSE - Timeout occured while trying to stop program
+   ;ENDFOLD
+   IF ($PRO_STATE1 == #P_ACTIVE) THEN
+      CWRITE($CMD,StmtState,CmdMode,"STOP 1")
+      IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
+         MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+         RETURN FALSE
+      ENDIF
+   ENDIF
+   RETURN TRUE
+ENDFCT
+
+DEFFCT BOOL WaitForState(ProState: IN, Timeout:IN)
+   ;FOLD Help
+      ;   Used internally to wait for a specific program
+      ;   state or timeout, whichever comes first.
+      ; @Inputs
+      ;   @param ProState
+      ;      ENUM PRO_STATE: #P_ACTIVE,#P_FREE,#P_END,#P_RESET,#P_STOP
+      ;
+      ;   @param Timeout
+      ;      Maximum time to wait in milliseconds.
+      ;
+      ; @Outputs
+      ;   None
+      ;
+      ; @Return
+      ;    TRUE - Program state condition was met
+      ;    FALSE - Timeout occured
+      ;
+   ;ENDFOLD
+   DECL PRO_STATE ProState
+   INT Timeout
+   INT StartTime, TriggerTime
+
+   StartTime = $ROB_TIMER
+
+   ; Set the trigger time based on the start time.  Account for integer rollover
+   IF ((IntegerMax-Timeout) < StartTime) THEN
+      TriggerTime = Timeout - (IntegerMax-StartTime)
+   ELSE
+      TriggerTime = StartTime + Timeout
+   ENDIF
+
+   IF (TriggerTime >= StartTime) THEN
+      ; No worries about timer rollover
+      REPEAT
+         WAIT SEC 0.12
+      UNTIL (($PRO_STATE1 == ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime))
+
+   ELSE
+      ; Timer rollover must be accounted for
+      REPEAT
+         WAIT SEC 0.12
+      UNTIL (($PRO_STATE1 == ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime)))
+   ENDIF
+
+   IF ($PRO_STATE1 == ProState) THEN
+      RETURN TRUE
+   ENDIF
+
+   RETURN FALSE
+ENDFCT
+
+DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout:IN)
+   ;FOLD Help
+      ;   Used internally to wait for a program state transition FROM the given state
+      ; @Inputs
+      ;   @param ProState
+      ;      ENUM PRO_STATE: #P_ACTIVE,#P_FREE,#P_END,#P_RESET,#P_STOP
+      ;
+      ;   @param Timeout
+      ;      Maximum time to wait in milliseconds.
+      ;
+      ; @Outputs
+      ;   None
+      ;
+      ; @Return
+      ;    TRUE - Program state condition was met
+      ;    FALSE - Timeout occured
+      ;
+      ;
+   ;ENDFOLD
+   DECL PRO_STATE ProState
+   INT Timeout
+   INT StartTime, TriggerTime
+
+   StartTime = $ROB_TIMER
+
+   ; Set the trigger time based on the start time.  Account for integer rollover
+   IF ((IntegerMax-Timeout) < StartTime) THEN
+      TriggerTime = Timeout - (IntegerMax-StartTime)
+   ELSE
+      TriggerTime = StartTime + Timeout
+   ENDIF
+
+   IF (TriggerTime >= StartTime) THEN
+      ; No worries about timer rollover
+      REPEAT
+         WAIT SEC 0.12
+      UNTIL (($PRO_STATE1 <> ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime))
+   ELSE
+      ; Timer rollover must be accounted for
+      REPEAT
+         WAIT SEC 0.12
+      UNTIL (($PRO_STATE1 <> ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime)))
+   ENDIF
+
+   IF ($PRO_STATE1 <> ProState) THEN
+      RETURN TRUE
+   ENDIF
+
+   RETURN FALSE
+ENDFCT
+
+GLOBAL DEFFCT INT GetControlModeID(mode:IN)
+   DECL ControlMode mode
+   DECL INT ID
+
+   FOR ID=1 TO MAP_SIZE
+      IF (mode == map[ID].control_mode) THEN
+         RETURN ID
+      ENDIF
+   ENDFOR
+
+   RETURN -1
+ENDFCT
+
+GLOBAL DEFFCT CHAR [64] GetProgName(mode:IN)
+   DECL ControlMode mode
+   RETURN map[GetControlModeID(mode)].prog_name[]
+ENDFCT
+
+GLOBAL DEF SetControlMode(mode:IN)
+   DECL ControlMode mode
+   CHAR modeString[32]
+
+   modeString[] = ControlModeToString(mode)
+   MsgNotify("Control mode set to %1.", "ProgramHandler",, modeString[])
+
+   control_mode = mode
+END
+
+DEFFCT CHAR [32] ControlModeToString(controlMode: IN)
+   DECL ControlMode controlMode
+
+   IF (controlMode == #JointPosition) THEN
+      RETURN "JointPosition"
+   ENDIF
+
+   IF (controlMode == #CartPosition) THEN
+      RETURN "CartesianPosition"
+   ENDIF
+
+   RETURN "InvalidControlMode"
+ENDFCT
+
+GLOBAL DEFFCT ControlMode GetControlMode()
+   RETURN control_mode
+ENDFCT
