@@ -13,6 +13,4 @@ DEFDAT  EKI_COMMUNICATION
 
    DECL EventType last_event=#None
 
-   DECL BOOL first_pub_after_start=FALSE
-
 ENDDAT

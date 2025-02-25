@@ -117,15 +117,6 @@ GLOBAL DEF PublishEvent()
    DECL INT event_int
    DECL CHAR event_msg[64]
 
-   IF first_pub_after_start == TRUE THEN
-      MsgNotify("Publishing test error event")
-      eki_ret = eki_setInt(InterfaceName[], "Robot/Event/@EventID", 4)
-      eki_ret = eki_setString(InterfaceName[], "Robot/Event/@Message", "Test error event")
-      eki_ret = eki_send(InterfaceName[], "Robot/Event")
-      first_pub_after_start = FALSE
-      RETURN
-   ENDIF
-
    IF GetEvent() <> #None THEN
       IF Connected() == FALSE THEN
          MsgNotify("External client is not connected when trying to send event")
@@ -136,7 +127,6 @@ GLOBAL DEF PublishEvent()
       SWITCH last_event
          CASE #Started
             event_int = 0
-            first_pub_after_start = TRUE
          CASE #Stopped
             event_int = 1
          CASE #Cancelled
