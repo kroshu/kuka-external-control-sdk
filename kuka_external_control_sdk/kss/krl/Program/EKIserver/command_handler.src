@@ -56,7 +56,7 @@ GLOBAL DEF HandleCommand(cmd:IN)
             SetEvent(#Connected)
          CASE #CMD_START
             cmd_success = StartProgram(GetProgName(GetControlMode()))
-            IF (cmd_success == TRUE) THEN
+            IF cmd_success THEN
                driver_state = #Active
                SetEvent(#Started)
             ELSE
@@ -64,7 +64,7 @@ GLOBAL DEF HandleCommand(cmd:IN)
             ENDIF
          CASE #CMD_CANCEL
             cmd_success = CancelProgram()
-            IF (cmd_success == TRUE) THEN
+            IF cmd_success THEN
                driver_state = #Initialized
                SetControlMode(#Inactive)
                SetEvent(#Cancelled)
@@ -73,7 +73,7 @@ GLOBAL DEF HandleCommand(cmd:IN)
             ENDIF
          CASE #CMD_RESET
             cmd_success = ResetProgram()
-            IF (cmd_success == TRUE) THEN
+            IF cmd_success THEN
                driver_state = #Inactive
                SetEvent(#ResetOK)
             ELSE
@@ -176,16 +176,14 @@ ENDFCT
 
 DEFFCT CHAR [16] DriverStateToString(driverState: IN)
    DECL DriverState driverState
-
-   IF (driverState == #Initialized) THEN
-      RETURN "Initialized"
-   ENDIF
-
-   IF (driverState == #Inactive) THEN
-      RETURN "Inactive"
-   ENDIF
-
-   RETURN "Invalid"
+   SWITCH driverState
+      CASE #Initialized
+         RETURN "Initialized"
+      CASE #Inactive
+         RETURN "Inactive"
+      CASE #Active
+         RETURN "Active"
+   ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetDriverState(state: IN)

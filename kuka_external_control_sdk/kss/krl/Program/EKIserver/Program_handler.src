@@ -80,14 +80,16 @@ GLOBAL DEFFCT BOOL CancelProgram()
       ;
    ;ENDFOLD
 
+   MsgNotify("Cancelling program", "ProgramHandler")
+
    ; Check to see if no program is selected
    IF ($PRO_STATE1 == #P_FREE) THEN
       RETURN TRUE
    ENDIF
 
    IF ($PRO_STATE1 == #P_ACTIVE) THEN
-      MsgNotify("STOP", "PC", 0, " ", 0)
-      CWRITE($CMD,StmtState,CmdMode,"STOP 1")
+      MsgNotify("Sending stop command", "ProgramHandler")
+      CWRITE($CMD, StmtState, CmdMode, "STOP 1")
       IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
          MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
          RETURN FALSE
@@ -95,8 +97,8 @@ GLOBAL DEFFCT BOOL CancelProgram()
    ENDIF
 
    ; Cancel the program
-   MsgNotify("CANCEL")
-   CWRITE($CMD,StmtState,CmdMode,"CANCEL 1")
+   MsgNotify("Sending cancel command", "ProgramHandler")
+   CWRITE($CMD, StmtState, CmdMode, "CANCEL 1")
    IF (WaitForState(#P_FREE, 1000) <> TRUE) THEN
       MsgNotify("Timeout cancelling program", "PC", 0, " ", 4)
       RETURN FALSE

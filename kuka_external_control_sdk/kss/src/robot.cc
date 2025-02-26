@@ -52,15 +52,6 @@ Status Robot::StartControlling(kuka::external::control::ControlMode control_mode
 }
 
 Status Robot::StopControlling() {
-  auto recv_ret = ReceiveMotionState(std::chrono::milliseconds(40));
-  if (recv_ret.return_code != kuka::external::control::ReturnCode::OK) {
-    return recv_ret;
-  }
-
-  // Hold position with stop message
-  const auto & joint_positions = last_motion_state_.GetMeasuredCartesianPositions();
-  control_signal_.AddJointPositionValues(joint_positions.cbegin(), joint_positions.cend());
-
   auto stop_send_str_view =
       control_signal_.GetXMLString(control_signal_format_, last_ipoc_, initial_motion_state_, true);
   if (!stop_send_str_view.has_value()) {
