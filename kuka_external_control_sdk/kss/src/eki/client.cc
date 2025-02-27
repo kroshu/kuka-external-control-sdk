@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/kss/eki-rsi/eki_comm_client.h"
-
-#include <cstdio>
+#include "kuka/external-control-sdk/kss/eki/client.h"
 #include <cstring>
-#include <iostream>
 
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
+#include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss::eki {
 
-EKICommClient::EKICommClient(const std::string& server_address, unsigned short server_port)
+Client::Client(const std::string& server_address, unsigned short server_port)
     : os::core::udp::communication::TCPClient(
           kRecvBuffSize, os::core::udp::communication::SocketAddress(server_address, server_port)) {
   event_handler_ = std::make_unique<EventHandler>();
 }
 
-EKICommClient::~EKICommClient() {
+Client::~Client() {
   StopRSI();
   // Shutting down socket to interrupt blocking receive
   // In receiver thread
@@ -38,7 +36,7 @@ EKICommClient::~EKICommClient() {
   }
 }
 
-Status EKICommClient::Start() {
+Status Client::Start() {
   StartReceiverThread();
   auto connect_status = SendCommand("CON");
   return connect_status.return_code == ReturnCode::OK
@@ -49,7 +47,7 @@ Status EKICommClient::Start() {
              : connect_status;
 }
 
-Status EKICommClient::StartRSI(kuka::external::control::ControlMode control_mode) {
+Status Client::StartRSI(kuka::external::control::ControlMode control_mode) {
   auto ctrl_change_resp = SendControlModeChange(control_mode);
   if (ctrl_change_resp.return_code != ReturnCode::OK) {
     return ctrl_change_resp;
@@ -63,7 +61,7 @@ Status EKICommClient::StartRSI(kuka::external::control::ControlMode control_mode
   return {ReturnCode::OK, "RSI started"};
 }
 
-Status EKICommClient::StopRSI() {
+Status Client::StopRSI() {
   if (rsi_running_) {
     auto cancel_resp = SendCommand("CANCEL");
     if (cancel_resp.return_code != ReturnCode::OK) {
@@ -75,7 +73,7 @@ Status EKICommClient::StopRSI() {
   return {ReturnCode::WARN, "RSI already stopped"};
 }
 
-Status EKICommClient::SendMessageAndWait() {
+Status Client::SendMessageAndWait() {
   if (!TCPClient::Send(send_buff_, kSendBuffSize)) {
     return {ReturnCode::ERROR, "Sending message failed"};
   }
@@ -90,18 +88,18 @@ Status EKICommClient::SendMessageAndWait() {
                      : Status(ReturnCode::TIMEOUT, "Request sent but response timeouted");
 }
 
-Status EKICommClient::SendCommand(const std::string& req_type, int id) {
+Status Client::SendCommand(const std::string& req_type, int id) {
   sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data(), id);
   return SendMessageAndWait();
 }
 
-Status EKICommClient::SendControlModeChange(kuka::external::control::ControlMode control_mode,
+Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode,
                                             int id) {
   sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, id, control_mode);
   return SendMessageAndWait();
 }
 
-void EKICommClient::StartReceiverThread() {
+void Client::StartReceiverThread() {
   receiver_thread_ = std::thread([this] {
     while (true) {
       if (!Receive(std::chrono::microseconds(-1))) {
@@ -120,7 +118,7 @@ void EKICommClient::StartReceiverThread() {
   });
 }
 
-void EKICommClient::HandleEvent(const EventResponse& event) {
+void Client::HandleEvent(const EventResponse& event) {
   std::lock_guard<std::mutex> lck(event_handler_mutex_);
   switch (event.event_type) {
     case EventType::STARTED:
@@ -144,11 +142,11 @@ void EKICommClient::HandleEvent(const EventResponse& event) {
   }
 }
 
-bool EKICommClient::Receive(std::chrono::microseconds timeout) {
+bool Client::Receive(std::chrono::microseconds timeout) {
   return TCPClient::Receive(recv_buff_, timeout);
 }
 
-int EKICommClient::Dissect(char* cursor_ptr, std::size_t available_bytes) {
+int Client::Dissect(char* cursor_ptr, std::size_t available_bytes) {
   // TODO somehow propagate error causes in the different cases
 
   // Check opening tag (might be unnecessary) - return with failed if not found
@@ -172,7 +170,7 @@ int EKICommClient::Dissect(char* cursor_ptr, std::size_t available_bytes) {
   }
 }
 
-bool EKICommClient::ParseEvent(char* data_to_parse) {
+bool Client::ParseEvent(char* data_to_parse) {
   // Reset event fields
   event_response_.event_type = EventType::NONE;
   strcpy(event_response_.message, "");
@@ -187,7 +185,7 @@ bool EKICommClient::ParseEvent(char* data_to_parse) {
   return true;
 }
 
-bool EKICommClient::ParseStatus(char* data_to_parse) {
+bool Client::ParseStatus(char* data_to_parse) {
   // Reset status fields
   status_response_.mode = -1;
   status_response_.control_mode = ControlMode::UNSPECIFIED;
@@ -206,7 +204,7 @@ bool EKICommClient::ParseStatus(char* data_to_parse) {
   return true;
 }
 
-Status EKICommClient::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   if (event_handler == nullptr) {
     return Status(ReturnCode::ERROR,
                   "RegisterEventHandler failed: please provide a valid pointer.");

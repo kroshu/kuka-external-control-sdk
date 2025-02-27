@@ -12,22 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
-
-#include <atomic>
-#include <condition_variable>
-#include <memory>
-#include <mutex>
-#include <variant>
+#ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
+#define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
-#include "kuka/external-control-sdk/kss/mxa/client.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss::rsi {
 
 class Robot : public IRobot {
   // Special methods
@@ -52,18 +45,34 @@ class Robot : public IRobot {
   virtual Status SendControlSignal() override;
   virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
-  BaseControlSignal& GetControlSignal() override;
-  BaseMotionState& GetLastMotionState() override;
+  virtual BaseControlSignal& GetControlSignal() override;
+  virtual BaseMotionState& GetLastMotionState() override;
 
   // TODO add to documentation that other commands could come in between the Stop and Start call
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
+ protected:
+  MotionState last_motion_state_;
+  MotionState initial_motion_state_;
+  std::unique_ptr<ControlSignal> control_signal_{nullptr};
+
+  Configuration config_;
+  int last_ipoc_ = 0;
+  static constexpr int kStopReceiveTimeoutMs = 40;
+
+  Endpoint endpoint_;
+
+  // Members and methods for implementing control
  private:
-  std::unique_ptr<IRobot> installed_interface_ = nullptr;
+  Status ParseIncomingXML(std::string_view xml_str);
+  Status UpdateMotionState(std::string_view xml_str);
+ 
+ private:
+  static constexpr char error_text[] =  "Not supported by plain RSI";
 };
 
 }  // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_

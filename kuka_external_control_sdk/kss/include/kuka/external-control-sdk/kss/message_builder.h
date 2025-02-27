@@ -15,12 +15,12 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
 
-#include <math.h>
-
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <optional>
 #include <string>
+#include <limits>
 
 #include "kuka/external-control-sdk/common/message_builder.h"
 
@@ -29,52 +29,77 @@ namespace kuka::external::control::kss {
 class MotionState : public BaseMotionState {
  public:
   MotionState(std::size_t dof) : BaseMotionState(dof) {
-    measured_positions_.resize(dof);
-    measured_torques_.resize(dof);
-    measured_velocities_.resize(dof);
+    measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_velocities_.resize(dof, std::numeric_limits<double>::quiet_NaN());
+    measured_cartesian_positions_.resize(6, std::numeric_limits<double>::quiet_NaN());
+
+    first_cartesian_position_index_ += kMessagePrefix.length();
+    first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
   }
 
-  MotionState& operator=(const std::array<double, 6>& arr) {
-    std::copy_n(arr.cbegin(), dof_, measured_positions_.begin());
-    has_positions_ = true;
-    return *this;
-  }
+  MotionState(const MotionState& other) = default;
+
+  void CreateFromXML(const char* incoming_xml);
+  int GetIpoc() { return ipoc_; }
+  int GetDelay() { return delay_; }
+
+ private:
+  const std::string kMessagePrefix = "<Rob Type=\"KUKA\">";
+
+  const std::string kCartesianPositionsPrefix = "<RIst";
+  const std::vector<std::string> kCartesianPositionAttributePrefixes = {" X=\"", " Y=\"", " Z=\"",
+                                                                        " A=\"", " B=\"", " C=\""};
+  const std::string kAttributeSuffix = "\"/>";
+
+  const std::string kJointPositionsPrefix = "<AIPos";
+
+  const std::string kDelayNodePrefix = "<Delay D=\"";
+  const std::string kIpocNodePrefix = "<IPOC>";
+  const std::string kIpocNodeSuffix = "</IPOC>";
+  const std::string kMessageSuffix = "</Rob>";
+
+  int first_cartesian_position_index_ = 0;
+
+  long ipoc_ = 0;
+  long delay_ = 0;
+
+  static constexpr int kPrecision = 6;
 };
 
 class ControlSignal : public BaseControlSignal {
  public:
-  ControlSignal(std::size_t dof) : BaseControlSignal(dof) {
+  ControlSignal(std::size_t dof, const MotionState& initial_positions)
+      : BaseControlSignal(dof), kInitialPositions(initial_positions) {
     joint_position_values_.resize(dof, 0.0);
+    cartesian_position_values_.resize(6, 0.0);
+    for (int i = 1; i <= dof; ++i) {
+      joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) + "=\"");
+    }
   }
 
-  std::optional<std::string_view> GetXMLString(std::string_view format, int last_ipoc,
-                                               MotionState& initial_position,
-                                               bool stop_control = false) {
-    // Reset the string to enable doubles with different precisions. (TODO: reset only 'ret'  number
-    // of characters)
-    std::memset(xml_string_, 0, sizeof(xml_string_));
-
-    if (has_positions_) {
-      std::transform(joint_position_values_.begin(), joint_position_values_.end(),
-                     initial_position.GetMeasuredPositions().cbegin(),
-                     joint_position_values_.begin(), std::minus<double>());
-    }
-
-    int ret = snprintf(xml_string_, sizeof(xml_string_), format.data(), joint_position_values_[0],
-                       joint_position_values_[1], joint_position_values_[2],
-                       joint_position_values_[3], joint_position_values_[4],
-                       joint_position_values_[5], stop_control ? 1 : 0, last_ipoc);
-
-    if (ret < 0 || ret == 1024) {
-      return std::nullopt;
-    }
-
-    has_positions_ = true;
-    return xml_string_;
-  }
+  // Create XML containing relative positions in rad
+  std::optional<std::string_view> CreateXMLString(int last_ipoc, bool stop_control = false);
 
  private:
-  char xml_string_[1024];
+  void AppendToXMLString(std::string_view str);
+
+  const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
+  const std::string kJointPositionsPrefix = "<AK";
+  std::vector<std::string> joint_position_attribute_prefixes_;
+  const std::string kJointPositionAttributeFormat = "%." + std::to_string(kPrecision) + "f";
+  const std::string kJointPositionsSuffix = "/>";
+  const std::string kStopNodePrefix = "<Stop>";
+  const std::string kStopNodeSuffix = "</Stop>";
+  const std::string kIpocNodePrefix = "<IPOC>";
+  const std::string kIpocNodeSuffix = "</IPOC>";
+  const std::string kMessageSuffix = "</Sen>";
+
+  const MotionState& kInitialPositions;
+
+  static constexpr int kPrecision = 6;
+  static constexpr int kBufferSize = 1024;
+  char xml_string_[kBufferSize];
 };
 }  // namespace kuka::external::control::kss
 

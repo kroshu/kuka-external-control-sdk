@@ -12,106 +12,84 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "kuka/external-control-sdk/kss/eki/robot_interface.h"
+#include "kuka/external-control-sdk/kss/mxa/robot_interface.h"
+#include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 #include "kuka/external-control-sdk/kss/robot.h"
-
-#include <iostream>
 
 namespace kuka::external::control::kss {
 
 Robot::Robot(Configuration config)
-    : config_(config)
-    , eki_tcp_channel_(config.kli_ip_address, config.eki_port)
-    , control_signal_(config.dof)
-    , last_motion_state_(config.dof)
-    , initial_motion_state_(config.dof)
-    , motion_states_initialized_(false) {
-  control_signal_format_ = config_.control_signal_default_format_str_;
-  motion_state_format_ = config_.motion_state_default_format_str_;
-}
+    {
+      switch (config.installed_interface) {
+        case Configuration::InstalledInterface::MXA_RSI:
+          installed_interface_ = std::make_unique<kuka::external::control::kss::mxa::Robot>(config);
+          break;
+        case Configuration::InstalledInterface::EKI_RSI:
+          installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
+          break;
+        case Configuration::InstalledInterface::RSI_ONLY:
+          installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
+          break;
+        default:
+          throw std::runtime_error("Configuration contains invalid interface, please choose between EKI, MXA or plain RSI.");
+      };
+    }
 
 Status Robot::Setup() {
-  auto setup_ret = eki_tcp_channel_.Setup();
-  if (setup_ret != os::core::udp::communication::TCPClient::ErrorCode::kSuccess) {
-    return {ReturnCode::ERROR, "Setup failed with error code: " + setup_ret};
-  }
-
-  auto start_ret = eki_tcp_channel_.Start();
-  if (start_ret.return_code != ReturnCode::OK && start_ret.return_code != ReturnCode::WARN) {
-    return start_ret;
-  }
-
-  if (!rsi_comm_endpoint_.Setup(config_.client_port)) {
-    return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
-  }
-
-  return start_ret;
+  return installed_interface_->Setup();
 }
 
 Status Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
-  return eki_tcp_channel_.StartRSI(control_mode);
+    return installed_interface_->StartControlling(control_mode);
+}
+
+Status Robot::StartMonitoring() {
+  return installed_interface_->StartMonitoring();
 }
 
 Status Robot::StopControlling() {
-  auto stop_send_str_view =
-      control_signal_.GetXMLString(control_signal_format_, last_ipoc_, initial_motion_state_, true);
-  if (!stop_send_str_view.has_value()) {
-    return {ReturnCode::ERROR, "Parsing control signal to proper XML format failed"};
-  }
+  return installed_interface_->StopControlling();
+}
 
-  if (!rsi_comm_endpoint_.MessageSend(stop_send_str_view.value())) {
-    return {ReturnCode::ERROR, "Sending RSI stop command failed"};
-  }
+Status Robot::StopMonitoring() {
+  return installed_interface_->StopMonitoring();
+}
 
-  return eki_tcp_channel_.StopRSI();
+
+Status Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState&)> func) {
+  return installed_interface_->CreateMonitoringSubscription(func);
+}
+
+Status Robot::CancelMonitoringSubscription() {
+  return installed_interface_->CancelMonitoringSubscription();
+}
+
+bool Robot::HasMonitoringSubscription() {
+  return installed_interface_->HasMonitoringSubscription();
 }
 
 Status Robot::SendControlSignal() {
-  auto ctr_signal_xml =
-      control_signal_.GetXMLString(control_signal_format_, last_ipoc_, initial_motion_state_);
-  if (!ctr_signal_xml.has_value()) {
-    return {ReturnCode::ERROR, "Parsing control signal to proper XML format failed"};
-  }
-
-  if (!rsi_comm_endpoint_.MessageSend(ctr_signal_xml.value())) {
-    return {ReturnCode::ERROR, "Sending RSI control signal failed"};
-  }
-  return {ReturnCode::OK, "Sent RSI control signal"};
+  return installed_interface_->SendControlSignal();
 }
 
 Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
-  if (!rsi_comm_endpoint_.ReceiveOrTimeout(receive_request_timeout)) {
-    return {ReturnCode::ERROR, "Receiving RSI state failed"};
-  }
-
-  return ParseIncomingXML(rsi_comm_endpoint_.GetReceivedMessage());
+  return installed_interface_->ReceiveMotionState(receive_request_timeout);
 }
 
-BaseControlSignal& Robot::GetControlSignal() { return control_signal_; }
-BaseMotionState& Robot::GetLastMotionState() { return last_motion_state_; }
+BaseControlSignal& Robot::GetControlSignal() {
+  return installed_interface_->GetControlSignal();
+}
 
-Status Robot::SwitchControlMode(ControlMode control_mode) {}
+BaseMotionState& Robot::GetLastMotionState() {
+  return installed_interface_->GetLastMotionState();
+}
+
+Status Robot::SwitchControlMode(ControlMode control_mode) {
+  return installed_interface_->SwitchControlMode(control_mode);
+}
+
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
-  return eki_tcp_channel_.RegisterEventHandler(std::move(event_handler));
+  return installed_interface_->RegisterEventHandler(std::move(event_handler));
 }
-
-Status Robot::ParseIncomingXML(std::string_view xml_str) {
-  std::array<double, 6> arr;
-  int ret = std::sscanf(xml_str.data(), motion_state_format_.data(), &arr[0], &arr[1], &arr[2],
-                        &arr[3], &arr[4], &arr[5], &last_ipoc_);
-
-  if (ret == 7) {
-    if (!motion_states_initialized_) {
-      initial_motion_state_ = arr;
-      motion_states_initialized_ = true;
-    }
-    last_motion_state_ = arr;
-    return {ReturnCode::OK, "Parsed incoming RSI server message"};
-  }
-  return {ReturnCode::ERROR,
-          "Failed to parse all necessary fields of the incoming RSI server message"};
-}
-
-void Robot::Reset() {}
-bool Robot::Uninitialized() {}
-
 };  // namespace kuka::external::control::kss

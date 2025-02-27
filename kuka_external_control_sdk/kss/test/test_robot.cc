@@ -12,14 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_CONTROL_SDK__KSS_SDK_H_
-#define EXTERNAL_CONTROL_SDK__KSS_SDK_H_
+#include <gtest/gtest.h>
 
-#include "kuka/external-control-sdk/common/irobot.h"
-#include "kuka/external-control-sdk/common/message_builder.h"
-#include "kuka/external-control-sdk/common/status.h"
-#include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/robot.h"
 
-#endif  // EXTERNAL_CONTROL_SDK__KSS_SDK_H_
+using ::testing::Test;
+
+class KSSRobot : public ::testing::Test {
+ protected:
+  kuka::external::control::kss::Configuration eci_config_;
+  std::unique_ptr<kuka::external::control::kss::Robot> robot_;
+
+  KSSRobot(){};
+
+  virtual ~KSSRobot() = default;
+
+  virtual void SetUp() {
+    eci_config_.client_ip_address = "127.0.0.1";
+    eci_config_.kli_ip_address = "127.0.0.3";
+    robot_ = std::make_unique<kuka::external::control::kss::Robot>(eci_config_);
+  }
+
+  virtual void TearDown() {
+    robot_.reset();
+  }
+};

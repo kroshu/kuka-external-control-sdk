@@ -74,6 +74,11 @@ DEF rsi_joint_pos( )
       HALT
    ENDIF
    PTP $AXIS_ACT_MEAS
+
+   ret = RSI_DELETE(CONTID)
+   IF (ret <> RSIOK) THEN
+      HALT
+   ENDIF
    
    ; Send stopped msg
    

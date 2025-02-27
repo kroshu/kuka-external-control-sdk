@@ -38,15 +38,25 @@ struct Configuration {
    */
   ControlMode initial_control_mode = ControlMode::UNSPECIFIED;
 
+
+  enum class InstalledInterface {
+      UNSPECIFIED = 0,
+      MXA_RSI = 1,
+      EKI_RSI = 2,
+      RSI_ONLY = 3
+  };
+
+  // The interface installed on the KSS robot
+  InstalledInterface installed_interface = InstalledInterface::RSI_ONLY;
+
+  // Action to do after MXA/KRC error signaled to event handler
+  // If true -> reset error messages
+  // If false -> error messages remain
+  bool reset_errors = true;
+
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
   const unsigned short client_port = 59152;
-
-  const char* control_signal_default_format_str_ =
-      "<Sen Type=\"KROSHU\"><AK A1=\"%lf\" A2=\"%lf\" A3=\"%lf\" A4=\"%lf\" A5=\"%lf\" A6=\"%lf\"/><Stop>%d</Stop><IPOC>%d</IPOC></Sen>";
-
-  const char* motion_state_default_format_str_ =
-      "<Rob Type=\"KUKA\"><RIst X=\"%*f\" Y=\"%*f\" Z=\"%*f\" A=\"%*f\" B=\"%*f\" C=\"%*f\"/><RSol X=\"%*f\" Y=\"%*f\" Z=\"%*f\" A=\"%*f\" B=\"%*f\" C=\"%*f\"/><AIPos A1=\"%lf\" A2=\"%lf\" A3=\"%lf\" A4=\"%lf\" A5=\"%lf\" A6=\"%lf\"/><ASPos A1=\"%*f\" A2=\"%*f\" A3=\"%*f\" A4=\"%*f\" A5=\"%*f\" A6=\"%*f\"/><Delay D=\"%*d\"/><IPOC>%d</IPOC></Rob>";
 };
 
 }  // namespace kuka::external::control::kss

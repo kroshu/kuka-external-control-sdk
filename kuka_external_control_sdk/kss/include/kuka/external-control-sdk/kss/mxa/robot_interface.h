@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
-
-#include <atomic>
-#include <condition_variable>
-#include <memory>
-#include <mutex>
-#include <variant>
+#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
+#define KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
 
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/mxa/client.h"
-#include "kuka/external-control-sdk/kss/rsi/endpoint.h"
+#include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss::mxa {
 
-class Robot : public IRobot {
+class Robot : public kuka::external::control::kss::rsi::Robot {
   // Special methods
  public:
   Robot(Configuration);
@@ -39,21 +32,9 @@ class Robot : public IRobot {
   virtual Status Setup() override;
 
   virtual Status StartControlling(kuka::external::control::ControlMode) override;
-  virtual Status StartMonitoring() override;
-
   virtual Status StopControlling() override;
-  virtual Status StopMonitoring() override;
-
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
-  virtual Status CancelMonitoringSubscription() override;
-
-  virtual bool HasMonitoringSubscription() override;
 
   virtual Status SendControlSignal() override;
-  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
-
-  BaseControlSignal& GetControlSignal() override;
-  BaseMotionState& GetLastMotionState() override;
 
   // TODO add to documentation that other commands could come in between the Stop and Start call
   // here, also evaluate dispatcher mode
@@ -61,9 +42,17 @@ class Robot : public IRobot {
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
  private:
-  std::unique_ptr<IRobot> installed_interface_ = nullptr;
+  Status CancelRSI();
+  
+  bool stop_flag_;
+  bool rsi_running_ = false;
+  
+  // Members and methods necessary for network configuration and error handling.
+ private:
+  Configuration config_;
+  Client client_;
 };
 
 }  // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_

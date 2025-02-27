@@ -22,26 +22,31 @@
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss::rsi {
 
-/**
- * @brief The RSICommEndpoint class handles RSI communication to the Kuka
- * which uses a UDP Server for communication and XML formatted packets for data exchange
- * by the ETHERNET object in RSI.
- */
-class RSICommEndpoint {
+// Class for communicating with the KRC via RSI
+class Endpoint {
  public:
+  // Set up necessary prerequsities for a successful RSI communication
   bool Setup(unsigned short local_udp_port);
 
+  // Try to receive RSI message from the KRC for a given timeout
   bool ReceiveOrTimeout(std::chrono::milliseconds receive_request_timeout);
 
+  // Read received RSI message
   std::string_view GetReceivedMessage();
 
+  // Send RSI message to the KRC
   bool MessageSend(std::string_view send_msg);
 
- private:
-  std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{nullptr};
+  bool IsRequestActive();
 
+  void Reset();
+
+ private:
+  void EmptyBuffer();
+
+  std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{nullptr};
   char recv_msg_[1024];
 };
 

@@ -23,12 +23,12 @@
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/tcp_client.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss::eki {
 
-class EKICommClient : public os::core::udp::communication::TCPClient {
+class Client : public os::core::udp::communication::TCPClient {
  public:
-  EKICommClient(const std::string& server_address, unsigned short server_port);
-  virtual ~EKICommClient() override;
+  Client(const std::string& server_address, unsigned short server_port);
+  virtual ~Client() override;
 
   // Initiates EKI connection
   Status Start();

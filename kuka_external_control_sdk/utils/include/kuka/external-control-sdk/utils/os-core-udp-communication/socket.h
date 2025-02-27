@@ -149,6 +149,9 @@ class Socket {
                                    SocketAddress &incoming_remote_address, unsigned char *buffer,
                                    int buffer_size, int flags = 0);
 
+  /* receives all packets present on the previously bound address, puts last into the given `buffer` */
+  virtual int ReceiveAllWithTimeout(const std::chrono::microseconds &timeout, unsigned char *buffer, int buffer_size, int flags = 0);
+
   /* freeing up the socket */
   virtual int Close();
 
