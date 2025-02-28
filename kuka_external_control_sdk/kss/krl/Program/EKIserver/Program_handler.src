@@ -300,14 +300,14 @@ DEFFCT CHAR [32] ControlModeToString(controlMode: IN)
    DECL ControlMode controlMode
 
    IF (controlMode == #JointPosition) THEN
-      RETURN "JointPosition"
+      RETURN "JointPositionControl"
    ENDIF
 
    IF (controlMode == #CartPosition) THEN
-      RETURN "CartesianPosition"
+      RETURN "CartesianPositionControl"
    ENDIF
 
-   RETURN "InvalidControlMode"
+   RETURN "NonSpecifiedControlMode"
 ENDFCT
 
 GLOBAL DEFFCT ControlMode GetControlMode()
