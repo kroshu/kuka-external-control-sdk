@@ -2,7 +2,7 @@
 &REL 11735
 &PARAM DISKPATH = KRC:\R1\Program\ROS
 def driver()
-   
+
    ; Software License Agreement (BSD License)
    ;
    ; Copyright (c) 2022, Kuka Robotics Corp
@@ -31,30 +31,30 @@ def driver()
    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    ; POSSIBILITY OF SUCH DAMAGE.
-   
+
 END
 
 GLOBAL DEF SPS_Init()
    SetDriverState(#Initialized)
    SetControlMode(#Inactive)
-   
+
    EKI_ServerInit()
    EKI_ServerStart()
 END
 
 GLOBAL DEF SPS_loopCall()
    DECL Command cmd
-   
+
    ; Check for connection/disconnection events
    HandleConnection()
-   
+
    IF Connected() == TRUE THEN
       ; Parse commands into Command structure
       EKI_ReceiveData(cmd)
-      
+
       ; Handle parsed command
       HandleCommand(cmd)
-      
+
       ; Publish state transition or error events
       PublishEvent()
    ELSE

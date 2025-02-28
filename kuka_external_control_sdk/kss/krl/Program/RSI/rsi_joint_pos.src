@@ -2,7 +2,7 @@
 &PARAM EDITMASK = *
 &PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
 DEF rsi_joint_pos( )
-   
+
    ; Software License Agreement (BSD License)
    ;
    ; Copyright (c) 2022, Kuka Robotics Corp
@@ -31,44 +31,44 @@ DEF rsi_joint_pos( )
    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    ; POSSIBILITY OF SUCH DAMAGE.
-   
+
    ; Declaration of KRL variables
    DECL INT ret	; Return value for RSI commands
    DECL INT CONTID	; ContainerID
-   
+
    ;FOLD INI
       ;FOLD BASISTECH INI
          GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
-         INTERRUPT ON 3 
+         INTERRUPT ON 3
          BAS (#INITMOV,0 )
       ;ENDFOLD (BASISTECH INI)
       ;FOLD USER INI
          ;Make your modifications here
-         
+
       ;ENDFOLD (USER INI)
    ;ENDFOLD (INI)
-   
+
    WAIT SEC 1.0
-   
+
    ; Move to start position
    PTP $AXIS_ACT_MEAS
-   
-   ; Create RSI Context 
-   ret = RSI_CREATE("rsi_joint_pos",CONTID,TRUE)
+
+   ; Create RSI Context
+   ret = RSI_CREATE("rsi_joint_pos", CONTID, TRUE)
    IF (ret <> RSIOK) THEN
       HALT
    ENDIF
-   
+
    ; Start RSI execution
    ret = RSI_ON(#ABSOLUTE)
    IF (ret <> RSIOK) THEN
       HALT
    ENDIF
-   
+
    ; Sensor guided movement
    RSI_MOVECORR()
-   
-   ; Turn off RSI 
+
+   ; Turn off RSI
    ret = RSI_OFF()
    IF (ret <> RSIOK) THEN
       HALT
@@ -79,7 +79,7 @@ DEF rsi_joint_pos( )
    IF (ret <> RSIOK) THEN
       HALT
    ENDIF
-   
+
    ; Send stopped msg
-   
+
 END
