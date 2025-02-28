@@ -24,7 +24,6 @@ set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
-add_subdirectory(/usr/src/googletest GTest)
 
 pkg_check_modules(gRPC REQUIRED grpc++)
 set(motion_external_proto_api_path "${proto_api_directory}/motion-external")
