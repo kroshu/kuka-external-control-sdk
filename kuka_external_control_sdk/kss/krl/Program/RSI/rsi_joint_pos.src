@@ -38,9 +38,9 @@ DEF rsi_joint_pos( )
 
    ;FOLD INI
       ;FOLD BASISTECH INI
-         GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+         GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ()
          INTERRUPT ON 3
-         BAS (#INITMOV,0 )
+         BAS (#INITMOV, 0)
       ;ENDFOLD (BASISTECH INI)
       ;FOLD USER INI
          ;Make your modifications here
@@ -73,6 +73,7 @@ DEF rsi_joint_pos( )
    IF (ret <> RSIOK) THEN
       HALT
    ENDIF
+
    PTP $AXIS_ACT_MEAS
 
    ret = RSI_DELETE(CONTID)
