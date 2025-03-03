@@ -96,7 +96,8 @@ Status Robot::Setup() {
   return SetupUDPChannel();
 }
 
-// TODO (Komaromi): Should be seperated to two. ReceiveIOConfig() and GetIOConfig just like the motion state and control signal
+// TODO (Komaromi): Should be seperated to two. ReceiveIOConfig() and
+// GetIOConfig just like the motion state and control signal
 Status Robot::GetSignalConfiguration(
     std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config) {
   if (Uninitialized()) {
@@ -278,7 +279,7 @@ Status Robot::CreateMonitoringSubscription(
   stop_monitoring_ = false;
 
   monitoring_thread_ = std::thread([&]() {
-    MotionState internal_motion_state(config_.dof);
+    MotionState internal_motion_state(config_.dof, config_.gpio_state_size);
 
     ArenaWrapper<kuka::ecs::v1::MotionStateExternal> monitoring_arena;
 
@@ -363,6 +364,10 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
   }
   auto recv_ret =
       replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
+  auto stat_msg_1 = 0;
+  auto stat_msg_2 = 0;
+  auto stat_msg_3 = 0;
+  auto stat_msg_4 = 0;
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess) {
     auto req_message = replier_socket_->GetRequestMessage();
 
@@ -371,19 +376,32 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
       recv_ret = os::core::udp::communication::Socket::ErrorCode::kError;
     } else {
       last_ipoc_ = monitoring_arena_.GetMessage()->header().ipoc();
-      *last_motion_state_ = std::move(*monitoring_arena_.GetMessage());
+      last_motion_state_ = std::move(*monitoring_arena_.GetMessage());
+      stat_msg_1 = std::move(*monitoring_arena_.GetMessage())
+                       .mutable_signal_values(0)
+                       ->signal_id();
+      stat_msg_2 = std::move(*monitoring_arena_.GetMessage())
+                       .mutable_signal_values(1)
+                       ->signal_id();
+      stat_msg_3 = std::move(*std::move(*monitoring_arena_.GetMessage())
+                                  .mutable_signal_values(0))
+                       .signal_id();
+      stat_msg_4 = std::move(*std::move(*monitoring_arena_.GetMessage())
+                                  .mutable_signal_values(1))
+                       .signal_id();
     }
   }
 
-  return ConvertStatus(recv_ret);
+  auto status = ConvertStatus(recv_ret);
+  strcpy(status.message,
+         (std::to_string(stat_msg_1) + " " + std::to_string(stat_msg_2) + " " +
+          std::to_string(stat_msg_3) + " " + std::to_string(stat_msg_4))
+             .c_str());
+  return status;
 }
 
-std::shared_ptr<BaseControlSignal> Robot::GetControlSignal() {
-  return control_signal_;
-};
-std::shared_ptr<BaseMotionState> Robot::GetLastMotionState() {
-  return last_motion_state_;
-};
+BaseControlSignal &Robot::GetControlSignal() { return control_signal_; };
+BaseMotionState &Robot::GetLastMotionState() { return last_motion_state_; };
 
 Status Robot::SwitchControlMode(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);

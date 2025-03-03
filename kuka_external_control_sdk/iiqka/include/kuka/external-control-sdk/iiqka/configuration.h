@@ -41,6 +41,12 @@ struct Configuration {
   // Degree of freedom.
   uint8_t dof = 6;
 
+  // GPIO states size
+  std::size_t gpio_state_size = 0;
+
+  // GPIO commands size
+  std::size_t gpio_command_size = 0;
+
   // Timeout to establish network connection with the KRC.
   uint32_t connection_timeout = 5000;
 

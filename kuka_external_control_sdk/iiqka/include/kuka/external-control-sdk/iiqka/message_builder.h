@@ -30,19 +30,23 @@ class MotionState : public BaseMotionState {
 public:
   // Measured velocities are not provided by the controller, vector should
   // remain empty
-  MotionState(std::size_t dof) : BaseMotionState(dof) {
+  MotionState(std::size_t dof, std::size_t gpio_size) : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
-    measured_signal_values_.resize(kMotionState_SignalValueMaxCount,
-                                   std::make_shared<SignalValue>());
+    // measured_signal_values_.resize(kMotionState_SignalValueMaxCount,
+    //                                std::make_shared<SignalValue>());
+    for (size_t i = 0; i < gpio_size; i++) {
+      measured_signal_values_.push_back(std::make_shared<SignalValue>());
+    }
   }
   MotionState(kuka::ecs::v1::MotionStateExternal &protobuf_motion_state,
-              uint8_t dof)
+              uint8_t dof, std::size_t gpio_size)
       : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
-    measured_signal_values_.resize(kMotionState_SignalValueMaxCount,
-                                   std::make_shared<SignalValue>());
+    for (size_t i = 0; i < gpio_size; i++) {
+      measured_signal_values_.push_back(std::make_shared<SignalValue>());
+    }
     *this = std::move(protobuf_motion_state);
   }
 
@@ -117,15 +121,16 @@ public:
 class ControlSignal : public BaseControlSignal {
 public:
   ControlSignal(ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> *arena,
-                std::size_t dof)
+                std::size_t dof, std::size_t gpio_size)
       : BaseControlSignal(dof), controlling_arena_(arena) {
     joint_position_values_.resize(dof, 0.0);
     joint_torque_values_.resize(dof, 0.0);
     joint_velocity_values_.resize(dof, 0.0);
     joint_impedance_stiffness_values_.resize(dof, 0.0);
     joint_impedance_damping_values_.resize(dof, 0.0);
-    signal_values_.resize(kControlSignal_SignalValueMaxCount,
-                          std::make_shared<SignalValue>());
+    for (size_t i = 0; i < gpio_size; i++) {
+      signal_values_.push_back(std::make_shared<SignalValue>());
+    }
   }
 
   kuka::ecs::v1::ControlSignalExternal *
