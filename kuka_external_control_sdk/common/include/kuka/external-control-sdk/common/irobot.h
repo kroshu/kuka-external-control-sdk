@@ -69,8 +69,8 @@ public:
   ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
 
   // TODO (Komaromi): Try with the original interface as well
-  virtual std::shared_ptr<BaseControlSignal> GetControlSignal() = 0;
-  virtual std::shared_ptr<BaseMotionState> GetLastMotionState() = 0;
+  virtual BaseControlSignal &GetControlSignal() = 0;
+  virtual BaseMotionState &GetLastMotionState() = 0;
 
   virtual Status SwitchControlMode(ControlMode control_mode) = 0;
   virtual Status

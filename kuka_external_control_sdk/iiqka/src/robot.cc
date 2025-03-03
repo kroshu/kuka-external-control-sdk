@@ -24,10 +24,10 @@ using namespace kuka::external::control;
 
 namespace kuka::external::control::iiqka {
 
-Robot::Robot(Configuration config) {
-  control_signal_ =
-      std::make_shared<ControlSignal>(&controlling_arena_, config.dof);
-  last_motion_state_ = std::make_shared<MotionState>(config.dof);
+Robot::Robot(Configuration config)
+    : control_signal_(&controlling_arena_, config.dof,
+                      config.gpio_command_size),
+      last_motion_state_(config.dof, config.gpio_state_size) {
   config_.koni_ip_address = config.koni_ip_address;
   config_.client_ip_address = config.client_ip_address;
   config_.is_secure = config.is_secure;
@@ -335,8 +335,8 @@ Status Robot::SendControlSignal() {
   }
 
   kuka::ecs::v1::ControlSignalExternal *protobuf_control_signal =
-      control_signal_->CreateProtobufControlSignal(last_ipoc_, control_mode_,
-                                                   stop_flag_);
+      control_signal_.CreateProtobufControlSignal(last_ipoc_, control_mode_,
+                                                  stop_flag_);
   if (protobuf_control_signal->has_control_signal() == false && !stop_flag_) {
     return Status(ReturnCode::ERROR, "SendControlSignal failed: please fill "
                                      "out the control signal first.");
