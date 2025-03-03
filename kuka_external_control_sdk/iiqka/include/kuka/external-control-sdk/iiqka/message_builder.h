@@ -54,8 +54,7 @@ public:
 
     this->has_positions_ = has_pb_ms ? pb_ms.has_measured_positions() : false;
     this->has_torques_ = has_pb_ms ? pb_ms.has_measured_torques() : false;
-    this->has_signal_values_ =
-        protobuf_motion_state.signal_values_size() != 0 ? true : false;
+    this->signal_values_size_ = protobuf_motion_state.signal_values_size();
     if (this->has_positions_) {
       std::move(
           std::begin(pb_ms.measured_positions().values()),
@@ -70,21 +69,44 @@ public:
                     std::min((int)dof_, pb_ms.measured_torques().values_size()),
                 measured_torques_.begin());
     }
-
-    if (this->has_signal_values_) {
+    if (this->signal_values_size_ > 0) {
       // std::copy(protobuf_motion_state.mutable_signal_values()->begin(),
       //           protobuf_motion_state.mutable_signal_values()->end(),
       //           measured_signal_values_.begin())
 
-      for (size_t i = 0; i < protobuf_motion_state.signal_values_size(); i++) {
-        *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(i)) =
-            std::move(protobuf_motion_state.mutable_signal_values()->at(i));
+      // for (size_t i = 0, j = 0; i <
+      // protobuf_motion_state.signal_values_size();
+      //      i++, j++) {
+      //   *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(i))
+      //   =
+      //       std::move(*protobuf_motion_state.mutable_signal_values(j));
+      // }
+      // measured_signal_values_.clear();
+      // for (size_t i = 0;
+      //      i < std::min(signal_values_size_,
+      //                   static_cast<int>(kMotionState_SignalValueMaxCount));
+      //      i++) {
+      //   measured_signal_values_.push_back(std::make_shared<SignalValue>(
+      //       *protobuf_motion_state.mutable_signal_values(i)));
+      // }
+
+      for (size_t i = 0;
+           i < std::min(signal_values_size_, measured_signal_values_.size());
+           i++) {
+        *std::static_pointer_cast<SignalValue>(measured_signal_values_[i]) =
+            std::move(*protobuf_motion_state.mutable_signal_values(i));
       }
 
-      // std::move(std::begin(pb_sv),
-      //           std::begin(pb_sv) +
-      //               /*std::min((int)kMotionState_SignalValueMaxCount,*/
-      //               protobuf_motion_state.signal_values_size() /*)*/,
+      // *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(0)) =
+      //     std::move(*protobuf_motion_state.mutable_signal_values(0));
+      // *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(1))
+      // =
+      //     std::move(*protobuf_motion_state.mutable_signal_values(1));
+
+      // std::move(protobuf_motion_state.mutable_signal_values()->begin(),
+      //           protobuf_motion_state.mutable_signal_values()->begin() +
+      //               std::min((int)kMotionState_SignalValueMaxCount,
+      //                        protobuf_motion_state.signal_values_size()),
       //           measured_signal_values_.begin());
     }
 
@@ -196,24 +218,23 @@ public:
 
     controlling_arena_->GetMessage()->mutable_signal_values()->Clear();
 
-    if (this->has_signal_values_) {
-      for (auto &&signal : signal_values_) {
-        auto pb_sv =
-            controlling_arena_->GetMessage()->mutable_signal_values()->Add();
-        pb_sv->set_signal_id(signal->GetSignalID());
-        switch (signal->GetValueType()) {
-        case SignalValue::SignalValueType::BOOL_VALUE:
-          pb_sv->set_bool_value(signal->GetBoolValue());
-          break;
-        case SignalValue::SignalValueType::DOUBLE_VALUE:
-          pb_sv->set_double_value(signal->GetDoubleValue());
-          break;
-        case SignalValue::SignalValueType::RAW_VALUE:
-          pb_sv->set_raw_value(signal->GetRawValue());
-          break;
-        default:
-          break;
-        }
+    for (size_t i = 0; i < std::min(signal_values_.size(), signal_values_size_);
+         i++) {
+      auto pb_sv =
+          controlling_arena_->GetMessage()->mutable_signal_values()->Add();
+      pb_sv->set_signal_id(signal_values_.at(i)->GetSignalID());
+      switch (signal_values_.at(i)->GetValueType()) {
+      case SignalValue::SignalValueType::BOOL_VALUE:
+        pb_sv->set_bool_value(signal_values_.at(i)->GetBoolValue());
+        break;
+      case SignalValue::SignalValueType::DOUBLE_VALUE:
+        pb_sv->set_double_value(signal_values_.at(i)->GetDoubleValue());
+        break;
+      case SignalValue::SignalValueType::RAW_VALUE:
+        pb_sv->set_raw_value(signal_values_.at(i)->GetRawValue());
+        break;
+      default:
+        break;
       }
     }
 

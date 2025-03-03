@@ -121,6 +121,7 @@ public:
         break;
       case kuka::ecs::v1::SignalConfig::OUTPUT:
         this->direction_ = SignalDirection::OUTPUT;
+        break;
       default:
         this->direction_ = SignalDirection::UNSPECIFIED;
         break;

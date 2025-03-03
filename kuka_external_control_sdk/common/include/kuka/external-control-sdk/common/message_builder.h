@@ -18,6 +18,7 @@
 #include "signal_value.h"
 #include <iterator>
 #include <map>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -44,12 +45,13 @@ public:
     return measured_signal_values_;
   }
 
+  std::size_t const &GetSignalValuesSize() const { return signal_values_size_; }
+
 protected:
   bool has_positions_ = false;
   bool has_torques_ = false;
   bool has_velocities_ = false;
   bool has_cartesian_positions_ = false;
-  bool has_signal_values_ = false;
 
   std::vector<double> measured_positions_;
   std::vector<double> measured_torques_;
@@ -57,7 +59,8 @@ protected:
   std::vector<double> measured_cartesian_positions_;
   std::vector<std::shared_ptr<BaseSignalValue>> measured_signal_values_;
 
-  std::size_t dof_;
+  std::size_t dof_ = 0;
+  std::size_t signal_values_size_ = 0;
 };
 
 class BaseControlSignal {
@@ -113,31 +116,29 @@ public:
 
   template <typename InputIt>
   void AddSignalValues(InputIt first, InputIt last) {
-    has_signal_values_ = true;
-    // TODO (Komaromi): insted of signal_values_.size() get a max value somehow
-    for (size_t i = 0; i < signal_values_.size() && first != last;
-         ++i, ++first) {
-      auto signal = signal_values_.at(i);
+    for (signal_values_size_ = 0;
+         signal_values_size_ < signal_values_.size() && first != last;
+         signal_values_size_++, ++first) {
+      auto signal = signal_values_.at(signal_values_size_);
       switch (signal->GetValueType()) {
+        case BaseSignalValue::SignalValueType::BOOL_VALUE:
+          signal->SetBoolValue(*first);
+          break;
 
-      case BaseSignalValue::SignalValueType::BOOL_VALUE:
-        signal->SetBoolValue(const_cast<bool &>(first->get()->GetBoolValue()));
-        break;
+        case BaseSignalValue::SignalValueType::DOUBLE_VALUE:
+          signal->SetDoubleValue(*first);
+          break;
 
-      case BaseSignalValue::SignalValueType::DOUBLE_VALUE:
-        signal->SetDoubleValue(const_cast<double &>(first->get()->GetDoubleValue()));
-        break;
+        case BaseSignalValue::SignalValueType::RAW_VALUE:
+          signal->SetRawValue(*first);
+          break;
 
-      case BaseSignalValue::SignalValueType::RAW_VALUE:
-        signal->SetRawValue(const_cast<uint64_t &>(first->get()->GetRawValue()));
-        break;
+        case BaseSignalValue::SignalValueType::LONG_VALUE:
+          signal->SetLongValue(*first);
+          break;
 
-      case BaseSignalValue::SignalValueType::LONG_VALUE:
-        signal->SetLongValue(const_cast<int64_t &>(first->get()->GetLongValue()));
-        break;
-
-      default:
-        break;
+        default:
+          break;
       }
     }
   }
@@ -152,7 +153,6 @@ protected:
   bool has_velocities_ = false;
   bool has_stiffness_and_damping_ = false;
   bool has_cartesian_positions_ = false;
-  bool has_signal_values_ = false;
 
   std::vector<double> joint_position_values_;
   std::vector<double> joint_torque_values_;
@@ -163,6 +163,7 @@ protected:
   std::vector<std::shared_ptr<BaseSignalValue>> signal_values_;
 
   std::size_t dof_ = 0;
+  std::size_t signal_values_size_ = 0;
 
 private:
   template <typename InputIt>
