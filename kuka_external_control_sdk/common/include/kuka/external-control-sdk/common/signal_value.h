@@ -26,7 +26,6 @@ public:
     LONG_VALUE = 4
   };
   BaseSignalValue() = default;
-  // BaseSignalValue(BaseSignalValue &&) = default;
   ~BaseSignalValue() = default;
 
   uint32_t const &GetSignalID() const { return signal_id_; }
@@ -58,6 +57,7 @@ protected:
     uint64_t raw_value_;
     int64_t long_value_;
   } value_;
+  // std::variant<bool,double,uint64_t,int64_t> value_;
 };
 } // namespace kuka::external::control
 

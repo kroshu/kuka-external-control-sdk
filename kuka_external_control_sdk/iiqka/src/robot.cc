@@ -364,10 +364,6 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
   }
   auto recv_ret =
       replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
-  auto stat_msg_1 = 0;
-  auto stat_msg_2 = 0;
-  auto stat_msg_3 = 0;
-  auto stat_msg_4 = 0;
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess) {
     auto req_message = replier_socket_->GetRequestMessage();
 
@@ -377,27 +373,9 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
     } else {
       last_ipoc_ = monitoring_arena_.GetMessage()->header().ipoc();
       last_motion_state_ = std::move(*monitoring_arena_.GetMessage());
-      stat_msg_1 = std::move(*monitoring_arena_.GetMessage())
-                       .mutable_signal_values(0)
-                       ->signal_id();
-      stat_msg_2 = std::move(*monitoring_arena_.GetMessage())
-                       .mutable_signal_values(1)
-                       ->signal_id();
-      stat_msg_3 = std::move(*std::move(*monitoring_arena_.GetMessage())
-                                  .mutable_signal_values(0))
-                       .signal_id();
-      stat_msg_4 = std::move(*std::move(*monitoring_arena_.GetMessage())
-                                  .mutable_signal_values(1))
-                       .signal_id();
     }
   }
-
-  auto status = ConvertStatus(recv_ret);
-  strcpy(status.message,
-         (std::to_string(stat_msg_1) + " " + std::to_string(stat_msg_2) + " " +
-          std::to_string(stat_msg_3) + " " + std::to_string(stat_msg_4))
-             .c_str());
-  return status;
+  return ConvertStatus(recv_ret);
 }
 
 BaseControlSignal &Robot::GetControlSignal() { return control_signal_; };
