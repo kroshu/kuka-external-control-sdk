@@ -222,7 +222,7 @@ public:
     }
 
     controlling_arena_->GetMessage()->mutable_signal_values()->Clear();
-
+    
     for (size_t i = 0; i < std::min(signal_values_.size(), signal_values_size_);
          i++) {
       auto pb_sv =

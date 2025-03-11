@@ -54,9 +54,6 @@ public:
     }
     return *this;
   }
-
-private:
-  /* data */
 };
 
 } // namespace kuka::external::control::iiqka
