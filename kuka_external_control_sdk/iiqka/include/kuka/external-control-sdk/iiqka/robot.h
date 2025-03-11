@@ -24,6 +24,7 @@
 
 #include "arena_wrapper.h"
 #include "configuration.h"
+#include "gpio_config.h"
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
@@ -86,8 +87,8 @@ public:
 public:
   Status SetQoSProfile(QoS_Configuration);
   // This might have to be moved to IRobot
-  Status GetSignalConfiguration(
-      std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config);
+  Status ReceiveGPIOConfig();
+  std::vector<GPIOConfig> &GetGPIOConfig();
 
   // Members used for keeping track of the state.
 private:
@@ -125,6 +126,7 @@ private:
 
   ControlSignal control_signal_;
   MotionState last_motion_state_;
+  std::vector<GPIOConfig> gpio_config_;
   kuka::motion::external::ExternalControlMode control_mode_{
       kuka::motion::external::ExternalControlMode::
           EXTERNAL_CONTROL_MODE_UNSPECIFIED};
@@ -139,10 +141,6 @@ private:
   Status SetupUDPChannel();
 
   const int kStopRecvTimeout{6};
-
-  // Members and methods necessary for signal hadling
-  std::shared_ptr<std::vector<Signal_Configuration>> signal_config_list_ptr_{
-      nullptr};
 };
 
 } // namespace kuka::external::control::iiqka

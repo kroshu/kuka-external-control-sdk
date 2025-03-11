@@ -15,21 +15,16 @@
 #ifndef KUKA_EXTERNAL_CONTROL__SIGNAL_VALUE_H_
 #define KUKA_EXTERNAL_CONTROL__SIGNAL_VALUE_H_
 
+#include "gpio_config.h"
+
 namespace kuka::external::control {
 class BaseSignalValue {
 public:
-  enum class SignalValueType {
-    UNSPECIFIED = 0,
-    BOOL_VALUE = 1,
-    DOUBLE_VALUE = 2,
-    RAW_VALUE = 3,
-    LONG_VALUE = 4
-  };
   BaseSignalValue() = default;
   ~BaseSignalValue() = default;
 
   uint32_t const &GetSignalID() const { return signal_id_; }
-  SignalValueType const &GetValueType() const { return value_type_; }
+  GPIOValueType const &GetValueType() const { return value_type_; }
   bool const &GetBoolValue() const { return value_.bool_value_; }
   void SetBoolValue(bool &value) { value_.bool_value_ = value; }
   void SetBoolValue(double &value) {
@@ -50,7 +45,7 @@ public:
 
 protected:
   uint32_t signal_id_;
-  SignalValueType value_type_ = SignalValueType::UNSPECIFIED;
+  GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
   union {
     bool bool_value_;
     double double_value_;

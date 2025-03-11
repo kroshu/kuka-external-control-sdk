@@ -115,30 +115,24 @@ public:
   }
 
   template <typename InputIt>
-  void AddSignalValues(std::vector<std::shared_ptr<BaseSignalValue>> received,
-                       InputIt first, InputIt last) {
-    for (size_t i = 0; i < std::min(signal_values_.size(), received.size());
-         i++) {
-      signal_values_[i] = received[i];
-    }
-    for (signal_values_size_ = 0;
-         signal_values_size_ < signal_values_.size() && first != last;
-         signal_values_size_++, ++first) {
-      auto signal = signal_values_.at(signal_values_size_);
+  void AddSignalValues(InputIt first, InputIt last) {
+    for (size_t i = 0; i < signal_values_.size() && first != last;
+         i++, ++first) {
+      auto signal = signal_values_.at(i);
       switch (signal->GetValueType()) {
-      case BaseSignalValue::SignalValueType::BOOL_VALUE:
+      case GPIOValueType::BOOL_VALUE:
         signal->SetBoolValue(*first);
         break;
 
-      case BaseSignalValue::SignalValueType::DOUBLE_VALUE:
+      case GPIOValueType::DOUBLE_VALUE:
         signal->SetDoubleValue(*first);
         break;
 
-      case BaseSignalValue::SignalValueType::RAW_VALUE:
+      case GPIOValueType::RAW_VALUE:
         signal->SetRawValue(*first);
         break;
 
-      case BaseSignalValue::SignalValueType::LONG_VALUE:
+      case GPIOValueType::LONG_VALUE:
         signal->SetLongValue(*first);
         break;
 
@@ -168,7 +162,6 @@ protected:
   std::vector<std::shared_ptr<BaseSignalValue>> signal_values_;
 
   std::size_t dof_ = 0;
-  std::size_t signal_values_size_ = 0;
 
 private:
   template <typename InputIt>

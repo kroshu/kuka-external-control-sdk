@@ -15,6 +15,7 @@
 #ifndef KUKA_EXTERNAL_CONTROL__IIQKA_SIGNAL_VALUE_H_
 #define KUKA_EXTERNAL_CONTROL__IIQKA_SIGNAL_VALUE_H_
 
+#include "gpio_config.h"
 #include "kuka/external-control-sdk/common/signal_value.h"
 #include "proto-api/motion-services-ecs/signal_value_external.pb.h"
 
@@ -31,25 +32,29 @@ public:
       : BaseSignalValue() {
     *this = std::move(protobuf_signal_value);
   }
+  SignalValue(GPIOConfig const &gpio_config) : BaseSignalValue() {
+    signal_id_ = gpio_config.GetGPIOId();
+    value_type_ = gpio_config.GetValueType();
+  }
   SignalValue &
   operator=(kuka::ecs::v1::SignalValueExternal &&protobuf_signal_value) {
     this->signal_id_ = protobuf_signal_value.signal_id();
 
     switch (protobuf_signal_value.signal_type_case()) {
     case kuka::ecs::v1::SignalValueExternal::kBoolValue:
-      this->value_type_ = SignalValueType::BOOL_VALUE;
+      this->value_type_ = GPIOValueType::BOOL_VALUE;
       this->value_.bool_value_ = protobuf_signal_value.bool_value();
       break;
     case kuka::ecs::v1::SignalValueExternal::kDoubleValue:
-      this->value_type_ = SignalValueType::DOUBLE_VALUE;
+      this->value_type_ = GPIOValueType::DOUBLE_VALUE;
       this->value_.double_value_ = protobuf_signal_value.double_value();
       break;
     case kuka::ecs::v1::SignalValueExternal::kRawValue:
-      this->value_type_ = SignalValueType::RAW_VALUE;
+      this->value_type_ = GPIOValueType::RAW_VALUE;
       this->value_.raw_value_ = protobuf_signal_value.raw_value();
       break;
     default:
-      this->value_type_ = SignalValueType::UNSPECIFIED;
+      this->value_type_ = GPIOValueType::UNSPECIFIED;
       break;
     }
     return *this;

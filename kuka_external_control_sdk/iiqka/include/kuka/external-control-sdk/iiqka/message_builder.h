@@ -74,44 +74,12 @@ public:
                 measured_torques_.begin());
     }
     if (this->signal_values_size_ > 0) {
-      // std::copy(protobuf_motion_state.mutable_signal_values()->begin(),
-      //           protobuf_motion_state.mutable_signal_values()->end(),
-      //           measured_signal_values_.begin())
-
-      // for (size_t i = 0, j = 0; i <
-      // protobuf_motion_state.signal_values_size();
-      //      i++, j++) {
-      //   *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(i))
-      //   =
-      //       std::move(*protobuf_motion_state.mutable_signal_values(j));
-      // }
-      // measured_signal_values_.clear();
-      // for (size_t i = 0;
-      //      i < std::min(signal_values_size_,
-      //                   static_cast<int>(kMotionState_SignalValueMaxCount));
-      //      i++) {
-      //   measured_signal_values_.push_back(std::make_shared<SignalValue>(
-      //       *protobuf_motion_state.mutable_signal_values(i)));
-      // }
-
       for (size_t i = 0;
            i < std::min(signal_values_size_, measured_signal_values_.size());
            i++) {
         *std::static_pointer_cast<SignalValue>(measured_signal_values_[i]) =
             std::move(*protobuf_motion_state.mutable_signal_values(i));
       }
-
-      // *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(0)) =
-      //     std::move(*protobuf_motion_state.mutable_signal_values(0));
-      // *std::static_pointer_cast<SignalValue>(measured_signal_values_.at(1))
-      // =
-      //     std::move(*protobuf_motion_state.mutable_signal_values(1));
-
-      // std::move(protobuf_motion_state.mutable_signal_values()->begin(),
-      //           protobuf_motion_state.mutable_signal_values()->begin() +
-      //               std::min((int)kMotionState_SignalValueMaxCount,
-      //                        protobuf_motion_state.signal_values_size()),
-      //           measured_signal_values_.begin());
     }
 
     return *this;
@@ -122,15 +90,26 @@ class ControlSignal : public BaseControlSignal {
 public:
   ControlSignal(ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> *arena,
                 std::size_t dof, std::size_t gpio_size)
-      : BaseControlSignal(dof), controlling_arena_(arena) {
+      : BaseControlSignal(dof), controlling_arena_(arena),
+        gpio_size_(gpio_size) {
     joint_position_values_.resize(dof, 0.0);
     joint_torque_values_.resize(dof, 0.0);
     joint_velocity_values_.resize(dof, 0.0);
     joint_impedance_stiffness_values_.resize(dof, 0.0);
     joint_impedance_damping_values_.resize(dof, 0.0);
-    for (size_t i = 0; i < gpio_size; i++) {
-      signal_values_.push_back(std::make_shared<SignalValue>());
+  }
+
+  bool Setup(std::vector<GPIOConfig> const &gpio_configs) {
+    signal_values_.clear();
+    for (auto &&config : gpio_configs) {
+      if (config.IsGPIOUsed()) {
+        signal_values_.push_back(std::make_shared<SignalValue>(config));
+      }
     }
+    if (signal_values_.size() != gpio_size_) {
+      return false;
+    }
+    return true;
   }
 
   kuka::ecs::v1::ControlSignalExternal *
@@ -222,20 +201,19 @@ public:
     }
 
     controlling_arena_->GetMessage()->mutable_signal_values()->Clear();
-    
-    for (size_t i = 0; i < std::min(signal_values_.size(), signal_values_size_);
-         i++) {
+
+    for (size_t i = 0; i < signal_values_.size(); i++) {
       auto pb_sv =
           controlling_arena_->GetMessage()->mutable_signal_values()->Add();
       pb_sv->set_signal_id(signal_values_.at(i)->GetSignalID());
       switch (signal_values_.at(i)->GetValueType()) {
-      case SignalValue::SignalValueType::BOOL_VALUE:
+      case GPIOValueType::BOOL_VALUE:
         pb_sv->set_bool_value(signal_values_.at(i)->GetBoolValue());
         break;
-      case SignalValue::SignalValueType::DOUBLE_VALUE:
+      case GPIOValueType::DOUBLE_VALUE:
         pb_sv->set_double_value(signal_values_.at(i)->GetDoubleValue());
         break;
-      case SignalValue::SignalValueType::RAW_VALUE:
+      case GPIOValueType::RAW_VALUE:
         pb_sv->set_raw_value(signal_values_.at(i)->GetRawValue());
         break;
       default:
@@ -248,6 +226,7 @@ public:
 
 private:
   ArenaWrapper<kuka::ecs::v1::ControlSignalExternal> *controlling_arena_;
+  size_t gpio_size_ = 0;
 };
 
 } // namespace kuka::external::control::iiqka

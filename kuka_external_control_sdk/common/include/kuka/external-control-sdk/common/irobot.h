@@ -20,6 +20,7 @@
 #include <memory>
 #include <utility>
 
+#include "gpio_config.h"
 #include "message_builder.h"
 #include "status.h"
 

@@ -96,28 +96,24 @@ Status Robot::Setup() {
   return SetupUDPChannel();
 }
 
-// TODO (Komaromi): Should be seperated to two. ReceiveIOConfig() and
-// GetIOConfig just like the motion state and control signal
-Status Robot::GetSignalConfiguration(
-    std::shared_ptr<std::vector<Signal_Configuration>> &shared_signal_config) {
+Status Robot::ReceiveGPIOConfig() {
   if (Uninitialized()) {
-    return Status(ReturnCode::ERROR, "GetSignal_Configurationuration failed: "
+    return Status(ReturnCode::ERROR, "ReceiveGPIOConfig failed: "
                                      "network connection not initialized.");
   }
   kuka::ecs::v1::GetSignalConfigurationRequest request;
   kuka::ecs::v1::GetSignalConfigurationResponse response;
   grpc::ClientContext context;
-  signal_config_list_ptr_ = shared_signal_config;
 
   Status ret_val = ConvertStatus(
       stub_->GetSignalConfiguration(&context, request, &response));
   if (ret_val.return_code != ReturnCode::OK) {
     return ret_val;
   }
-  signal_config_list_ptr_->clear();
-  for (auto &&signal : response.signal_config_external()) {
-    strcpy(ret_val.message, std::to_string(signal.signal_id()).c_str());
-    signal_config_list_ptr_->emplace_back(Signal_Configuration(signal));
+  gpio_config_.clear();
+  for (auto &&gpio : response.signal_config_external()) {
+    strcpy(ret_val.message, std::to_string(gpio.signal_id()).c_str());
+    gpio_config_.emplace_back(GPIOConfig(gpio));
   }
 
   return ret_val;
@@ -166,14 +162,18 @@ Status Robot::StartControlling(ControlMode control_mode) {
   request.set_external_control_mode(control_mode_);
   request.set_is_secure(config_.is_secure);
   request.clear_set_signals();
-  for (auto &&signal : *signal_config_list_ptr_) {
-    if (signal.IsChanged()) {
-      auto signal_for_control_ptr = request.add_set_signals();
-      signal_for_control_ptr->set_signal_id(signal.GetSignalId());
-      signal_for_control_ptr->set_is_signal_used(signal.IsSignalUsed());
-      signal.ClearChanged();
-    }
+
+  // Add all gpios to set signals
+  for (auto &&gpio : gpio_config_) {
+    // (It will override all gpio usage but only those are set to true which we
+    // want to use)
+    auto signal = request.add_set_signals();
+    signal->set_signal_id(gpio.GetGPIOId());
+    signal->set_is_signal_used(gpio.IsGPIOUsed());
   }
+  // Path the gpio data to control signal
+  control_signal_.Setup(gpio_config_);
+
   stop_flag_ = false;
 
   Status op_status =
@@ -380,6 +380,7 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
 
 BaseControlSignal &Robot::GetControlSignal() { return control_signal_; };
 BaseMotionState &Robot::GetLastMotionState() { return last_motion_state_; };
+std::vector<GPIOConfig> &Robot::GetGPIOConfig() { return gpio_config_; };
 
 Status Robot::SwitchControlMode(ControlMode control_mode) {
   control_mode_ = kuka::motion::external::ExternalControlMode(control_mode);
