@@ -172,7 +172,9 @@ Status Robot::StartControlling(ControlMode control_mode) {
     signal->set_is_signal_used(gpio.IsGPIOUsed());
   }
   // Path the gpio data to control signal
-  control_signal_.Setup(gpio_config_);
+  if (!control_signal_.Setup(gpio_config_)) {
+    return Status(ReturnCode::ERROR, "Error: Control GPIO setup failed");
+  }
 
   stop_flag_ = false;
 

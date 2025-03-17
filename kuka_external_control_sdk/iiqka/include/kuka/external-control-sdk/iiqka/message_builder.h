@@ -102,7 +102,9 @@ public:
   bool Setup(std::vector<GPIOConfig> const &gpio_configs) {
     signal_values_.clear();
     for (auto &&config : gpio_configs) {
-      if (config.IsGPIOUsed()) {
+      if (config.IsGPIOUsed() &&
+          config.GetDirection() ==
+              kuka::external::control::GPIODirection::OUTPUT) {
         signal_values_.push_back(std::make_shared<SignalValue>(config));
       }
     }
