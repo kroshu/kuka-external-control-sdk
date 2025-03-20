@@ -115,24 +115,22 @@ GLOBAL DEF PublishEvent()
 
         ; TODO make this nicer if possible
         SWITCH last_event
-            CASE #INVALID
-                event_int = 0
             CASE #STARTED
-                event_int = 1
+                event_int = 0
             CASE #STOPPED
-                event_int = 2
+                event_int = 1
             CASE #CANCELLED
-                event_int = 3
+                event_int = 2
             CASE #RESET_OK
-                event_int = 4
+                event_int = 3
             CASE #ERROR
-                event_int = 5
+                event_int = 4
             CASE #CONNECTED
-                event_int = 6
+                event_int = 5
                 WriteInitDataToChannel()
                 x_path_send[] = "Robot"
             CASE #SWITCH_OK
-                event_int = 7
+                event_int = 6
                 SWITCH GetControlMode()
                     CASE #JOINT_POSITION
                         event_msg[] = "joint position control"
@@ -142,6 +140,10 @@ GLOBAL DEF PublishEvent()
                         event_msg[] = "inactive control"
                 ENDSWITCH
                 ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
+            CASE #INVALID
+                event_int = 7
+            DEFAULT
+                event_int = 8
         ENDSWITCH
 
         ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
