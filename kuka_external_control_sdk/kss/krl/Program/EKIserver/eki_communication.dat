@@ -1,16 +1,22 @@
-&ACCESS  RV
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS RV
 &REL 4
-DEFDAT  EKI_COMMUNICATION
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+DEFDAT eki_communication
+    CONST CHAR INTERFACE_NAME[64]
+    INTERFACE_NAME[] = "EkiKSSinterface"
+    CONST CHAR INTERFACE_VERSION[16]
+    INTERFACE_VERSION[] = "1.0.0"
+    CONST INT ROS_EKI_CONN_FLAG = 105
+    CONST INT ROS_EKI_RECV_FLAG = 110
 
-   CHAR InterfaceName[64]
-   InterfaceName[]="EkiKSSinterface"
+    ; Helper constant for decoding axis type information
+    CONST CHAR AXIS_TYPE_MAP[5, 16]
+    AXIS_TYPE_MAP[1,] = "LINEAR"
+    AXIS_TYPE_MAP[2,] = "NOT_USED" ; Not used
+    AXIS_TYPE_MAP[3,] = "ROTATIONAL"
+    AXIS_TYPE_MAP[4,] = "NOT_USED" ; Not used
+    AXIS_TYPE_MAP[5,] = "ENDLESS"
 
-   INT ROS_EKI_Conn_Flag=105
-   INT ROS_EKI_Recv_Flag=110
-
-   DECL BOOL connection_flag=FALSE
-
-   DECL EventType last_event=#None
-
+    DECL BOOL connection_flag = FALSE
+    DECL EventType last_event = #NONE
 ENDDAT

@@ -1,36 +1,89 @@
 <ETHERNETKRL>
-   <CONFIGURATION>
-      <EXTERNAL>
-         <TYPE>Client</TYPE>                    <!-- Users connect as clients -->
-      </EXTERNAL>
-      <INTERNAL>
-         <ENVIRONMENT>Submit</ENVIRONMENT>      <!-- Server run via submit interpreter -->
-         <BUFFERING Limit="512" />              <!-- Allow buffering of up to 512 messages (system max) -->
-         <ALIVE Set_Flag="105" />               <!-- Use $flag[105] to indicate alive/good connection status -->
-         <IP>192.168.38.8</IP>                  <!-- IP address for EKI interface on robot controller (KRC) -->
-         <PORT>54600</PORT>                     <!-- Port of EKI interface on robot controller (in [54600, 54615]) -->
-         <PROTOCOL>TCP</PROTOCOL>               <!-- Use TCP protocol -->
-         <MESSAGES Logging="warning" Display="disabled" />
-      </INTERNAL>
-   </CONFIGURATION>
-
-   <RECEIVE>
-      <XML>
-         <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
-         <ELEMENT Tag="External/@ID" Type="INT" />
-         <ELEMENT Tag="External/@ControlMode" Type="INT" />
-         <ELEMENT Tag="External" Set_Flag="110"/>
-      </XML>
-   </RECEIVE>
-   <SEND>
-      <XML>
-         <!-- ROS Event Info  ========================================= -->
-         <ELEMENT Tag="Robot/Event/@EventID"/>
-         <ELEMENT Tag="Robot/Event/@Message"/>
-         <ELEMENT Tag="Robot/Status/@Mode"/>
-         <ELEMENT Tag="Robot/Status/@ControlMode"/>
-         <ELEMENT Tag="Robot/Status/@EStop"/>
-         <ELEMENT Tag="Robot/Status/@ErrorCode"/>
-      </XML>
-   </SEND>
+  <CONFIGURATION>
+    <EXTERNAL>
+      <TYPE>Client</TYPE>
+    </EXTERNAL>
+    <INTERNAL>
+      <ENVIRONMENT>Submit</ENVIRONMENT>
+      <BUFFERING Limit="512" />
+      <ALIVE Set_Flag="105" Ping="120" />
+      <IP>172.31.1.147</IP>
+      <PORT>54600</PORT>
+      <PROTOCOL>TCP</PROTOCOL>
+      <MESSAGES Logging="warning" Display="disabled" />
+    </INTERNAL>
+  </CONFIGURATION>
+  <RECEIVE>
+    <XML>
+      <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
+      <ELEMENT Tag="External/@ID" Type="INT" />
+      <ELEMENT Tag="External/@ControlMode" Type="INT" />
+      <ELEMENT Tag="External" Set_Flag="110" />
+    </XML>
+  </RECEIVE>
+  <SEND>
+    <XML>
+      <ELEMENT Tag="Robot/Common/Event/@EventID" />
+      <ELEMENT Tag="Robot/Common/Event/@Message" />
+      <ELEMENT Tag="Robot/Common/Status/@Mode" />
+      <ELEMENT Tag="Robot/Common/Status/@ControlMode" />
+      <ELEMENT Tag="Robot/Common/Status/@EStop" />
+      <ELEMENT Tag="Robot/Common/Status/@ErrorCode" />
+      <!-- Initial parameters -->
+      <ELEMENT Tag="Robot/Init/@VER" />
+      <ELEMENT Tag="Robot/Init/@IPOC" />
+      <ELEMENT Tag="Robot/Init/@NumAxes" />
+      <ELEMENT Tag="Robot/Init/@NumExternalAxes" />
+      <ELEMENT Tag="Robot/Init/@Model" />
+      <!-- Axis parameters -->
+      <ELEMENT Tag="Robot/Init/Axis/A1/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A1/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A1/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A1/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/A2/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A2/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A2/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A2/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/A3/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A3/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A3/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A3/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/A4/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A4/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A4/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A4/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/A5/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A5/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A5/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A5/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/A6/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/A6/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/A6/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/A6/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E1/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E1/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E1/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E1/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E2/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E2/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E2/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E2/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E3/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E3/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E3/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E3/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E4/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E4/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E4/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E4/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E5/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E5/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E5/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E5/@MaxRPM" />
+      <ELEMENT Tag="Robot/Init/Axis/E6/@Type" />
+      <ELEMENT Tag="Robot/Init/Axis/E6/@RatioNum" />
+      <ELEMENT Tag="Robot/Init/Axis/E6/@RatioDen" />
+      <ELEMENT Tag="Robot/Init/Axis/E6/@MaxRPM" />
+    </XML>
+  </SEND>
 </ETHERNETKRL>

@@ -1,0 +1,15 @@
+&ACCESS RV3
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+DEFDAT program_handler
+    STRUC ControlModeMap ControlMode control_mode, CHAR prog_name[64]
+
+    CONST INT INTEGER_MAX = 2147483647
+    DECL STATE_T statement_state
+    DECL MODUS_T command_mode = #SYNC
+    DECL ControlMode control_mode = #INACTIVE
+
+    CONST INT MAP_SIZE = 2
+    DECL CONST ControlModeMap map[2]
+    map[1] = {control_mode #JOINT_POSITION, prog_name[] "R1/rsi_joint_pos()"}
+    map[2] = {control_mode #CART_POSITION, prog_name[] "R1/rsi_cart_pos()"}
+ENDDAT
