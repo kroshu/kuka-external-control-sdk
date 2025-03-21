@@ -23,6 +23,6 @@ bool ParseInitMessage(const char* data_to_parse, InitializationData& init_data);
 
 bool CheckSemVerCompatibility(const char* one, const char* other);
 
-} // namespace kuka::external::control::kss
+}  // namespace kuka::external::control::kss
 
 #endif // KUKA_EXTERNAL_CONTROL__KSS_INIT_SEQUENCE_H_
