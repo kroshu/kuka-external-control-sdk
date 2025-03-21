@@ -94,6 +94,7 @@ class Client : public os::core::udp::communication::TCPClient {
   int Dissect(char* cursor_ptr, std::size_t available_bytes) override;
 
  private:
+  void TearDownConnection();
   bool ParseEvent(char* data_to_parse);
   bool ParseStatus(char* data_to_parse);
   bool ParseMessage(char* data_to_parse);

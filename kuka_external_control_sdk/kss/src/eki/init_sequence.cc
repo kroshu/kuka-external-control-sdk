@@ -18,6 +18,16 @@
 
 namespace kuka::external::control::kss::eki {
 
+void ParseAxis(char* ax_i, const char* format, size_t idx, size_t offset, tinyxml2::XMLElement* axis, InitializationData& init_data) {
+  sprintf(ax_i, format, idx + 1);
+  tinyxml2::XMLElement* ax_elem = axis->FirstChildElement(ax_i);
+  size_t actual_idx = idx + offset;
+  init_data.axis_type[actual_idx] = ax_elem->Attribute("Type");
+  init_data.ratio_numerator[actual_idx] = std::stoi(ax_elem->Attribute("RatioNum"));
+  init_data.ratio_denominator[actual_idx] = std::stoi(ax_elem->Attribute("RatioDen"));
+  init_data.max_rpm[actual_idx] = std::stoi(ax_elem->Attribute("MaxRPM"));
+}
+
 bool ParseInitMessage(const char* data_to_parse, InitializationData& init_data) {
   tinyxml2::XMLDocument doc;
   tinyxml2::XMLError error = doc.Parse(data_to_parse);
@@ -50,25 +60,12 @@ bool ParseInitMessage(const char* data_to_parse, InitializationData& init_data) 
   char ax_i[3];
 
   // Parse robot axes parameters
-  for (size_t i = 0; i < init_data.num_axes; ++i) {
-    sprintf(ax_i, "A%ld", i + 1);
-    tinyxml2::XMLElement* ax_elem = axis->FirstChildElement(ax_i);
-    init_data.axis_type[i] = ax_elem->Attribute("Type");
-    init_data.ratio_numerator[i] = std::stoi(ax_elem->Attribute("RatioNum"));
-    init_data.ratio_denominator[i] = std::stoi(ax_elem->Attribute("RatioDen"));
-    init_data.max_rpm[i] = std::stoi(ax_elem->Attribute("MaxRPM"));
-  }
+  for (size_t i = 0; i < init_data.num_axes; ++i)
+    ParseAxis(ax_i, "A%ld", i, 0, axis, init_data);
 
   // Parse extarnal axes parameters
-  for (size_t i = 0; i < init_data.num_external_axes; ++i) {
-    const size_t actual_idx = i + init_data.num_axes;
-    sprintf(ax_i, "E%ld", i + 1);
-    tinyxml2::XMLElement* ax_elem = axis->FirstChildElement(ax_i);
-    init_data.axis_type[actual_idx] = ax_elem->Attribute("Type");
-    init_data.ratio_numerator[actual_idx] = std::stoi(ax_elem->Attribute("RatioNum"));
-    init_data.ratio_denominator[actual_idx] = std::stoi(ax_elem->Attribute("RatioDen"));
-    init_data.max_rpm[actual_idx] = std::stoi(ax_elem->Attribute("MaxRPM"));
-  }
+  for (size_t i = 0; i < init_data.num_external_axes; ++i)
+    ParseAxis(ax_i, "E%ld", i, init_data.num_axes, axis, init_data);
 
   return true;
 }

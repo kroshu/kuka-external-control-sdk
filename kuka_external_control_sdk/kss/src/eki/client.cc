@@ -31,10 +31,8 @@ Client::Client(const std::string& server_address, unsigned short server_port)
 }
 
 Client::~Client() {
-  StopRSI();
-  // Shutting down socket to interrupt blocking receive
-  // In receiver thread
-  socket_->Shutdown();
+  TearDownConnection();
+
   if (receiver_thread_.joinable()) {
     receiver_thread_.join();
   }
@@ -177,6 +175,14 @@ int Client::Dissect(char* cursor_ptr, std::size_t available_bytes) {
   return -1;
 }
 
+void Client::TearDownConnection() {
+  StopRSI();
+
+  // Shutting down socket to interrupt blocking receive
+  // In receiver thread
+  socket_->Shutdown();
+}
+
 bool Client::ParseEvent(char* data_to_parse) {
   // Reset event fields
   event_response_.event_type = EventType::NONE;
@@ -222,12 +228,24 @@ bool Client::ParseMessage(char* data_to_parse) {
   event_response_.event_type = static_cast<EventType>(eid);
 
   if (event_response_.event_type == EventType::CONNECTED) {
-    bool success = ParseInitMessage(data_to_parse, init_data_);
-    if (success) {
+    const bool parsed = ParseInitMessage(data_to_parse, init_data_);
+    if (parsed) {
       // Check that the client and server versions are compatible
-      success = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), semantic_version_);
+      const bool compatible = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), semantic_version_);
+
+      // If they are not compatible, close the connection and report an error
+      if (!compatible) {
+        TearDownConnection();
+        event_response_.event_type = EventType::ERROR;
+        sprintf(
+          event_response_.message,
+          "The server (%s) and client (%s) versions are not compatible",
+          init_data_.semantic_version.c_str(),
+          semantic_version_
+        );
+      }
     }
-    return success;
+    return parsed;
   }
 
   return ParseEvent(data_to_parse) || ParseStatus(data_to_parse);
