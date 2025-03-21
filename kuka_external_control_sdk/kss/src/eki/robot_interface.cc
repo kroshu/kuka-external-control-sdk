@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
-   
+
 namespace kuka::external::control::kss::eki {
 
 Robot::Robot(Configuration config)
@@ -60,7 +60,9 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 
   return StartControlling(control_mode);
 }
+
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
+
 };  // namespace kuka::external::control::kss

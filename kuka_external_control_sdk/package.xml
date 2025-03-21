@@ -15,6 +15,7 @@
   <depend>libssl-dev</depend>
   <depend>pkg-config</depend>
   <depend>protobuf-compiler-grpc</depend>
+  <depend>tinyxml2_vendor</depend>
 
   <exec_depend>ament_cmake</exec_depend>
 

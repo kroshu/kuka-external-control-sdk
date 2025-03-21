@@ -19,6 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
+find_package(tinyxml2 CONFIG REQUIRED)
 
 set(sources
   ${common_directory}/src/status.cc
@@ -32,6 +33,7 @@ set(sources
   ${kss_directory}/src/mxa/robot_interface.cc
   ${kss_directory}/src/eki/client.cc
   ${kss_directory}/src/eki/robot_interface.cc
+  ${kss_directory}/src/eki/init_sequence.cc
   ${kss_directory}/src/rsi/endpoint.cc
   ${kss_directory}/src/rsi/robot_interface.cc
   ${kss_directory}/src/message_builder.cc
@@ -49,9 +51,7 @@ target_include_directories(${target_name} PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
-target_link_libraries(${target_name} PUBLIC
-    Threads::Threads
-)
+target_link_libraries(${target_name} PUBLIC Threads::Threads PUBLIC tinyxml2::tinyxml2)
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
@@ -61,13 +61,24 @@ if (CMAKE_TESTING_ENABLED)
     add_subdirectory(/usr/src/googletest GTest)
   endif()
   enable_testing()
+
   add_executable(
     test_kss_message_builder
     test/test_message_builder.cc
   )
+  add_executable(
+    test_eki_communication
+    test/test_eki_communication.cc
+  )
 
   target_link_libraries(
     test_kss_message_builder
+    GTest::gtest_main
+    kuka-kss-client-library
+    GTest::gtest
+  )
+  target_link_libraries(
+    test_eki_communication
     GTest::gtest_main
     kuka-kss-client-library
     GTest::gtest
@@ -78,10 +89,19 @@ if (CMAKE_TESTING_ENABLED)
     "$<BUILD_INTERFACE:${kss_directory}/include>"
     "$<BUILD_INTERFACE:${kss_directory}/test>"
   )
+  target_include_directories(test_eki_communication PUBLIC
+    "$<BUILD_INTERFACE:${common_directory}/include>"
+    "$<BUILD_INTERFACE:${kss_directory}/include>"
+    "$<BUILD_INTERFACE:${kss_directory}/test>"
+  )
 
   target_compile_features(test_kss_message_builder INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+  target_compile_features(test_eki_communication INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+
   include(GoogleTest)
+
   gtest_discover_tests(test_kss_message_builder)
+  gtest_discover_tests(test_eki_communication)
 endif()
 
 install(TARGETS ${target_name} EXPORT SdkExport

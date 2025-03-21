@@ -47,15 +47,15 @@ class Client : public os::core::udp::communication::TCPClient {
  private:
   // Response structures
   enum EventType {
-    STARTED,
-    STOPPED,
-    CANCELLED,
-    RESET_OK,
-    ERROR,
-    CONNECTED,
-    SWITCH_OK,
-    INVALID,
-    NONE
+    STARTED = 0,
+    STOPPED = 1,
+    CANCELLED = 2,
+    RESET_OK = 3,
+    ERROR = 4,
+    CONNECTED = 5,
+    SWITCH_OK = 6,
+    INVALID = 7,
+    NONE = 8,
   };
 
   struct EventResponse {
@@ -96,6 +96,7 @@ class Client : public os::core::udp::communication::TCPClient {
  private:
   bool ParseEvent(char* data_to_parse);
   bool ParseStatus(char* data_to_parse);
+  bool ParseMessage(char* data_to_parse);
 
  private:
   static constexpr std::size_t kRecvBuffSize = 4096;
@@ -109,11 +110,14 @@ class Client : public os::core::udp::communication::TCPClient {
       "<External REQTYPE=\"CHANGE\" ID=\"%d\" ControlMode=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
-      "<Robot><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Robot>";
+      "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
   static constexpr char status_resp_format_[] =
-      "<Robot><Status Mode=\"%d\" ControlMode=\"%d\" EStop=\"%d\" "
-      "ErrorCode=\"%d\"></Status></Robot>";
+      "<Robot><Common><Status Mode=\"%d\" ControlMode=\"%d\" EStop=\"%d\" "
+      "ErrorCode=\"%d\"></Status></Common></Robot>";
 
+  static constexpr char semantic_version_[] = "1.0.0";
+
+  InitializationData init_data_;
   EventResponse event_response_;
   StatusResponse status_response_;
 

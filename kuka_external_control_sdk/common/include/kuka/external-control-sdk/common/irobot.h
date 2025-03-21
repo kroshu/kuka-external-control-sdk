@@ -25,14 +25,27 @@
 
 namespace kuka::external::control {
 
+struct InitializationData {
+  std::string semantic_version;
+  int64_t ipoc;
+  int8_t num_axes;
+  int8_t num_external_axes;
+  std::string model_name;
+  std::vector<std::string> axis_type;
+  std::vector<int16_t> ratio_numerator;
+  std::vector<int16_t> ratio_denominator;
+  std::vector<int16_t> max_rpm;
+};
+
 class EventHandler {
  public:
   virtual ~EventHandler() = default;
 
-  virtual void OnSampling(){};
-  virtual void OnControlModeSwitch(const std::string& reason){};
-  virtual void OnStopped(const std::string& reason){};
-  virtual void OnError(const std::string& reason){};
+  virtual void OnSampling() {}
+  virtual void OnControlModeSwitch(const std::string& reason) {}
+  virtual void OnStopped(const std::string& reason) {}
+  virtual void OnError(const std::string& reason) {}
+  virtual void OnConnected(const InitializationData& init_data) {}
 };
 
 enum class ControlMode {

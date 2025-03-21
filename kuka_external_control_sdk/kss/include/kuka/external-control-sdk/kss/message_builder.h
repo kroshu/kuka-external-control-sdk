@@ -18,9 +18,9 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <limits>
 #include <optional>
 #include <string>
-#include <limits>
 
 #include "kuka/external-control-sdk/common/message_builder.h"
 

@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/kss/eki/client.h"
 #include <cstring>
 
-#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
+#include <tinyxml2.h>
+
+#include "kuka/external-control-sdk/kss/eki/client.h"
+#include "kuka/external-control-sdk/kss/eki/init_sequence.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
+
 
 namespace kuka::external::control::kss::eki {
 
@@ -124,9 +128,6 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::STARTED:
       event_handler_->OnSampling();
       return;
-    case EventType::SWITCH_OK:
-      event_handler_->OnControlModeSwitch(event.message);
-      return;
     case EventType::STOPPED:
       event_handler_->OnStopped("RSI program stopped");
       return;
@@ -136,7 +137,12 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::ERROR:
       event_handler_->OnError(event.message);
       return;
-
+    case EventType::CONNECTED:
+      event_handler_->OnConnected(init_data_);
+      return;
+    case EventType::SWITCH_OK:
+      event_handler_->OnControlModeSwitch(event.message);
+      return;
     default:
       return;
   }
@@ -162,12 +168,13 @@ int Client::Dissect(char* cursor_ptr, std::size_t available_bytes) {
     return available_bytes + 1;
   }
 
-  // Parse event or status response with format string - return with error if failed
-  if (ParseEvent(cursor_ptr) || ParseStatus(cursor_ptr)) {
+  // Parse event or status response with format string
+  if (ParseMessage(cursor_ptr)) {
     return available_bytes;
-  } else {
-    return -1;
   }
+
+  // Return with error if parsing failed
+  return -1;
 }
 
 bool Client::ParseEvent(char* data_to_parse) {
@@ -202,6 +209,28 @@ bool Client::ParseStatus(char* data_to_parse) {
     // Not all event fields scanned, might add a warning somehow later on
   }
   return true;
+}
+
+bool Client::ParseMessage(char* data_to_parse) {
+  tinyxml2::XMLDocument doc;
+  doc.Parse(data_to_parse);
+
+  tinyxml2::XMLElement* root = doc.RootElement();
+  tinyxml2::XMLElement* common = root->FirstChildElement("Common");
+  tinyxml2::XMLElement* event = common->FirstChildElement("Event");
+  int eid = std::stoi(event->Attribute("EventID"));
+  event_response_.event_type = static_cast<EventType>(eid);
+
+  if (event_response_.event_type == EventType::CONNECTED) {
+    bool success = ParseInitMessage(data_to_parse, init_data_);
+    if (success) {
+      // Check that the client and server versions are compatible
+      success = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), semantic_version_);
+    }
+    return success;
+  }
+
+  return ParseEvent(data_to_parse) || ParseStatus(data_to_parse);
 }
 
 Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
