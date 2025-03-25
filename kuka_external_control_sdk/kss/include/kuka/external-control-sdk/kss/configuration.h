@@ -31,6 +31,12 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
+  // GPIO states size
+  std::size_t gpio_state_size = 0;
+
+  // GPIO commands size
+  std::size_t gpio_command_size = 0;
+
   /** The control mode to begin external control in.
    *  At the present, the following modes are supported:
    *  1 - Joint position control
@@ -38,12 +44,11 @@ struct Configuration {
    */
   ControlMode initial_control_mode = ControlMode::UNSPECIFIED;
 
-
   enum class InstalledInterface {
-      UNSPECIFIED = 0,
-      MXA_RSI = 1,
-      EKI_RSI = 2,
-      RSI_ONLY = 3
+    UNSPECIFIED = 0,
+    MXA_RSI = 1,
+    EKI_RSI = 2,
+    RSI_ONLY = 3
   };
 
   // The interface installed on the KSS robot
@@ -59,6 +64,6 @@ struct Configuration {
   const unsigned short client_port = 59152;
 };
 
-}  // namespace kuka::external::control::kss
+} // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
