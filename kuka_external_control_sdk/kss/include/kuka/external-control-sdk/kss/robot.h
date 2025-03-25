@@ -24,7 +24,6 @@
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
-#include "kuka/external-control-sdk/kss/mxa/client.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss {

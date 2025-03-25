@@ -29,8 +29,6 @@ set(sources
   ${utils_directory}/src/os-core-udp-communication/subscriber.cc
   ${utils_directory}/src/os-core-udp-communication/dissector.cc
   ${utils_directory}/src/os-core-udp-communication/tcp_client.cc
-  ${kss_directory}/src/mxa/client.cc
-  ${kss_directory}/src/mxa/robot_interface.cc
   ${kss_directory}/src/eki/client.cc
   ${kss_directory}/src/eki/robot_interface.cc
   ${kss_directory}/src/eki/init_sequence.cc
