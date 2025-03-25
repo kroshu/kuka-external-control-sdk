@@ -18,43 +18,51 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <limits>
 #include <optional>
 #include <string>
-#include <limits>
 
 #include "kuka/external-control-sdk/common/message_builder.h"
 
 namespace kuka::external::control::kss {
 
 class MotionState : public BaseMotionState {
- public:
-  MotionState(std::size_t dof) : BaseMotionState(dof) {
+public:
+  MotionState(std::size_t dof, std::size_t gpio_size) : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_velocities_.resize(dof, std::numeric_limits<double>::quiet_NaN());
-    measured_cartesian_positions_.resize(6, std::numeric_limits<double>::quiet_NaN());
+    measured_cartesian_positions_.resize(
+        6, std::numeric_limits<double>::quiet_NaN());
 
     first_cartesian_position_index_ += kMessagePrefix.length();
     first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
+
+    for (size_t i = 0; i < gpio_size; i++) {
+      measured_gpio_values_.push_back(
+          std::make_shared<kuka::external::control::BaseGPIOValue>());
+    }
   }
 
-  MotionState(const MotionState& other) = default;
+  MotionState(const MotionState &other) = default;
 
-  void CreateFromXML(const char* incoming_xml);
+  void CreateFromXML(const char *incoming_xml);
   int GetIpoc() { return ipoc_; }
   int GetDelay() { return delay_; }
 
- private:
+private:
   const std::string kMessagePrefix = "<Rob Type=\"KUKA\">";
 
   const std::string kCartesianPositionsPrefix = "<RIst";
-  const std::vector<std::string> kCartesianPositionAttributePrefixes = {" X=\"", " Y=\"", " Z=\"",
-                                                                        " A=\"", " B=\"", " C=\""};
+  const std::vector<std::string> kCartesianPositionAttributePrefixes = {
+      " X=\"", " Y=\"", " Z=\"", " A=\"", " B=\"", " C=\""};
   const std::string kAttributeSuffix = "\"/>";
 
   const std::string kJointPositionsPrefix = "<AIPos";
 
   const std::string kDelayNodePrefix = "<Delay D=\"";
+  const std::string kGpioPrefix = "<GPIO";
+  const std::vector<std::string> kGpioAttributePrefix = {" 01=\"", " 02=\""};
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Rob>";
@@ -68,39 +76,49 @@ class MotionState : public BaseMotionState {
 };
 
 class ControlSignal : public BaseControlSignal {
- public:
-  ControlSignal(std::size_t dof, const MotionState& initial_positions)
+public:
+  ControlSignal(std::size_t dof, std::size_t gpio_size,
+                const MotionState &initial_positions)
       : BaseControlSignal(dof), kInitialPositions(initial_positions) {
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
+    for (size_t i = 0; i < gpio_size; i++) {
+      gpio_values_.push_back(
+          std::make_shared<kuka::external::control::BaseGPIOValue>());
+    }
     for (int i = 1; i <= dof; ++i) {
-      joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) + "=\"");
+      joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) +
+                                                   "=\"");
     }
   }
 
   // Create XML containing relative positions in rad
-  std::optional<std::string_view> CreateXMLString(int last_ipoc, bool stop_control = false);
+  std::optional<std::string_view> CreateXMLString(int last_ipoc,
+                                                  bool stop_control = false);
 
- private:
+private:
   void AppendToXMLString(std::string_view str);
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
   const std::string kJointPositionsPrefix = "<AK";
   std::vector<std::string> joint_position_attribute_prefixes_;
-  const std::string kJointPositionAttributeFormat = "%." + std::to_string(kPrecision) + "f";
-  const std::string kJointPositionsSuffix = "/>";
+  const std::string kJointPositionAttributeFormat =
+      "%." + std::to_string(kPrecision) + "f";
+  const std::string kAttributeSuffix = "/>";
   const std::string kStopNodePrefix = "<Stop>";
   const std::string kStopNodeSuffix = "</Stop>";
+  const std::string kGpioPrefix = "<GPIO";
+  const std::vector<std::string> kGpioAttributePrefix = {" 01=\""};
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Sen>";
 
-  const MotionState& kInitialPositions;
+  const MotionState &kInitialPositions;
 
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;
   char xml_string_[kBufferSize];
 };
-}  // namespace kuka::external::control::kss
+} // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
