@@ -18,11 +18,24 @@
 
 namespace kuka::external::control::kss::eki {
 
+AxisType StringToAxisType(const std::string axis_type_str) {
+  if (axis_type_str == "LINEAR")
+    return AxisType::LINEAR;
+
+  if (axis_type_str == "ROTATIONAL")
+    return AxisType::ROTATIONAL;
+
+  if (axis_type_str == "ENDLESS")
+    return AxisType::ENDLESS;
+
+  return AxisType::UNKOWN;
+}
+
 void ParseAxis(char* ax_i, const char* format, size_t idx, size_t offset, tinyxml2::XMLElement* axis, InitializationData& init_data) {
   sprintf(ax_i, format, idx + 1);
   tinyxml2::XMLElement* ax_elem = axis->FirstChildElement(ax_i);
   size_t actual_idx = idx + offset;
-  init_data.axis_type[actual_idx] = ax_elem->Attribute("Type");
+  init_data.axis_type[actual_idx] = StringToAxisType(ax_elem->Attribute("Type"));
   init_data.ratio_numerator[actual_idx] = std::stoi(ax_elem->Attribute("RatioNum"));
   init_data.ratio_denominator[actual_idx] = std::stoi(ax_elem->Attribute("RatioDen"));
   init_data.max_rpm[actual_idx] = std::stoi(ax_elem->Attribute("MaxRPM"));

@@ -25,16 +25,25 @@
 
 namespace kuka::external::control {
 
+enum AxisType {
+  LINEAR,
+  ROTATIONAL,
+  ENDLESS,
+  UNKOWN,
+};
+
 struct InitializationData {
   std::string semantic_version;
-  int64_t ipoc;
-  int8_t num_axes;
-  int8_t num_external_axes;
+  u_int64_t ipoc;
+  u_int8_t num_axes;
+  u_int8_t num_external_axes;
   std::string model_name;
-  std::vector<std::string> axis_type;
+  std::vector<AxisType> axis_type;
   std::vector<int16_t> ratio_numerator;
   std::vector<int16_t> ratio_denominator;
   std::vector<int16_t> max_rpm;
+
+  u_int8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 };
 
 class EventHandler {
