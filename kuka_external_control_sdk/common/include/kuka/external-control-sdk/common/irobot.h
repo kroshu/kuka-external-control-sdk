@@ -38,6 +38,8 @@ struct InitializationData {
   u_int8_t num_axes;
   u_int8_t num_external_axes;
   std::string model_name;
+  std::string hw_version;
+  std::string sw_version;
   std::vector<AxisType> axis_type;
   std::vector<int16_t> ratio_numerator;
   std::vector<int16_t> ratio_denominator;

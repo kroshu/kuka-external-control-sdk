@@ -150,7 +150,7 @@ GLOBAL DEF PublishEvent()
         ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@Mode", 1) ; TODO: op mode
 
         ; Transmit the current Run Mode
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1) ; TODO
+        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1) ; TODOC
 
         ; Send the message
         ret = EKI_Send(INTERFACE_NAME[], x_path_send[])
@@ -187,6 +187,7 @@ DEF WriteInitDataToChannel()
     eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumAxes", $NUM_AX)
     eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumExternalAxes", $EX_AX_NUM)
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@Model", $ROBTRAFO[])
+    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@RobVer", $V_R1MADA[])
 
     ; Set axis-specific parameters for robot axes
     FOR counter = 1 TO $NUM_AX

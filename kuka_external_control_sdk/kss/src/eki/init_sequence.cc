@@ -61,6 +61,12 @@ bool ParseInitMessage(const char* data_to_parse, InitializationData& init_data) 
   init_data.num_external_axes = std::stoi(init_elem->Attribute("NumExternalAxes"));
   init_data.model_name = init_elem->Attribute("Model");
 
+  const std::string rob_ver = init_elem->Attribute("RobVer");
+  // The hardware and software versions are separated by a slash
+  const size_t sep_idx = rob_ver.find('/');
+  init_data.hw_version = rob_ver.substr(0, sep_idx);
+  init_data.sw_version = rob_ver.substr(sep_idx + 1);
+
   const int8_t size = init_data.num_axes + init_data.num_external_axes;
   init_data.axis_type.resize(size);
   init_data.ratio_numerator.resize(size);

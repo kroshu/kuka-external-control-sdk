@@ -35,6 +35,7 @@
       <ELEMENT Tag="Robot/Init/@NumAxes" />
       <ELEMENT Tag="Robot/Init/@NumExternalAxes" />
       <ELEMENT Tag="Robot/Init/@Model" />
+      <ELEMENT Tag="Robot/Init/@RobVer" />
       <!-- Axis parameters -->
       <ELEMENT Tag="Robot/Init/Axis/A1/@Type" />
       <ELEMENT Tag="Robot/Init/Axis/A1/@RatioNum" />
