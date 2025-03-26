@@ -90,6 +90,12 @@ GLOBAL DEF HandleCommand(cmd: IN)
                 SetControlMode(ctrl_mode)
                 current_driver_state = #INACTIVE
                 SetLastEvent(#SWITCH_OK)
+            CASE #CMD_DRIVES_ON
+                $DRIVES_ENABLE = TRUE
+                SetLastEvent(#DRIVES_TURNED_ON)
+            CASE #CMD_DRIVES_OFF
+                $DRIVES_ENABLE = FALSE
+                SetLastEvent(#DRIVES_TURNED_OFF)
         ENDSWITCH
     ELSE
         SetLastEvent(#INVALID)
@@ -99,30 +105,15 @@ END
 
 DEFFCT CMDType ParseCommand(cmd[]: IN)
     CHAR cmd[]
+    DECL StringCommandPair pair
+    INT idx
 
-    IF (StrComp(cmd[], "CON", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_CON
-    ENDIF
-
-    IF (StrComp(cmd[], "START", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_START
-    ENDIF
-
-    IF (StrComp(cmd[], "RESET", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_RESET
-    ENDIF
-
-    IF (StrComp(cmd[], "CANCEL", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_CANCEL
-    ENDIF
-
-    IF (StrComp(cmd[], "CHANGE", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_CHANGE
-    ENDIF
-
-    IF (StrComp(cmd[], "NONE", #NOT_CASE_SENS)) THEN
-        RETURN #CMD_NONE
-    ENDIF
+    FOR idx = 1 TO CMD_COUNT
+        pair = STRING_COMMAND_PAIRS[idx]
+        IF (StrComp(cmd[], pair.cmd_string[], #NOT_CASE_SENS)) THEN
+            RETURN pair.cmd_type
+        ENDIF
+    ENDFOR
 
     RETURN #CMD_INVALID
 ENDFCT
@@ -139,11 +130,11 @@ DEFFCT BOOL ValidateCommand(cmd: IN)
 
     ; Actual check
     IF (current_driver_state == #INITIALIZED) THEN
-        RETURN (cmd == #CMD_CON) OR (cmd == #CMD_CHANGE)
+        RETURN (cmd == #CMD_CON) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_DRIVES_ON) OR (cmd == #CMD_DRIVES_OFF)
     ENDIF
 
     IF (current_driver_state == #INACTIVE) THEN
-        RETURN (cmd == #CMD_START) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_CANCEL)
+        RETURN (cmd == #CMD_START) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_CANCEL) OR (cmd == #CMD_DRIVES_ON) OR (cmd == #CMD_DRIVES_OFF)
     ENDIF
 
     ; If the driver is neither INITIALIZED nor INACTIVE, it must be ACTIVE
@@ -152,22 +143,17 @@ ENDFCT
 
 DEFFCT CHAR [32] CommandToString(command: IN)
     DECL CMDType command
-    SWITCH command
-        CASE #CMD_NONE
-            RETURN "NONE"
-        CASE #CMD_CON
-            RETURN "CONNECT"
-        CASE #CMD_START
-            RETURN "START"
-        CASE #CMD_RESET
-            RETURN "RESET"
-        CASE #CMD_CANCEL
-            RETURN "CANCEL"
-        CASE #CMD_CHANGE
-            RETURN "CHANGE"
-        CASE #CMD_INVALID
-            RETURN "INVALID"
-    ENDSWITCH
+    DECL StringCommandPair pair
+    INT idx
+
+    FOR idx = 1 TO CMD_COUNT
+        pair = STRING_COMMAND_PAIRS[idx]
+        IF (command == pair.cmd_type) THEN
+            RETURN pair.cmd_string[]
+        ENDIF
+    ENDFOR
+
+    RETURN "INVALID"
 ENDFCT
 
 DEFFCT CHAR [16] DriverStateToString(driver_state: IN)

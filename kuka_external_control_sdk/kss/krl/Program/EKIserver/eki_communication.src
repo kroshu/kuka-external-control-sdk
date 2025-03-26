@@ -113,24 +113,14 @@ GLOBAL DEF PublishEvent()
             RETURN
         ENDIF
 
-        ; TODO make this nicer if possible
+        event_int = GetEventId()
+
+        ; Only list commands that need special handling
         SWITCH last_event
-            CASE #STARTED
-                event_int = 0
-            CASE #STOPPED
-                event_int = 1
-            CASE #CANCELLED
-                event_int = 2
-            CASE #RESET_OK
-                event_int = 3
-            CASE #ERROR
-                event_int = 4
             CASE #CONNECTED
-                event_int = 5
                 WriteInitDataToChannel()
                 x_path_send[] = "Robot"
             CASE #SWITCH_OK
-                event_int = 6
                 SWITCH GetControlMode()
                     CASE #JOINT_POSITION
                         event_msg[] = "joint position control"
@@ -140,10 +130,6 @@ GLOBAL DEF PublishEvent()
                         event_msg[] = "inactive control"
                 ENDSWITCH
                 ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
-            CASE #INVALID
-                event_int = 7
-            DEFAULT
-                event_int = 8
         ENDSWITCH
 
         ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
@@ -234,3 +220,18 @@ DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
     SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@MaxRPM", base_path[], idx)
     eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $VEL_AXIS_MA[actual_idx])
 END
+
+DEFFCT INT GetEventId()
+    DECL EventIntPair pair
+    INT idx
+
+    FOR idx = 1 TO EVENT_COUNT
+        pair = EVENT_INT_PAIRS[idx]
+        IF (last_event == pair.event_type) THEN
+            RETURN pair.event_id
+        ENDIF
+    ENDFOR
+
+    ; Should never get to this point
+    RETURN -1
+ENDFCT

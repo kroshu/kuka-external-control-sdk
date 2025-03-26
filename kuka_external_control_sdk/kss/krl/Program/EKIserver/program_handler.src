@@ -166,7 +166,7 @@ GLOBAL DEFFCT BOOL StopProgram()
     RETURN TRUE
 ENDFCT
 
-DEFFCT BOOL WaitForState(ProState: IN, Timeout:IN)
+DEFFCT BOOL WaitForState(ProState: IN, Timeout: IN)
     ;FOLD Help
         ;   Used internally to wait for a specific program
         ;   state or timeout, whichever comes first.
@@ -218,7 +218,7 @@ DEFFCT BOOL WaitForState(ProState: IN, Timeout:IN)
     RETURN FALSE
 ENDFCT
 
-DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout:IN)
+DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout: IN)
     ;FOLD Help
         ;   Used internally to wait for a program state transition FROM the given state
         ; @Inputs
@@ -269,12 +269,12 @@ DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout:IN)
     RETURN FALSE
 ENDFCT
 
-GLOBAL DEFFCT INT GetControlModeID(mode:IN)
+GLOBAL DEFFCT INT GetControlModeID(mode: IN)
     DECL ControlMode mode
     DECL INT ID
 
-    FOR ID=1 TO MAP_SIZE
-        IF (mode == map[ID].control_mode) THEN
+    FOR ID = 1 TO CONTROL_MODE_COUNT
+        IF (mode == CTRL_MODE_PROG_PAIRS[ID].mode) THEN
             RETURN ID
         ENDIF
     ENDFOR
@@ -282,12 +282,12 @@ GLOBAL DEFFCT INT GetControlModeID(mode:IN)
     RETURN -1
 ENDFCT
 
-GLOBAL DEFFCT CHAR [64] GetProgName(mode:IN)
+GLOBAL DEFFCT CHAR [64] GetProgName(mode: IN)
     DECL ControlMode mode
-    RETURN map[GetControlModeID(mode)].prog_name[]
+    RETURN CTRL_MODE_PROG_PAIRS[GetControlModeID(mode)].prog_name[]
 ENDFCT
 
-GLOBAL DEF SetControlMode(mode:IN)
+GLOBAL DEF SetControlMode(mode: IN)
     DECL ControlMode mode
     CHAR modeString[32]
 
@@ -297,18 +297,19 @@ GLOBAL DEF SetControlMode(mode:IN)
     control_mode = mode
 END
 
-DEFFCT CHAR [32] ControlModeToString(controlMode: IN)
-    DECL ControlMode controlMode
+DEFFCT CHAR [32] ControlModeToString(mode: IN)
+    DECL ControlMode mode
+    DECL ControlModeStringPair pair
+    INT idx
 
-    IF (controlMode == #JOINT_POSITION) THEN
-        RETURN "JointPositionControl"
-    ENDIF
+    FOR idx = 1 TO CONTROL_MODE_COUNT
+        pair = CTRL_MODE_STRING_PAIRS[idx]
+        IF (mode == pair.mode) THEN
+            RETURN pair.mode_string[]
+        ENDIF
+    ENDFOR
 
-    IF (controlMode == #CART_POSITION) THEN
-        RETURN "CartesianPositionControl"
-    ENDIF
-
-    RETURN "NonSpecifiedControlMode"
+    RETURN "Inactive Control"
 ENDFCT
 
 GLOBAL DEFFCT ControlMode GetControlMode()
