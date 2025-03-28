@@ -42,6 +42,9 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler)
       override;  // EKI response / new EKI client-server with external the service
 
+  virtual Status TurnOnDrives() override;
+  virtual Status TurnOffDrives() override;
+
   // Members and methods necessary for network configuration and error handling.
  private:
   Configuration config_;

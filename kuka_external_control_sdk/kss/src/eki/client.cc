@@ -231,7 +231,7 @@ bool Client::ParseMessage(char* data_to_parse) {
     const bool parsed = ParseInitMessage(data_to_parse, init_data_);
     if (parsed) {
       // Check that the client and server versions are compatible
-      const bool compatible = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), semantic_version_);
+      const bool compatible = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), SEMANTIC_VERSION);
 
       // If they are not compatible, close the connection and report an error
       if (!compatible) {
@@ -241,7 +241,7 @@ bool Client::ParseMessage(char* data_to_parse) {
           event_response_.message,
           "The server (%s) and client (%s) versions are not compatible",
           init_data_.semantic_version.c_str(),
-          semantic_version_
+          SEMANTIC_VERSION
         );
       }
     }
@@ -264,5 +264,13 @@ Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handle
 
   return Status(ReturnCode::OK);
 };
+
+Status Client::TurnOnDrives() {
+  return SendCommand("DRIVES_ON");
+}
+
+Status Client::TurnOffDrives() {
+  return SendCommand("DRIVES_OFF");
+}
 
 }  // namespace kuka::external::control::kss

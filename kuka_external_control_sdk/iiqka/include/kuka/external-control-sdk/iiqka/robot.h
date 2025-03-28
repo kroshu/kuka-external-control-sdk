@@ -78,6 +78,9 @@ class Robot : public IRobot {
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
+  virtual Status TurnOnDrives() override;
+  virtual Status TurnOffDrives() override;
+
   // ECI-specific features
  public:
   Status SetQoSProfile(QoS_Configuration);

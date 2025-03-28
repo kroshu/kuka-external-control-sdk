@@ -88,4 +88,13 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   return installed_interface_->RegisterEventHandler(std::move(event_handler));
 }
+
+Status Robot::TurnOnDrives() {
+  return installed_interface_->TurnOnDrives();
+}
+
+Status Robot::TurnOffDrives() {
+  return installed_interface_->TurnOffDrives();
+}
+
 };  // namespace kuka::external::control::kss

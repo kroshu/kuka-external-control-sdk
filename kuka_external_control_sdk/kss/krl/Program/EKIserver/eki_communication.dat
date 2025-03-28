@@ -1,237 +1,39 @@
-&ACCESS RVO
+&ACCESS RV
 &REL 4
 &PARAM DISKPATH = KRC:\R1\Program\ROS
-DEF eki_communication()
-    ; Software License Agreement (BSD License)
-    ;
-    ; Copyright (c) 2022, Kuka Robotics Corp
-    ; All rights reserved.
-    ;
-    ; Redistribution and use in source and binary forms, with or without
-    ; modification, are permitted provided that the following conditions are met:
-    ;
-    ;      * Redistributions of source code must retain the above copyright
-    ;        notice, this list of conditions and the following disclaimer.
-    ;      * Redistributions in binary form must reproduce the above copyright
-    ;        notice, this list of conditions and the following disclaimer in the
-    ;        documentation and/or other materials provided with the distribution.
-    ;      * Neither the name of the copyright holder, nor the names of its
-    ;        contributors may be used to endorse or promote products derived
-    ;        from this software without specific prior written permission.
-    ;
-    ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-    ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-    ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-    ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-    ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-    ; POSSIBILITY OF SUCH DAMAGE.
-END
+DEFDAT eki_communication
+    STRUC EventIntPair EventType event_type, INT event_id
 
-GLOBAL DEF EKI_ServerStart()
-    DECL EKI_STATUS ret
+    CONST CHAR INTERFACE_NAME[64]
+    INTERFACE_NAME[] = "EkiKSSinterface"
+    CONST CHAR INTERFACE_VERSION[16]
+    INTERFACE_VERSION[] = "1.0.0"
+    CONST INT ROS_EKI_CONN_FLAG = 105
+    CONST INT ROS_EKI_RECV_FLAG = 110
 
-    ; Init connection flag - will be set TRUE internally by EKI after connection is made
-    $FLAG[ROS_EKI_CONN_FLAG] = FALSE
-    ; Init data recv flag - will be set TRUE internally by EKI after data is received
-    $FLAG[ROS_EKI_RECV_FLAG] = FALSE
+    ; Helper constant for decoding axis type information
+    CONST CHAR AXIS_TYPE_MAP[5, 16]
+    AXIS_TYPE_MAP[1,] = "LINEAR"
+    AXIS_TYPE_MAP[2,] = "NOT_USED" ; Not used
+    AXIS_TYPE_MAP[3,] = "ROTATIONAL"
+    AXIS_TYPE_MAP[4,] = "NOT_USED" ; Not used
+    AXIS_TYPE_MAP[5,] = "ENDLESS"
 
-    ; TODO: check ret values
-    ret = EKI_Init(INTERFACE_NAME[])
-    ret = EKI_Open(INTERFACE_NAME[])
-END
+    ; Constants for easier mapping of event types to integers
+    CONST INT EVENT_COUNT = 11
+    DECL CONST EventIntPair EVENT_INT_PAIRS[11]
+    EVENT_INT_PAIRS[1] = { event_type #STARTED, event_id 0 }
+    EVENT_INT_PAIRS[2] = { event_type #STOPPED, event_id 1 }
+    EVENT_INT_PAIRS[3] = { event_type #CANCELLED, event_id 2 }
+    EVENT_INT_PAIRS[4] = { event_type #RESET_OK, event_id 3 }
+    EVENT_INT_PAIRS[5] = { event_type #ERROR, event_id 4 }
+    EVENT_INT_PAIRS[6] = { event_type #CONNECTED, event_id 5 }
+    EVENT_INT_PAIRS[7] = { event_type #SWITCH_OK, event_id 6 }
+    EVENT_INT_PAIRS[8] = { event_type #INVALID, event_id 7 }
+    EVENT_INT_PAIRS[9] = { event_type #NONE, event_id 8 }
+    EVENT_INT_PAIRS[10] = { event_type #DRIVES_TURNED_ON, event_id 9 }
+    EVENT_INT_PAIRS[11] = { event_type #DRIVES_TURNED_OFF, event_id 10 }
 
-DEF EKI_ServerReset()
-    DECL EKI_STATUS ret
-    ret = EKI_Clear(INTERFACE_NAME[])
-    EKI_ServerStart()
-END
-
-; Tries to read received elements from buffer.
-GLOBAL DEF EKI_ReceiveData(command: OUT)
-    DECL Command command
-    DECL EKI_STATUS ret
-
-    ; Init cmd
-    command.cmd_str[] = "None"
-    command.control_mode = -1
-
-    ; Verify a valid connection
-    IF (NOT IsClientConnected()) THEN
-        WAIT SEC 0.012
-        RETURN
-    ENDIF
-
-    ; Skip processing if no data received.
-    IF (NOT DidReceiveData()) THEN
-        WAIT SEC 0.012
-        RETURN
-    ENDIF
-
-    ; Reset flag immediately after msg notification
-    $FLAG[ROS_EKI_RECV_FLAG] = FALSE
-
-    ret = EKI_CheckBuffer(INTERFACE_NAME[], "External/@REQTYPE")
-
-    IF ret.buff > 0 THEN
-        ret = EKI_GetString(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_str[])
-        ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
-    ELSE
-        MsgNotify("No valid data received.")
-        WAIT SEC 0.012
-    ENDIF
-END
-
-GLOBAL DEF HandleConnection()
-    IF (IsClientConnected() <> connection_flag) THEN
-        connection_flag = IsClientConnected()
-        IF (IsClientConnected()) THEN
-            MsgNotify("External client connected")
-        ELSE
-            MsgNotify("External client disconnected")
-            EKI_ServerReset()
-        ENDIF
-    ENDIF
-END
-
-GLOBAL DEF PublishEvent()
-    DECL EKI_STATUS ret
-    INT event_int
-    CHAR event_msg[64]
-    CHAR x_path_send[32]
-
-    ; Before publishing a response to a command, select the relevant part of the XML
-    x_path_send[] = "Robot/Common"
-
-    IF (GetLastEvent() <> #NONE) THEN
-        IF (NOT IsClientConnected()) THEN
-            MsgNotify("External client is not connected when trying to send event.")
-            RETURN
-        ENDIF
-
-        event_int = GetEventId()
-
-        ; Only list commands that need special handling
-        SWITCH last_event
-            CASE #CONNECTED
-                WriteInitDataToChannel()
-                x_path_send[] = "Robot"
-            CASE #SWITCH_OK
-                SWITCH GetControlMode()
-                    CASE #JOINT_POSITION
-                        event_msg[] = "joint position control"
-                    CASE #CART_POSITION
-                        event_msg[] = "cartesian position control"
-                    DEFAULT
-                        event_msg[] = "inactive control"
-                ENDSWITCH
-                ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
-        ENDSWITCH
-
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@Mode", 1) ; TODO: op mode
-
-        ; Transmit the current Run Mode
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1) ; TODOC
-
-        ; Send the message
-        ret = EKI_Send(INTERFACE_NAME[], x_path_send[])
-
-        ; Reset event
-        SetLastEvent(#NONE)
-    ENDIF
-END
-
-GLOBAL DEF SetLastEvent(event: IN)
-    DECL EventType event
-    last_event = event
-END
-
-GLOBAL DEFFCT EventType GetLastEvent()
-    RETURN last_event
-ENDFCT
-
-GLOBAL DEFFCT BOOL IsClientConnected()
-    RETURN $FLAG[ROS_EKI_CONN_FLAG]
-ENDFCT
-
-DEFFCT BOOL DidReceiveData()
-    RETURN $FLAG[ROS_EKI_RECV_FLAG]
-ENDFCT
-
-DEF WriteInitDataToChannel()
-    DECL EKI_STATUS eki_ret
-    INT counter
-
-    ; Set general parameters
-    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@VER", INTERFACE_VERSION[])
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@IPOC", $ROB_TIMER)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumAxes", $NUM_AX)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumExternalAxes", $EX_AX_NUM)
-    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@Model", $ROBTRAFO[])
-    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@RobVer", $V_R1MADA[])
-
-    ; Set axis-specific parameters for robot axes
-    FOR counter = 1 TO $NUM_AX
-        WriteAxisParamsToChannel("Robot/Init/Axis/A", counter, 0)
-    ENDFOR
-
-    ; Set axis-specific parameters for external axes (indexed from 7 to 12)
-    FOR counter = 1 TO $EX_AX_NUM
-        WriteAxisParamsToChannel("Robot/Init/Axis/E", counter, 6)
-    ENDFOR
-END
-
-DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
-    CHAR base_path[]
-    INT idx
-    INT offset
-    DECL EKI_STATUS eki_ret
-    DECL STATE_T state_ret
-    BOOL bool_ret
-    INT actual_idx
-    INT swrite_offset
-    CHAR x_path[64]
-    CHAR axis_type_string[16]
-
-    actual_idx = idx + offset
-
-    bool_ret = StrCopy(axis_type_string[], AXIS_TYPE_MAP[$AXIS_TYPE[actual_idx],])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@Type", base_path[], idx)
-    eki_ret = EKI_SetString(INTERFACE_NAME[], x_path[], axis_type_string[])
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@RatioNum", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $RAT_MOT_AX[actual_idx].N)
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@RatioDen", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $RAT_MOT_AX[actual_idx].D)
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@MaxRPM", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $VEL_AXIS_MA[actual_idx])
-END
-
-DEFFCT INT GetEventId()
-    DECL EventIntPair pair
-    INT idx
-
-    FOR idx = 1 TO EVENT_COUNT
-        pair = EVENT_INT_PAIRS[idx]
-        IF (last_event == pair.event_type) THEN
-            RETURN pair.event_id
-        ENDIF
-    ENDFOR
-
-    ; Should never get to this point
-    RETURN -1
-ENDFCT
+    DECL BOOL connection_flag = FALSE
+    DECL EventType last_event = #NONE
+ENDDAT

@@ -53,6 +53,9 @@ class Robot : public IRobot {
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
+  virtual Status TurnOnDrives() override;
+  virtual Status TurnOffDrives() override;
+
  protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
@@ -68,7 +71,7 @@ class Robot : public IRobot {
  private:
   Status ParseIncomingXML(std::string_view xml_str);
   Status UpdateMotionState(std::string_view xml_str);
- 
+
  private:
   static constexpr char error_text[] =  "Not supported by plain RSI";
 };

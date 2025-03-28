@@ -44,6 +44,9 @@ class Client : public os::core::udp::communication::TCPClient {
   // TODO implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
 
+  Status TurnOnDrives();
+  Status TurnOffDrives();
+
  private:
   // Response structures
   enum EventType {
@@ -116,7 +119,7 @@ class Client : public os::core::udp::communication::TCPClient {
       "<Robot><Common><Status Mode=\"%d\" ControlMode=\"%d\" EStop=\"%d\" "
       "ErrorCode=\"%d\"></Status></Common></Robot>";
 
-  static constexpr char semantic_version_[] = "1.0.0";
+  static constexpr char SEMANTIC_VERSION[] = "1.0.0";
 
   InitializationData init_data_;
   EventResponse event_response_;

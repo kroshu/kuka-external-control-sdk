@@ -48,7 +48,7 @@ Status Robot::StopControlling() {
         return Status(ReturnCode::ERROR, "Failed to receive before sending stop signal");
     }
   }
-  
+
   if (!stop_send_str_view.has_value()) {
       result = {ReturnCode::ERROR, "Parsing last control signal to proper XML format failed"};
   } else if (!endpoint_.MessageSend(stop_send_str_view.value())) {
@@ -123,6 +123,14 @@ Status Robot::UpdateMotionState(std::string_view xml_str) {
   last_motion_state_.CreateFromXML(xml_str.data());
   last_ipoc_ = last_motion_state_.GetIpoc();
   return {ReturnCode::OK, "Parsed incoming RSI server message"};
+}
+
+Status Robot::TurnOnDrives() {
+  return {ReturnCode::UNSUPPORTED, "Turning on drives with plain RSI is not supported"};
+}
+
+Status Robot::TurnOffDrives() {
+  return {ReturnCode::UNSUPPORTED, "Turning off drives with plain RSI is not supported"};
 }
 
 };  // namespace kuka::external::control::kss

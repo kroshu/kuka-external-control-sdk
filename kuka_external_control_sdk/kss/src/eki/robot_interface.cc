@@ -65,4 +65,12 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
 
+Status Robot::TurnOnDrives() {
+  return tcp_client_.TurnOnDrives();
+}
+
+Status Robot::TurnOffDrives() {
+  return tcp_client_.TurnOffDrives();
+}
+
 };  // namespace kuka::external::control::kss
