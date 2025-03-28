@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
-#include "kuka/external-control-sdk/kss/mxa/robot_interface.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 #include "kuka/external-control-sdk/kss/robot.h"
 
@@ -22,9 +21,6 @@ namespace kuka::external::control::kss {
 Robot::Robot(Configuration config)
     {
       switch (config.installed_interface) {
-        case Configuration::InstalledInterface::MXA_RSI:
-          installed_interface_ = std::make_unique<kuka::external::control::kss::mxa::Robot>(config);
-          break;
         case Configuration::InstalledInterface::EKI_RSI:
           installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
           break;
