@@ -45,7 +45,7 @@ public:
     return measured_cartesian_positions_;
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetSignalValues() const {
+  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return measured_gpio_values_;
   }
 
@@ -141,7 +141,7 @@ public:
     }
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetSignalValues() const {
+  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return gpio_values_;
   }
 
