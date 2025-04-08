@@ -16,17 +16,23 @@
 #define KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
 #include "gpio_config.h"
 #include <cstdint>
+#include <memory>
 
 namespace kuka::external::control {
 class BaseGPIOValue {
 public:
   BaseGPIOValue() = default;
+  BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
+      : gpio_config_(std::move(gpio_config)) {}
   ~BaseGPIOValue() = default;
 
-  uint32_t const &GetGPIOId() const { return gpio_id_; }
-  void SetGPIOId(uint32_t id) { gpio_id_ = id; }
-  GPIOValueType const &GetValueType() const { return value_type_; }
-  void SetValueType(GPIOValueType type) { value_type_ = type; }
+  // uint32_t const &GetGPIOId() const { return gpio_id_; }
+  // void SetGPIOId(uint32_t id) { gpio_id_ = id; }
+  // GPIOValueType const &GetValueType() const { return value_type_; }
+  // void SetValueType(GPIOValueType type) { value_type_ = type; }
+  std::unique_ptr<BaseGPIOConfig> const &GetGPIOConfig() const {
+    return gpio_config_;
+  }
   bool const &GetBoolValue() const { return value_.bool_value_; }
   void SetBoolValue(bool value) { value_.bool_value_ = value; }
   void SetBoolValue(double value) {
@@ -46,8 +52,9 @@ public:
   }
 
 protected:
-  uint32_t gpio_id_;
-  GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
+  // uint32_t gpio_id_;
+  // GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
+  std::unique_ptr<BaseGPIOConfig> gpio_config_;
   union {
     bool bool_value_;
     double double_value_;

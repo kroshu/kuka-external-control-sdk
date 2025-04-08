@@ -23,6 +23,7 @@
 #include <string>
 
 #include "kuka/external-control-sdk/common/message_builder.h"
+#include "kuka/external-control-sdk/kss/gpio_value.h"
 
 namespace kuka::external::control::kss {
 
@@ -38,9 +39,14 @@ public:
     first_cartesian_position_index_ += kMessagePrefix.length();
     first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
 
+    // Create GPIO config list (Its only for testing)
+    std::unique_ptr<GPIOConfig> gpio_config_list[] = {
+        std::make_unique<GPIOConfig>(1, "GPIO_01", GPIOValueType::BOOL_VALUE),
+        std::make_unique<GPIOConfig>(2, "GPIO_02", GPIOValueType::BOOL_VALUE)};
     for (size_t i = 0; i < gpio_size; i++) {
       measured_gpio_values_.push_back(
-          std::make_shared<kuka::external::control::BaseGPIOValue>());
+          std::make_shared<kuka::external::control::kss::GPIOValue>(
+              std::move(gpio_config_list[i])));
     }
   }
 
@@ -82,10 +88,16 @@ public:
       : BaseControlSignal(dof), kInitialPositions(initial_positions) {
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
+
+    // Create GPIO config list (Its only for testing)
+    std::unique_ptr<GPIOConfig> gpio_config_list[] = {
+        std::make_unique<GPIOConfig>(1, "GPIO_01", GPIOValueType::BOOL_VALUE)};
     for (size_t i = 0; i < gpio_size; i++) {
       gpio_values_.push_back(
-          std::make_shared<kuka::external::control::BaseGPIOValue>());
+          std::make_shared<kuka::external::control::kss::GPIOValue>(
+              std::move(gpio_config_list[i])));
     }
+
     for (int i = 1; i <= dof; ++i) {
       joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) +
                                                    "=\"");

@@ -88,10 +88,10 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
     std::size_t dbl_length = 0;
     next_value_idx += kGpioAttributePrefix[i].length() + 1;
     if (next_value_idx < len) {
-      measured_gpio_values_[i]->SetGPIOId(i);
-      measured_gpio_values_[i]->SetValueType(GPIOValueType::BOOL_VALUE);
-      measured_gpio_values_[i]->SetBoolValue(
-          std::stod(&incoming_xml[next_value_idx], &dbl_length));
+      // TODO (Komaromi) We could change this to an overridable function so
+      // there is no need for * and static pointer cast
+      *std::static_pointer_cast<GPIOValue>(measured_gpio_values_[i]) =
+          std::stod(&incoming_xml[next_value_idx], &dbl_length);
     } else {
       throw std::invalid_argument(
           "Received XML is not valid for the given degree of freedom");
@@ -152,6 +152,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   AppendToXMLString(kGpioPrefix);
   for (size_t i = 0; i < kGpioAttributePrefix.size(); i++) {
     AppendToXMLString(kGpioAttributePrefix[i]);
+    // TODO (Komaromi) Do other value types
     AppendToXMLString(std::to_string(gpio_values_[i]->GetBoolValue()));
     AppendToXMLString("\"");
   }
