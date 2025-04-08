@@ -11,15 +11,16 @@ DEFDAT eki_communication
     CONST INT ROS_EKI_CONN_FLAG = 105
     CONST INT ROS_EKI_RECV_FLAG = 110
 
-    ; Helper constant for decoding axis type information
+    ; FOLD Helper constant for decoding axis type information
     CONST CHAR AXIS_TYPE_MAP[5, 16]
     AXIS_TYPE_MAP[1,] = "LINEAR"
     AXIS_TYPE_MAP[2,] = "NOT_USED" ; Not used
     AXIS_TYPE_MAP[3,] = "ROTATIONAL"
     AXIS_TYPE_MAP[4,] = "NOT_USED" ; Not used
     AXIS_TYPE_MAP[5,] = "ENDLESS"
+    ; ENDFOLD
 
-    ; Constants for easier mapping of event types to integers
+    ; FOLD Constants for easier mapping of event types to integers
     CONST INT EVENT_COUNT = 11
     DECL CONST EventIntPair EVENT_INT_PAIRS[11]
     EVENT_INT_PAIRS[1] = { event_type #STARTED, event_id 0 }
@@ -33,6 +34,7 @@ DEFDAT eki_communication
     EVENT_INT_PAIRS[9] = { event_type #NONE, event_id 8 }
     EVENT_INT_PAIRS[10] = { event_type #DRIVES_TURNED_ON, event_id 9 }
     EVENT_INT_PAIRS[11] = { event_type #DRIVES_TURNED_OFF, event_id 10 }
+    ; ENDFOLD
 
     DECL BOOL connection_flag = FALSE
     DECL EventType last_event = #NONE

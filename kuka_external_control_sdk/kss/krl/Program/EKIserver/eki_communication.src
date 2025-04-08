@@ -80,6 +80,7 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     IF ret.buff > 0 THEN
         ret = EKI_GetString(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_str[])
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
+        ret = EKI_GetString(INTERFACE_NAME[], "External/@OperationMode", command.operation_mode[])
     ELSE
         MsgNotify("No valid data received.")
         WAIT SEC 0.012

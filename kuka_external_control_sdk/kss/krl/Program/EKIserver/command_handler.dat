@@ -2,19 +2,30 @@
 &REL 11735
 &PARAM DISKPATH = KRC:\R1\Program\ROS
 DEFDAT command_handler PUBLIC
+    ; FOLD Custom enumerations
+    CONST INT STATE_COUNT = 3
     GLOBAL ENUM DriverState INITIALIZED, INACTIVE, ACTIVE
-    GLOBAL ENUM EventType NONE, INVALID, STARTED, STOPPED, CANCELLED, RESET_OK, ERROR, CONNECTED, SWITCH_OK, DRIVES_TURNED_ON, DRIVES_TURNED_OFF
-    GLOBAL ENUM CMDType CMD_NONE, CMD_CON, CMD_START, CMD_RESET, CMD_CANCEL, CMD_CHANGE, CMD_INVALID, CMD_DRIVES_ON, CMD_DRIVES_OFF
-    GLOBAL ENUM ControlMode INACTIVE, JOINT_POSITION, CART_POSITION
 
-    GLOBAL STRUC Command CHAR cmd_str[32], INT control_mode
+    GLOBAL ENUM EventType NONE, INVALID, STARTED, STOPPED, CANCELLED, RESET_OK, ERROR, CONNECTED, SWITCH_OK, DRIVES_TURNED_ON, DRIVES_TURNED_OFF
+
+    CONST INT CMD_COUNT = 9
+    GLOBAL ENUM CMDType CMD_NONE, CMD_CON, CMD_START, CMD_RESET, CMD_CANCEL, CMD_CHANGE, CMD_INVALID, CMD_DRIVES_ON, CMD_DRIVES_OFF, CMD_CHANGE_OP_MODE
+
+    GLOBAL CONST INT CONTROL_MODE_COUNT = 2
+    GLOBAL ENUM ControlMode INACTIVE, JOINT_POSITION, CART_POSITION
+    ; ENDFOLD
+
+    ; FOLD Custom structure types
+    GLOBAL STRUC Command CHAR cmd_str[32], INT control_mode, CHAR operation_mode[32]
     STRUC StringCommandPair CHAR cmd_string[32], CMDType cmd_type
+    STRUC StringStatePair CHAR state_string[32], DriverState state
+    STRUC StateIntPair DriverState state, INT valid_count
+    ; ENDFOLD
 
     DECL DriverState current_driver_state = #INITIALIZED
 
-    ; Constants for easier mapping of strings to command types
-    CONST INT CMD_COUNT = 8
-    DECL CONST StringCommandPair STRING_COMMAND_PAIRS[8]
+    ; FOLD Constants for mapping strings to command types
+    DECL CONST StringCommandPair STRING_COMMAND_PAIRS[9]
     STRING_COMMAND_PAIRS[1] = { cmd_string[] "CON", cmd_type #CMD_CON }
     STRING_COMMAND_PAIRS[2] = { cmd_string[] "START", cmd_type #CMD_START }
     STRING_COMMAND_PAIRS[3] = { cmd_string[] "RESET", cmd_type #CMD_RESET }
@@ -23,4 +34,37 @@ DEFDAT command_handler PUBLIC
     STRING_COMMAND_PAIRS[6] = { cmd_string[] "NONE", cmd_type #CMD_NONE }
     STRING_COMMAND_PAIRS[7] = { cmd_string[] "DRIVES_ON", cmd_type #CMD_DRIVES_ON }
     STRING_COMMAND_PAIRS[8] = { cmd_string[] "DRIVES_OFF", cmd_type #CMD_DRIVES_OFF }
+    STRING_COMMAND_PAIRS[9] = { cmd_string[] "CHANGE_OP_MODE", cmd_type #CMD_CHANGE_OP_MODE }
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping strings to driver states
+    DECL CONST StringStatePair STRING_STATE_PAIRS[3]
+    STRING_STATE_PAIRS[1] = { state_string "INITIALIZED", state #INITIALIZED }
+    STRING_STATE_PAIRS[2] = { state_string "INACTIVE", state #INACTIVE }
+    STRING_STATE_PAIRS[3] = { state_string "ACTIVE", state #ACTIVE }
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping driver states to valid commands
+    DECL CONST StateIntPair STATE_VALID_COUNTS[3]
+    STATE_VALID_COUNTS[1] = { state #INITIALIZED, valid_count 4 }
+    STATE_VALID_COUNTS[2] = { state #INACTIVE, valid_count 5 }
+    STATE_VALID_COUNTS[3] = { state #ACTIVE, valid_count 2 }
+
+    DECL CONST CMDType INIT_VALID_COMMANDS[16]
+    INIT_VALID_COMMANDS[1] = #CMD_CON
+    INIT_VALID_COMMANDS[2] = #CMD_CHANGE
+    INIT_VALID_COMMANDS[3] = #CMD_DRIVES_ON
+    INIT_VALID_COMMANDS[4] = #CMD_DRIVES_OFF
+
+    DECL CONST CMDType INACTIVE_VALID_COMMANDS[16]
+    INACTIVE_VALID_COMMANDS[1] = #CMD_START
+    INACTIVE_VALID_COMMANDS[2] = #CMD_CHANGE
+    INACTIVE_VALID_COMMANDS[3] = #CMD_CANCEL
+    INACTIVE_VALID_COMMANDS[4] = #CMD_DRIVES_ON
+    INACTIVE_VALID_COMMANDS[5] = #CMD_DRIVES_OFF
+
+    DECL CONST CMDType ACTIVE_VALID_COMMANDS[16]
+    ACTIVE_VALID_COMMANDS[1] = #CMD_CANCEL
+    ACTIVE_VALID_COMMANDS[2] = #CMD_RESET
+    ; ENDFOLD
 ENDDAT

@@ -46,7 +46,7 @@ GLOBAL DEF HandleCommand(cmd: IN)
         RETURN
     ENDIF
 
-    IF (ValidateCommand(cmd_enum)) THEN
+    IF IsCommandValid(cmd_enum) THEN
         SWITCH cmd_enum
             CASE #CMD_INVALID
                 SetLastEvent(#INVALID)
@@ -118,10 +118,11 @@ DEFFCT CMDType ParseCommand(cmd[]: IN)
     RETURN #CMD_INVALID
 ENDFCT
 
-DEFFCT BOOL ValidateCommand(cmd: IN)
+DEFFCT BOOL IsCommandValid(cmd: IN)
     DECL CMDType cmd
     CHAR cmd_string[32]
-    CHAR state_string[16]
+    CHAR state_string[32]
+    INT valid_command_count
 
     ; Info message
     cmd_string[] = CommandToString(cmd)
@@ -129,18 +130,23 @@ DEFFCT BOOL ValidateCommand(cmd: IN)
     MsgNotifyTextPar("Got command %1 while in state %2", "CommandHandler", 0, cmd_string[], state_string[])
 
     ; Actual check
-    IF (current_driver_state == #INITIALIZED) THEN
-        RETURN (cmd == #CMD_CON) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_DRIVES_ON) OR (cmd == #CMD_DRIVES_OFF)
-    ENDIF
-
-    IF (current_driver_state == #INACTIVE) THEN
-        RETURN (cmd == #CMD_START) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_CANCEL) OR (cmd == #CMD_DRIVES_ON) OR (cmd == #CMD_DRIVES_OFF)
-    ENDIF
-
-    ; If the driver is neither INITIALIZED nor INACTIVE, it must be ACTIVE
-    RETURN (cmd == #CMD_CANCEL) OR (cmd == #CMD_RESET)
+    valid_command_count = GetValidCommandCount()
+    SWITCH current_driver_state
+        CASE #INITIALIZED
+            RETURN IsCommandInArray(cmd, INIT_VALID_COMMANDS[], valid_command_count)
+        CASE #INACTIVE
+            RETURN IsCommandInArray(cmd, INACTIVE_VALID_COMMANDS[], valid_command_count)
+        CASE #ACTIVE
+            RETURN IsCommandInArray(cmd, ACTIVE_VALID_COMMANDS[], valid_command_count)
+    ENDSWITCH
 ENDFCT
 
+GLOBAL DEF SetCurrentDriverState(state: IN)
+    DECL DriverState state
+    current_driver_state = state
+END
+
+; Maps the command enum to its string representation
 DEFFCT CHAR [32] CommandToString(command: IN)
     DECL CMDType command
     DECL StringCommandPair pair
@@ -153,22 +159,51 @@ DEFFCT CHAR [32] CommandToString(command: IN)
         ENDIF
     ENDFOR
 
+    ; Unreachable
     RETURN "INVALID"
 ENDFCT
 
-DEFFCT CHAR [16] DriverStateToString(driver_state: IN)
+; Maps the driver state to its string representation
+DEFFCT CHAR [32] DriverStateToString(driver_state: IN)
     DECL DriverState driver_state
-    SWITCH driver_state
-        CASE #INITIALIZED
-            RETURN "INITIALIZED"
-        CASE #INACTIVE
-            RETURN "INACTIVE"
-        CASE #ACTIVE
-            RETURN "ACTIVE"
-    ENDSWITCH
+    INT idx
+
+    FOR idx = 1 TO STATE_COUNT
+        IF driver_state == STRING_STATE_PAIRS[idx].state THEN
+            RETURN STRING_STATE_PAIRS[idx].state_string
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "INVALID"
 ENDFCT
 
-GLOBAL DEF SetCurrentDriverState(state: IN)
-    DECL DriverState state
-    current_driver_state = state
-END
+; Returns the number of valid command enum values in the currently active driver state
+DEFFCT INT GetValidCommandCount()
+    INT idx
+
+    FOR idx = 1 TO STATE_COUNT
+        IF current_driver_state == STATE_VALID_COUNTS[idx].state THEN
+            RETURN STATE_VALID_COUNTS[idx].valid_count
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN -1
+ENDFCT
+
+; Checks if the specified command enum is present in the provided array
+DEFFCT BOOL IsCommandInArray(cmd: IN, array[]: IN, size: IN)
+    DECL CMDType cmd
+    DECL CMDType array[]
+    INT size
+    INT idx
+
+    FOR idx = 1 TO size
+        IF array[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT

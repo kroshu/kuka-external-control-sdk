@@ -4,7 +4,6 @@ DEFDAT program_handler
     STRUC ControlModeProgPair ControlMode mode, CHAR prog_name[64]
     STRUC ControlModeStringPair ControlMode mode, CHAR mode_string[32]
 
-    CONST INT CONTROL_MODE_COUNT = 2
     DECL CONST ControlModeProgPair CTRL_MODE_PROG_PAIRS[2]
     CTRL_MODE_PROG_PAIRS[1] = { mode #JOINT_POSITION, prog_name[] "R1/rsi_joint_pos()" }
     CTRL_MODE_PROG_PAIRS[2] = { mode #CART_POSITION, prog_name[] "R1/rsi_cart_pos()" }
