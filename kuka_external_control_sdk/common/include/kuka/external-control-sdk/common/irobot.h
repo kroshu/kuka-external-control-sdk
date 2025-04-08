@@ -95,9 +95,6 @@ class IRobot {
 
   virtual Status SwitchControlMode(ControlMode control_mode) = 0;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) = 0;
-
-  virtual Status TurnOnDrives() = 0;
-  virtual Status TurnOffDrives() = 0;
 };
 
 }  // namespace kuka::external::control

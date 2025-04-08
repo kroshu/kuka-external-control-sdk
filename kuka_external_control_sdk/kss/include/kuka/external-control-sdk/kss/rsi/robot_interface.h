@@ -16,13 +16,13 @@
 #define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
+#include "kuka/external-control-sdk/kss/ikssrobot.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss::rsi {
 
-class Robot : public IRobot {
+class Robot : public IKssRobot {
   // Special methods
  public:
   Robot(Configuration);

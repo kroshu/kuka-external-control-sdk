@@ -418,12 +418,4 @@ Status Robot::SetupUDPChannel() {
   return replier_setup;
 }
 
-Status Robot::TurnOnDrives() {
-  return {ReturnCode::UNSUPPORTED, "Turning on drives with the iiQKA driver is not supported"};
-}
-
-Status Robot::TurnOffDrives() {
-  return {ReturnCode::UNSUPPORTED, "Turning off drives with the iiQKA driver is not supported"};
-}
-
 };  // namespace kuka::external::control::iiqka

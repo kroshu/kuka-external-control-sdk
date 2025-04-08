@@ -22,13 +22,13 @@
 #include <variant>
 
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/ikssrobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss {
 
-class Robot : public IRobot {
+class Robot : public IKssRobot {
   // Special methods
  public:
   Robot(Configuration);
@@ -60,10 +60,10 @@ class Robot : public IRobot {
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
   virtual Status TurnOnDrives() override;
-  virtual Status TurnOffDrives() override;
+  virtual Status TurnOffDrives() override ;
 
  private:
-  std::unique_ptr<IRobot> installed_interface_ = nullptr;
+  std::unique_ptr<IKssRobot> installed_interface_ = nullptr;
 };
 
 }  // namespace kuka::external::control::kss
