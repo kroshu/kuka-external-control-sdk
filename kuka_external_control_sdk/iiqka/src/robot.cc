@@ -217,7 +217,7 @@ Status Robot::CreateMonitoringSubscription(
 
   stop_monitoring_ = false;
 
-  monitoring_thread_ = std::thread([&]() {
+  monitoring_thread_ = std::thread([=]() {
     MotionState internal_motion_state(config_.dof);
 
     ArenaWrapper<kuka::ecs::v1::MotionStateExternal> monitoring_arena;
