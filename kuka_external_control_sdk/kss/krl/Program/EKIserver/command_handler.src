@@ -133,11 +133,11 @@ DEFFCT BOOL IsCommandValid(cmd: IN)
     valid_command_count = GetValidCommandCount()
     SWITCH current_driver_state
         CASE #INITIALIZED
-            RETURN IsCommandInArray(cmd, INIT_VALID_COMMANDS[], valid_command_count)
+            RETURN IsCommandValidInInit(cmd, valid_command_count)
         CASE #INACTIVE
-            RETURN IsCommandInArray(cmd, INACTIVE_VALID_COMMANDS[], valid_command_count)
+            RETURN IsCommandValidInInactive(cmd, valid_command_count)
         CASE #ACTIVE
-            RETURN IsCommandInArray(cmd, ACTIVE_VALID_COMMANDS[], valid_command_count)
+            RETURN IsCommandValidInActive(cmd, valid_command_count)
     ENDSWITCH
 ENDFCT
 
@@ -170,7 +170,7 @@ DEFFCT CHAR [32] DriverStateToString(driver_state: IN)
 
     FOR idx = 1 TO STATE_COUNT
         IF driver_state == STRING_STATE_PAIRS[idx].state THEN
-            RETURN STRING_STATE_PAIRS[idx].state_string
+            RETURN STRING_STATE_PAIRS[idx].state_string[]
         ENDIF
     ENDFOR
 
@@ -192,15 +192,44 @@ DEFFCT INT GetValidCommandCount()
     RETURN -1
 ENDFCT
 
-; Checks if the specified command enum is present in the provided array
-DEFFCT BOOL IsCommandInArray(cmd: IN, array[]: IN, size: IN)
+; Checks if the specified command enum is a valid command in the initialized state
+DEFFCT BOOL IsCommandValidInInit(cmd: IN, size: IN)
     DECL CMDType cmd
-    DECL CMDType array[]
     INT size
     INT idx
 
     FOR idx = 1 TO size
-        IF array[idx] == cmd THEN
+        IF INIT_VALID_COMMANDS[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT
+
+; Checks if the specified command enum is a valid command in the inactive state
+DEFFCT BOOL IsCommandValidInInactive(cmd: IN, size: IN)
+    DECL CMDType cmd
+    INT size
+    INT idx
+
+    FOR idx = 1 TO size
+        IF INACTIVE_VALID_COMMANDS[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT
+
+; Checks if the specified command enum is a valid command in the active state
+DEFFCT BOOL IsCommandValidInActive(cmd: IN, size: IN)
+    DECL CMDType cmd
+    INT size
+    INT idx
+
+    FOR idx = 1 TO size
+        IF ACTIVE_VALID_COMMANDS[idx] == cmd THEN
             RETURN TRUE
         ENDIF
     ENDFOR
