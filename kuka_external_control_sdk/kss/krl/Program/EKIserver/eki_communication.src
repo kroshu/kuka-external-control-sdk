@@ -47,6 +47,7 @@ END
 DEF EKI_ServerReset()
     DECL EKI_STATUS ret
     ROS_ResetCommandHandler()
+    ROS_ResetProgramHandler()
     ret = EKI_Clear(INTERFACE_NAME[])
     EKI_ServerStart()
 END

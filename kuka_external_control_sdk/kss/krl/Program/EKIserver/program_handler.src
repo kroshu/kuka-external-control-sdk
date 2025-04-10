@@ -283,3 +283,8 @@ GLOBAL DEFFCT BOOL ROS_SelectCycleTime(cycle_time_int: IN)
     MsgNotify("Cycle time set to %1", "ProgramHandler",, ROS_CycleTimeToString(selected_cycle_time))
     RETURN TRUE
 ENDFCT
+
+GLOBAL DEF ROS_ResetProgramHandler()
+    selected_control_mode = #INACTIVE
+    selected_cycle_time = #RSI_12MS
+END
