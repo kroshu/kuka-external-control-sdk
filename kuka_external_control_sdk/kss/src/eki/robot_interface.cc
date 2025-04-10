@@ -62,11 +62,12 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 }
 
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
-  return {ReturnCode::UNSUPPORTED, "Only KssEventHandler instances are allowed"};
+  return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
 
-Status Robot::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
-  return tcp_client_.RegisterEventHandler(std::move(event_handler));
+Status Robot::RegisterKssEventHandlerExtension(
+  std::unique_ptr<IKssEventHandlerExtension>&& extension) {
+  return tcp_client_.RegisterKssEventHandlerExtension(std::move(extension));
 }
 
 Status Robot::TurnOnDrives() {

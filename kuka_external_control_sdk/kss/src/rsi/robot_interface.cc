@@ -80,11 +80,11 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&&) {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
+Status Robot::RegisterKssEventHandlerExtension(std::unique_ptr<IKssEventHandlerExtension>&&) {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 

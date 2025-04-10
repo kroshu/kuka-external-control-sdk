@@ -57,7 +57,8 @@ class Robot : public IKssRobot {
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) override;
+  virtual Status RegisterKssEventHandlerExtension(
+    std::unique_ptr<IKssEventHandlerExtension>&& extension) override;
 
   // KSS-specific functionality
   virtual Status TurnOnDrives() override;

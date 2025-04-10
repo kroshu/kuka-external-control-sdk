@@ -20,7 +20,7 @@
 #include <mutex>
 #include <thread>
 
-#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/ikssrobot.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/tcp_client.h"
 
 namespace kuka::external::control::kss::eki {
@@ -39,7 +39,10 @@ class Client : public os::core::udp::communication::TCPClient {
   // Stops RSI program
   Status StopRSI();
 
-  Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler);
+  Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler);
+
+  Status RegisterKssEventHandlerExtension(
+    std::unique_ptr<IKssEventHandlerExtension>&& extension);
 
   // TODO implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
@@ -120,7 +123,7 @@ class Client : public os::core::udp::communication::TCPClient {
   static constexpr char change_control_mode_req_format_[] =
       "<External REQTYPE=\"CHANGE\" ID=\"%d\" ControlMode=\"%d\"></External>";
   static constexpr char change_cycle_time_req_format_[] =
-      "<External REQTYPE=\"CHANGE_CYCLE_TIME\" ID=\"%d\" CycleTime=\"%d\"></External>";
+      "<External REQTYPE=\"CHANGE_CYCLE_TIME\" CycleTime=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
       "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
@@ -143,7 +146,8 @@ class Client : public os::core::udp::communication::TCPClient {
 
   // Event handling
   std::mutex event_handler_mutex_;
-  std::unique_ptr<KssEventHandler> event_handler_;
+  std::unique_ptr<EventHandler> event_handler_;
+  std::unique_ptr<IKssEventHandlerExtension> event_handler_extension_;
   bool event_handler_set_ = false;
 };
 

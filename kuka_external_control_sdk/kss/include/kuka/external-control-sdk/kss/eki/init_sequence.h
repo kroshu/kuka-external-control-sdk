@@ -15,7 +15,7 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_INIT_SEQUENCE_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_INIT_SEQUENCE_H_
 
-#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/ikssrobot.h"
 
 namespace kuka::external::control::kss::eki {
 

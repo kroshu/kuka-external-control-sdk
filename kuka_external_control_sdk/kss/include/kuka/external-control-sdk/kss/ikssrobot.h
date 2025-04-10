@@ -43,9 +43,9 @@ struct InitializationData {
   u_int8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 };
 
-class KssEventHandler : public EventHandler {
+class IKssEventHandlerExtension {
  public:
-  virtual void OnConnected(const InitializationData& init_data) {}
+  virtual void OnConnected(const InitializationData& init_data) = 0;
 };
 
 // Interface for KSS-specific robot functionalities
@@ -55,7 +55,8 @@ class IKssRobot : public IRobot {
   virtual Status TurnOffDrives() = 0;
   virtual Status SetCycleTime(Configuration::CycleTime cycle_time) = 0;
 
-  virtual Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) = 0;
+  virtual Status RegisterKssEventHandlerExtension(
+    std::unique_ptr<IKssEventHandlerExtension>&& extension) = 0;
 };
 
 }  // namespace kuka::external::control::kss

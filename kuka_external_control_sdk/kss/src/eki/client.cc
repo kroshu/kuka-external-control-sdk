@@ -129,6 +129,7 @@ void Client::StartReceiverThread() {
 void Client::HandleEvent(const EventResponse& event) {
   std::lock_guard<std::mutex> lck(event_handler_mutex_);
   switch (event.event_type) {
+    // Generic events
     case EventType::STARTED:
       event_handler_->OnSampling();
       return;
@@ -141,11 +142,12 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::ERROR:
       event_handler_->OnError(event.message);
       return;
-    case EventType::CONNECTED:
-      event_handler_->OnConnected(init_data_);
-      return;
     case EventType::SWITCH_OK:
       event_handler_->OnControlModeSwitch(event.message);
+      return;
+    // KSS-specific events
+    case EventType::CONNECTED:
+      event_handler_extension_->OnConnected(init_data_);
       return;
     default:
       return;
@@ -257,7 +259,7 @@ bool Client::ParseMessage(char* data_to_parse) {
   return ParseEvent(data_to_parse) || ParseStatus(data_to_parse);
 }
 
-Status Client::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
+Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   if (event_handler == nullptr) {
     return Status(ReturnCode::ERROR,
                   "RegisterEventHandler failed: please provide a valid pointer.");
@@ -270,6 +272,17 @@ Status Client::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_han
 
   return Status(ReturnCode::OK);
 };
+
+Status Client::RegisterKssEventHandlerExtension(
+  std::unique_ptr<IKssEventHandlerExtension>&& extension) {
+  if (extension == nullptr) {
+    return Status(ReturnCode::ERROR,
+        "RegisterKssEventHandlerExtension failed: please provide a valid pointer.");
+  }
+
+  event_handler_extension_ = std::move(extension);
+  return Status(ReturnCode::OK);
+}
 
 Status Client::TurnOnDrives() {
   return SendCommand("DRIVES_ON");

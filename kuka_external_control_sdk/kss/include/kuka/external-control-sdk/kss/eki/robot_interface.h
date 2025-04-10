@@ -41,7 +41,8 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
       ControlMode control_mode) override;  // call EKI service, only in inactive
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler)
       override;  // EKI response / new EKI client-server with external the service
-  virtual Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) override;
+  virtual Status RegisterKssEventHandlerExtension(
+    std::unique_ptr<IKssEventHandlerExtension>&& extension) override;
 
   virtual Status TurnOnDrives() override;
   virtual Status TurnOffDrives() override;

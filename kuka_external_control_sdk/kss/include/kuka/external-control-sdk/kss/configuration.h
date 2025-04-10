@@ -43,7 +43,7 @@ struct Configuration {
   enum class CycleTime {
       RSI_4MS = 0,
       RSI_12MS = 1,
-  }
+  };
 
   CycleTime cycle_time = CycleTime::RSI_12MS;
 
