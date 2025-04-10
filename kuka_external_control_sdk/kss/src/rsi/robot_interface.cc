@@ -84,6 +84,10 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
+Status Robot::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
 Status Robot::SendControlSignal() {
   if (control_signal_ == nullptr) {
     return {ReturnCode::ERROR,
@@ -131,6 +135,10 @@ Status Robot::TurnOnDrives() {
 
 Status Robot::TurnOffDrives() {
   return {ReturnCode::UNSUPPORTED, "Turning off drives with plain RSI is not supported"};
+}
+
+Status Robot::SetCycleTime(Configuration::CycleTime) {
+  return {ReturnCode::UNSUPPORTED, "Setting RSI cycle time with plain RSI is not supported"};
 }
 
 };  // namespace kuka::external::control::kss

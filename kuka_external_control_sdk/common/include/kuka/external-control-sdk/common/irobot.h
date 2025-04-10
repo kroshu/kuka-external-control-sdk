@@ -25,29 +25,6 @@
 
 namespace kuka::external::control {
 
-enum AxisType {
-  LINEAR,
-  ROTATIONAL,
-  ENDLESS,
-  UNKOWN,
-};
-
-struct InitializationData {
-  std::string semantic_version;
-  u_int64_t ipoc;
-  u_int8_t num_axes;
-  u_int8_t num_external_axes;
-  std::string model_name;
-  std::string hw_version;
-  std::string sw_version;
-  std::vector<AxisType> axis_type;
-  std::vector<int16_t> ratio_numerator;
-  std::vector<int16_t> ratio_denominator;
-  std::vector<int16_t> max_rpm;
-
-  u_int8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
-};
-
 class EventHandler {
  public:
   virtual ~EventHandler() = default;
@@ -56,7 +33,6 @@ class EventHandler {
   virtual void OnControlModeSwitch(const std::string& reason) {}
   virtual void OnStopped(const std::string& reason) {}
   virtual void OnError(const std::string& reason) {}
-  virtual void OnConnected(const InitializationData& init_data) {}
 };
 
 enum class ControlMode {

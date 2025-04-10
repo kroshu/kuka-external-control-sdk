@@ -40,13 +40,13 @@ GLOBAL DEF EKI_ServerStart()
     ; Init data recv flag - will be set TRUE internally by EKI after data is received
     $FLAG[ROS_EKI_RECV_FLAG] = FALSE
 
-    ; TODO: check ret values
     ret = EKI_Init(INTERFACE_NAME[])
     ret = EKI_Open(INTERFACE_NAME[])
 END
 
 DEF EKI_ServerReset()
     DECL EKI_STATUS ret
+    ROS_ResetCommandHandler()
     ret = EKI_Clear(INTERFACE_NAME[])
     EKI_ServerStart()
 END
@@ -59,6 +59,7 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     ; Init cmd
     command.cmd_str[] = "None"
     command.control_mode = -1
+    command.cycle_time = -1
 
     ; Verify a valid connection
     IF (NOT IsClientConnected()) THEN
@@ -80,7 +81,7 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     IF ret.buff > 0 THEN
         ret = EKI_GetString(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_str[])
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
-        ret = EKI_GetString(INTERFACE_NAME[], "External/@OperationMode", command.operation_mode[])
+        ret = EKI_GetInt(INTERFACE_NAME[], "External/@CycleTime", command.cycle_time)
     ELSE
         MsgNotify("No valid data received.")
         WAIT SEC 0.012
@@ -88,9 +89,9 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
 END
 
 GLOBAL DEF HandleConnection()
-    IF (IsClientConnected() <> connection_flag) THEN
+    IF IsClientConnected() <> connection_flag THEN
         connection_flag = IsClientConnected()
-        IF (IsClientConnected()) THEN
+        IF IsClientConnected() THEN
             MsgNotify("External client connected")
         ELSE
             MsgNotify("External client disconnected")
@@ -108,8 +109,8 @@ GLOBAL DEF PublishEvent()
     ; Before publishing a response to a command, select the relevant part of the XML
     x_path_send[] = "Robot/Common"
 
-    IF (GetLastEvent() <> #NONE) THEN
-        IF (NOT IsClientConnected()) THEN
+    IF GetLastEvent() <> #NONE THEN
+        IF NOT IsClientConnected() THEN
             MsgNotify("External client is not connected when trying to send event.")
             RETURN
         ENDIF
@@ -122,14 +123,7 @@ GLOBAL DEF PublishEvent()
                 WriteInitDataToChannel()
                 x_path_send[] = "Robot"
             CASE #SWITCH_OK
-                SWITCH GetControlMode()
-                    CASE #JOINT_POSITION
-                        event_msg[] = "joint position control"
-                    CASE #CART_POSITION
-                        event_msg[] = "cartesian position control"
-                    DEFAULT
-                        event_msg[] = "inactive control"
-                ENDSWITCH
+                event_msg[] = ROS_GetSelCtrlModeStr()
                 ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
         ENDSWITCH
 
@@ -223,16 +217,14 @@ DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
 END
 
 DEFFCT INT GetEventId()
-    DECL EventIntPair pair
     INT idx
 
     FOR idx = 1 TO EVENT_COUNT
-        pair = EVENT_INT_PAIRS[idx]
-        IF (last_event == pair.event_type) THEN
-            RETURN pair.event_id
+        IF last_event == EVENT_TYPE_TUPLES[idx].event_type THEN
+            RETURN EVENT_TYPE_TUPLES[idx].event_type_int
         ENDIF
     ENDFOR
 
-    ; Should never get to this point
+    ; Unreachable
     RETURN -1
 ENDFCT

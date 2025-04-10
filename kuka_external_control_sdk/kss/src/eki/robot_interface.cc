@@ -62,6 +62,10 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 }
 
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+  return {ReturnCode::UNSUPPORTED, "Only KssEventHandler instances are allowed"};
+}
+
+Status Robot::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
 
@@ -71,6 +75,10 @@ Status Robot::TurnOnDrives() {
 
 Status Robot::TurnOffDrives() {
   return tcp_client_.TurnOffDrives();
+}
+
+Status Robot::SetCycleTime(Configuration::CycleTime cycle_time) {
+  return tcp_client_.SetCycleTime(cycle_time);
 }
 
 };  // namespace kuka::external::control::kss

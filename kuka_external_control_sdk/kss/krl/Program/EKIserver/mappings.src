@@ -1,0 +1,82 @@
+&ACCESS  RVP
+DEF mappings()
+END
+
+; Returns the control mode associated with the given integer
+GLOBAL DEFFCT ControlMode ROS_IntToControlMode(control_mode_int: IN)
+    INT control_mode_int
+    INT idx
+
+    FOR idx = 1 TO CONTROL_MODE_COUNT
+        IF CONTROL_MODE_TUPLES[idx].control_mode_int == control_mode_int THEN
+            RETURN CONTROL_MODE_TUPLES[idx].control_mode
+        ENDIF
+    ENDFOR
+
+    RETURN #INACTIVE
+ENDFCT
+
+; Returns the string representation of the specified control mode
+GLOBAL DEFFCT CHAR [32] ROS_ControlModeToString(control_mode: IN)
+    DECL ControlMode control_mode
+    INT idx
+
+    FOR idx = 1 TO CONTROL_MODE_COUNT
+        IF CONTROL_MODE_TUPLES[idx].control_mode == control_mode THEN
+            RETURN CONTROL_MODE_TUPLES[idx].control_mode_string[]
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "NOT_FOUND"
+ENDFCT
+
+; Return the cycle time associated with the given integer
+GLOBAL DEFFCT ROS_CycleTime ROS_IntToCycleTime(cycle_time_int: IN)
+    INT cycle_time_int
+    INT idx
+
+    FOR idx = 1 TO CYCLE_TIME_COUNT
+        IF CYCLE_TIME_TUPLES[idx].cycle_time_int == cycle_time_int THEN
+            RETURN CYCLE_TIME_TUPLES[idx].cycle_time
+        ENDIF
+    ENDFOR
+
+    RETURN #NONE_CYCLE_TIME
+ENDFCT
+
+; Returns the string representation of the specified cycle time
+GLOBAL DEFFCT CHAR [32] ROS_CycleTimeToString(cycle_time: IN)
+    DECL ROS_CycleTime cycle_time
+    INT idx
+
+    FOR idx = 1 TO CYCLE_TIME_COUNT
+        IF CYCLE_TIME_TUPLES[idx].cycle_time == cycle_time THEN
+            RETURN CYCLE_TIME_TUPLES[idx].cycle_time_string[]
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "NOT_FOUND"
+ENDFCT
+
+; Maps the specifed control mode and cycle time to a program name if available
+GLOBAL DEF ROS_GetProgramName(control_mode: IN, cycle_time: IN, program_name: OUT)
+    DECL ControlMode control_mode
+    DECL ROS_CycleTime cycle_time
+    CHAR program_name[]
+    INT idx
+    BOOL control_mode_ok
+    BOOL cycle_time_ok
+
+    FOR idx = 1 TO PROGRAM_CONFIG_COUNT
+        control_mode_ok = PROGRAM_CONFIGS[idx].control_mode == control_mode
+        cycle_time_ok = PROGRAM_CONFIGS[idx].cycle_time == cycle_time
+        IF control_mode_ok AND cycle_time_ok THEN
+            program_name[] = PROGRAM_CONFIGS[idx].program[]
+            RETURN
+        ENDIF
+    ENDFOR
+
+    MsgNotify("Invalid program configuration provided", "Mappings")
+END

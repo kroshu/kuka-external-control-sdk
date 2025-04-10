@@ -21,7 +21,6 @@
 #include <mutex>
 #include <variant>
 
-#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/ikssrobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
@@ -58,9 +57,12 @@ class Robot : public IKssRobot {
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) override;
 
+  // KSS-specific functionality
   virtual Status TurnOnDrives() override;
   virtual Status TurnOffDrives() override ;
+  virtual Status SetCycleTime(Configuration::CycleTime cycle_time) override;
 
  private:
   std::unique_ptr<IKssRobot> installed_interface_ = nullptr;

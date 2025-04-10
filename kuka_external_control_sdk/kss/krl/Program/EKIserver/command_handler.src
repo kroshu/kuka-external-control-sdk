@@ -36,12 +36,11 @@ END
 GLOBAL DEF HandleCommand(cmd: IN)
     DECL Command cmd
     DECL CMDType cmd_enum
-    DECL BOOL cmd_success
     DECL ControlMode ctrl_mode
 
     cmd_enum = ParseCommand(cmd.cmd_str[])
 
-    IF (cmd_enum == #CMD_NONE) THEN
+    IF cmd_enum == #CMD_NONE THEN
         ; If nothing was received, just RETURN
         RETURN
     ENDIF
@@ -53,41 +52,34 @@ GLOBAL DEF HandleCommand(cmd: IN)
             CASE #CMD_CON
                 SetLastEvent(#CONNECTED)
             CASE #CMD_START
-                cmd_success = StartProgram(GetProgName(GetControlMode()))
-                IF (cmd_success) THEN
+                IF ROS_StartProgram() THEN
                     current_driver_state = #Active
                     SetLastEvent(#STARTED)
                 ELSE
                     SetLastEvent(#ERROR)
                 ENDIF
             CASE #CMD_CANCEL
-                cmd_success = CancelProgram()
-                IF cmd_success THEN
+                IF CancelProgram() THEN
                     current_driver_state = #Initialized
-                    SetControlMode(#INACTIVE)
+                    ROS_SelectControlMode(#INACTIVE)
                     SetLastEvent(#CANCELLED)
                 ELSE
                     SetLastEvent(#ERROR)
                 ENDIF
             CASE #CMD_RESET
-                cmd_success = ResetProgram()
-                IF cmd_success THEN
+                IF ResetProgram() THEN
                     current_driver_state = #INACTIVE
                     SetLastEvent(#RESET_OK)
                 ELSE
                     SetLastEvent(#ERROR)
                 ENDIF
             CASE #CMD_CHANGE
-                SWITCH cmd.control_mode
-                    CASE 1
-                        ctrl_mode = #JOINT_POSITION
-                    CASE 5
-                        ctrl_mode = #CART_POSITION
-                    DEFAULT
-                        SetLastEvent(#ERROR)
-                        RETURN
-                ENDSWITCH
-                SetControlMode(ctrl_mode)
+                ctrl_mode = ROS_IntToControlMode(cmd.control_mode)
+                IF ctrl_mode == #INACTIVE THEN
+                    SetLastEvent(#ERROR)
+                    RETURN
+                ENDIF
+                ROS_SelectControlMode(ctrl_mode)
                 current_driver_state = #INACTIVE
                 SetLastEvent(#SWITCH_OK)
             CASE #CMD_DRIVES_ON
@@ -96,6 +88,12 @@ GLOBAL DEF HandleCommand(cmd: IN)
             CASE #CMD_DRIVES_OFF
                 $DRIVES_ENABLE = FALSE
                 SetLastEvent(#DRIVES_TURNED_OFF)
+            CASE #CMD_CHANGE_CYCLE_TIME
+                IF NOT ROS_SelectCycleTime(cmd.cycle_time) THEN
+                    SetLastEvent(#ERROR)
+                    RETURN
+                ENDIF
+                SetLastEvent(#CYCLE_TIME_CHANGED)
         ENDSWITCH
     ELSE
         SetLastEvent(#INVALID)
@@ -105,13 +103,11 @@ END
 
 DEFFCT CMDType ParseCommand(cmd[]: IN)
     CHAR cmd[]
-    DECL StringCommandPair pair
     INT idx
 
     FOR idx = 1 TO CMD_COUNT
-        pair = STRING_COMMAND_PAIRS[idx]
-        IF (StrComp(cmd[], pair.cmd_string[], #NOT_CASE_SENS)) THEN
-            RETURN pair.cmd_type
+        IF (StrComp(cmd[], STRING_COMMAND_PAIRS[idx].cmd_string[], #NOT_CASE_SENS)) THEN
+            RETURN STRING_COMMAND_PAIRS[idx].cmd_type
         ENDIF
     ENDFOR
 
@@ -122,7 +118,6 @@ DEFFCT BOOL IsCommandValid(cmd: IN)
     DECL CMDType cmd
     CHAR cmd_string[32]
     CHAR state_string[32]
-    INT valid_command_count
 
     ; Info message
     cmd_string[] = CommandToString(cmd)
@@ -130,14 +125,13 @@ DEFFCT BOOL IsCommandValid(cmd: IN)
     MsgNotifyTextPar("Got command %1 while in state %2", "CommandHandler", 0, cmd_string[], state_string[])
 
     ; Actual check
-    valid_command_count = GetValidCommandCount()
     SWITCH current_driver_state
         CASE #INITIALIZED
-            RETURN IsCommandValidInInit(cmd, valid_command_count)
+            RETURN IsCommandValidInInit(cmd)
         CASE #INACTIVE
-            RETURN IsCommandValidInInactive(cmd, valid_command_count)
+            RETURN IsCommandValidInInactive(cmd)
         CASE #ACTIVE
-            RETURN IsCommandValidInActive(cmd, valid_command_count)
+            RETURN IsCommandValidInActive(cmd)
     ENDSWITCH
 ENDFCT
 
@@ -178,27 +172,12 @@ DEFFCT CHAR [32] DriverStateToString(driver_state: IN)
     RETURN "INVALID"
 ENDFCT
 
-; Returns the number of valid command enum values in the currently active driver state
-DEFFCT INT GetValidCommandCount()
-    INT idx
-
-    FOR idx = 1 TO STATE_COUNT
-        IF current_driver_state == STATE_VALID_COUNTS[idx].state THEN
-            RETURN STATE_VALID_COUNTS[idx].valid_count
-        ENDIF
-    ENDFOR
-
-    ; Unreachable
-    RETURN -1
-ENDFCT
-
 ; Checks if the specified command enum is a valid command in the initialized state
-DEFFCT BOOL IsCommandValidInInit(cmd: IN, size: IN)
+DEFFCT BOOL IsCommandValidInInit(cmd: IN)
     DECL CMDType cmd
-    INT size
     INT idx
 
-    FOR idx = 1 TO size
+    FOR idx = 1 TO INITIALIZED_VALID_COUNT
         IF INIT_VALID_COMMANDS[idx] == cmd THEN
             RETURN TRUE
         ENDIF
@@ -208,12 +187,11 @@ DEFFCT BOOL IsCommandValidInInit(cmd: IN, size: IN)
 ENDFCT
 
 ; Checks if the specified command enum is a valid command in the inactive state
-DEFFCT BOOL IsCommandValidInInactive(cmd: IN, size: IN)
+DEFFCT BOOL IsCommandValidInInactive(cmd: IN)
     DECL CMDType cmd
-    INT size
     INT idx
 
-    FOR idx = 1 TO size
+    FOR idx = 1 TO INACTIVE_VALID_COUNT
         IF INACTIVE_VALID_COMMANDS[idx] == cmd THEN
             RETURN TRUE
         ENDIF
@@ -223,12 +201,11 @@ DEFFCT BOOL IsCommandValidInInactive(cmd: IN, size: IN)
 ENDFCT
 
 ; Checks if the specified command enum is a valid command in the active state
-DEFFCT BOOL IsCommandValidInActive(cmd: IN, size: IN)
+DEFFCT BOOL IsCommandValidInActive(cmd: IN)
     DECL CMDType cmd
-    INT size
     INT idx
 
-    FOR idx = 1 TO size
+    FOR idx = 1 TO ACTIVE_VALID_COUNT
         IF ACTIVE_VALID_COMMANDS[idx] == cmd THEN
             RETURN TRUE
         ENDIF
@@ -236,3 +213,8 @@ DEFFCT BOOL IsCommandValidInActive(cmd: IN, size: IN)
 
     RETURN FALSE
 ENDFCT
+
+; Resets the command handler state. Should be called whenever the external client disconnects.
+GLOBAL DEF ROS_ResetCommandHandler()
+    current_driver_state = #INITIALIZED
+END

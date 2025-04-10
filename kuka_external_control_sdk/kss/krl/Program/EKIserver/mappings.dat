@@ -1,0 +1,29 @@
+&ACCESS RV
+DEFDAT mappings PUBLIC
+    ; FOLD Custom structure types
+    STRUC ControlModeTuple ControlMode control_mode, CHAR control_mode_string[32], INT control_mode_int
+    STRUC CycleTimeTuple ROS_CycleTime cycle_time, CHAR cycle_time_string[32], INT cycle_time_int
+    STRUC ProgramConfiguration ControlMode control_mode, ROS_CycleTime cycle_time, CHAR program[64]
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping control modes to strings/integers and vice versa
+    DECL CONST ControlModeTuple CONTROL_MODE_TUPLES[3]
+    CONTROL_MODE_TUPLES[1] = { control_mode #INACTIVE, control_mode_string[] "Inactive Control", control_mode_int -1 }
+    CONTROL_MODE_TUPLES[2] = { control_mode #JOINT_POSITION, control_mode_string[] "Joint Position Control", control_mode_int 1 }
+    CONTROL_MODE_TUPLES[3] = { control_mode #CART_POSITION, control_mode_string[] "Cartesian Position Control", control_mode_int 5 }
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping strings to ROS_CycleTime values and vice versa
+    DECL CONST CycleTimeTuple CYCLE_TIME_TUPLES[3]
+    CYCLE_TIME_TUPLES[1] = { cycle_time #NONE_CYCLE_TIME, cycle_time_string[] "NONE", cycle_time_int -1 }
+    CYCLE_TIME_TUPLES[2] = { cycle_time #RSI_4MS, cycle_time_string[] "RSI_4MS", cycle_time_int 0 }
+    CYCLE_TIME_TUPLES[3] = { cycle_time #RSI_12MS, cycle_time_string[] "RSI_12MS", cycle_time_int 1 }
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping program configurations to programs to run
+    CONST INT PROGRAM_CONFIG_COUNT = 2
+    DECL CONST ProgramConfiguration PROGRAM_CONFIGS[2]
+    PROGRAM_CONFIGS[1] = { control_mode #JOINT_POSITION, cycle_time #RSI_4MS, program[] "R1/rsi_joint_pos_4ms()" }
+    PROGRAM_CONFIGS[2] = { control_mode #JOINT_POSITION, cycle_time #RSI_12MS, program[] "R1/rsi_joint_pos_12ms()" }
+    ; ENDFOLD
+ENDDAT

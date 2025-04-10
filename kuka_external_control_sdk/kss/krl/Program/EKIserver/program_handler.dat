@@ -1,19 +1,17 @@
 &ACCESS RV3
 &PARAM DISKPATH = KRC:\R1\Program\ROS
-DEFDAT program_handler
-    STRUC ControlModeProgPair ControlMode mode, CHAR prog_name[64]
-    STRUC ControlModeStringPair ControlMode mode, CHAR mode_string[32]
-
-    DECL CONST ControlModeProgPair CTRL_MODE_PROG_PAIRS[2]
-    CTRL_MODE_PROG_PAIRS[1] = { mode #JOINT_POSITION, prog_name[] "R1/rsi_joint_pos()" }
-    CTRL_MODE_PROG_PAIRS[2] = { mode #CART_POSITION, prog_name[] "R1/rsi_cart_pos()" }
-
-    DECL CONST ControlModeStringPair CTRL_MODE_STRING_PAIRS[2]
-    CTRL_MODE_STRING_PAIRS[1] = { mode #JOINT_POSITION, mode_string[] "Joint Position Control" }
-    CTRL_MODE_STRING_PAIRS[2] = { mode #CART_POSITION, mode_string[] "Cartesian Position Control" }
+DEFDAT program_handler PUBLIC
+    ; FOLD Custom enumerations
+    GLOBAL CONST INT CYCLE_TIME_COUNT = 3
+    GLOBAL ENUM ROS_CycleTime NONE_CYCLE_TIME, RSI_4MS, RSI_12MS
+    ; ENDFOLD
 
     CONST INT INTEGER_MAX = 2147483647
     DECL STATE_T statement_state
     DECL MODUS_T command_mode = #SYNC
-    DECL ControlMode control_mode = #INACTIVE
+
+    ; FOLD Program handler state variables
+    DECL ControlMode selected_control_mode = #INACTIVE
+    DECL ROS_CycleTime selected_cycle_time = #RSI_12MS
+    ; ENDFOLD
 ENDDAT

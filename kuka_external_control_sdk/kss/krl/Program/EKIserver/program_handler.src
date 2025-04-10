@@ -31,26 +31,12 @@ DEF program_handler()
     ; POSSIBILITY OF SUCH DAMAGE.
 END
 
-GLOBAL DEFFCT BOOL StartProgram(program_name: IN)
-    ;FOLD Help
-        ; Selects the robot program for running.  If mode is EXT and drives are on, the program will run too.  In all other cases, the program must be started with the start signal or button.
-        ;
-        ; @Inputs
-        ;   @param ProgName
-        ;      E.G.  "/R1/test()"
-        ;
-        ; @Outputs
-        ;   None
-        ;
-        ; @Return
-        ;    TRUE - Successfully selected program (this also start program in EXT mode)
-        ;    FALSE - Failed to select program
-        ;         KSS01422 $PRONAME[] value invalid = progname and path invalid;
-        ;
-    ;ENDFOLD
-    CHAR program_name[]
+GLOBAL DEFFCT BOOL ROS_StartProgram()
+    CHAR program_name[64]
     CHAR s[256]
     INT k
+
+    ROS_GetProgramName(selected_control_mode, selected_cycle_time, program_name[])
 
     ; Check to see if a program is already selected - should not happen
     IF ($PRO_STATE1 <> #P_FREE) THEN
@@ -269,49 +255,31 @@ DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout: IN)
     RETURN FALSE
 ENDFCT
 
-GLOBAL DEFFCT INT GetControlModeID(mode: IN)
+GLOBAL DEF ROS_SelectControlMode(mode: IN)
     DECL ControlMode mode
-    DECL INT ID
+    CHAR mode_string[32]
 
-    FOR ID = 1 TO CONTROL_MODE_COUNT
-        IF (mode == CTRL_MODE_PROG_PAIRS[ID].mode) THEN
-            RETURN ID
-        ENDIF
-    ENDFOR
+    mode_string[] = ROS_ControlModeToString(mode)
+    MsgNotify("Control mode set to %1", "ProgramHandler",, mode_string[])
 
-    RETURN -1
-ENDFCT
-
-GLOBAL DEFFCT CHAR [64] GetProgName(mode: IN)
-    DECL ControlMode mode
-    RETURN CTRL_MODE_PROG_PAIRS[GetControlModeID(mode)].prog_name[]
-ENDFCT
-
-GLOBAL DEF SetControlMode(mode: IN)
-    DECL ControlMode mode
-    CHAR modeString[32]
-
-    modeString[] = ControlModeToString(mode)
-    MsgNotify("Control mode set to %1", "ProgramHandler",, modeString[])
-
-    control_mode = mode
+    selected_control_mode = mode
 END
 
-DEFFCT CHAR [32] ControlModeToString(mode: IN)
-    DECL ControlMode mode
-    DECL ControlModeStringPair pair
-    INT idx
-
-    FOR idx = 1 TO CONTROL_MODE_COUNT
-        pair = CTRL_MODE_STRING_PAIRS[idx]
-        IF (mode == pair.mode) THEN
-            RETURN pair.mode_string[]
-        ENDIF
-    ENDFOR
-
-    RETURN "Inactive Control"
+; Returns the selected control mode as a string
+GLOBAL DEFFCT CHAR [32] ROS_GetSelCtrlModeStr()
+    RETURN ROS_ControlModeToString(selected_control_mode)
 ENDFCT
 
-GLOBAL DEFFCT ControlMode GetControlMode()
-    RETURN control_mode
+; Selects the cycle time associated with the specified integer
+; Returns TRUE, if a valid integer was provided, otherwise FALSE
+GLOBAL DEFFCT BOOL ROS_SelectCycleTime(cycle_time_int: IN)
+    INT cycle_time_int
+
+    selected_cycle_time = ROS_IntToCycleTime(cycle_time_int)
+    IF selected_cycle_time == #NONE_CYCLE_TIME THEN
+        RETURN FALSE
+    ENDIF
+
+    MsgNotify("Cycle time set to %1", "ProgramHandler",, ROS_CycleTimeToString(selected_cycle_time))
+    RETURN TRUE
 ENDFCT

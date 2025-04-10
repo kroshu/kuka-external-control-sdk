@@ -34,7 +34,7 @@ END
 
 GLOBAL DEF SPS_Init()
     SetCurrentDriverState(#INITIALIZED)
-    SetControlMode(#INACTIVE)
+    ROS_SelectControlMode(#INACTIVE)
     EKI_ServerStart()
 END
 
@@ -44,7 +44,7 @@ GLOBAL DEF SPS_LoopCall()
     ; Check for connection/disconnection events
     HandleConnection()
 
-    IF (IsClientConnected()) THEN
+    IF IsClientConnected() THEN
         ; Parse commands into Command structure
         EKI_ReceiveData(cmd)
 

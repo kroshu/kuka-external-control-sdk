@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,18 @@
 
 namespace kuka::external::control::kss {
 
-Robot::Robot(Configuration config)
-    {
-      switch (config.installed_interface) {
-        case Configuration::InstalledInterface::EKI_RSI:
-          installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
-          break;
-        case Configuration::InstalledInterface::RSI_ONLY:
-          installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
-          break;
-        default:
-          throw std::runtime_error("Configuration contains invalid interface, please choose between EKI, MXA or plain RSI.");
-      };
-    }
+Robot::Robot(Configuration config) {
+    switch (config.installed_interface) {
+    case Configuration::InstalledInterface::EKI_RSI:
+        installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
+        break;
+    case Configuration::InstalledInterface::RSI_ONLY:
+        installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
+        break;
+    default:
+        throw std::runtime_error("Configuration contains invalid interface, please choose between EKI, MXA or plain RSI.");
+    };
+}
 
 Status Robot::Setup() {
   return installed_interface_->Setup();
@@ -51,7 +50,6 @@ Status Robot::StopControlling() {
 Status Robot::StopMonitoring() {
   return installed_interface_->StopMonitoring();
 }
-
 
 Status Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState&)> func) {
   return installed_interface_->CreateMonitoringSubscription(func);
@@ -89,12 +87,20 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return installed_interface_->RegisterEventHandler(std::move(event_handler));
 }
 
+Status Robot::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
+  return installed_interface_->RegisterEventHandler(std::move(event_handler));
+}
+
 Status Robot::TurnOnDrives() {
   return installed_interface_->TurnOnDrives();
 }
 
 Status Robot::TurnOffDrives() {
   return installed_interface_->TurnOffDrives();
+}
+
+Status Robot::SetCycleTime(Configuration::CycleTime cycle_time) {
+  return installed_interface_->SetCycleTime(cycle_time);
 }
 
 };  // namespace kuka::external::control::kss

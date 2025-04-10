@@ -52,9 +52,11 @@ class Robot : public IKssRobot {
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) override;
 
   virtual Status TurnOnDrives() override;
   virtual Status TurnOffDrives() override;
+  virtual Status SetCycleTime(Configuration::CycleTime) override;
 
  protected:
   MotionState last_motion_state_;

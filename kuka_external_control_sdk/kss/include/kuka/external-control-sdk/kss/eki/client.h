@@ -39,13 +39,14 @@ class Client : public os::core::udp::communication::TCPClient {
   // Stops RSI program
   Status StopRSI();
 
-  Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler);
+  Status RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler);
 
   // TODO implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
 
   Status TurnOnDrives();
   Status TurnOffDrives();
+  Status SetCycleTime(Configuration::CycleTime cycle_time);
 
  private:
   // Response structures
@@ -59,6 +60,9 @@ class Client : public os::core::udp::communication::TCPClient {
     SWITCH_OK = 6,
     INVALID = 7,
     NONE = 8,
+    DRIVES_TURNED_ON = 9,
+    DRIVES_TURNED_OFF = 10,
+    CYCLE_TIME_CHANGED = 11,
   };
 
   struct EventResponse {
@@ -82,6 +86,9 @@ class Client : public os::core::udp::communication::TCPClient {
 
   // Send EKI control mode change command with given control mode
   Status SendControlModeChange(kuka::external::control::ControlMode control_mode, int id = 0);
+
+  // Send EKI cycle time change command with given cycle time
+  Status SendCycleTimeChange(Configuration::CycleTime cycle_time);
 
   // Start thread handling incoming events/status messages
   void StartReceiverThread();
@@ -112,6 +119,8 @@ class Client : public os::core::udp::communication::TCPClient {
   static constexpr char simple_req_format_[] = "<External REQTYPE=\"%s\" ID=\"%d\"></External>";
   static constexpr char change_control_mode_req_format_[] =
       "<External REQTYPE=\"CHANGE\" ID=\"%d\" ControlMode=\"%d\"></External>";
+  static constexpr char change_cycle_time_req_format_[] =
+      "<External REQTYPE=\"CHANGE_CYCLE_TIME\" ID=\"%d\" CycleTime=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
       "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
@@ -134,7 +143,7 @@ class Client : public os::core::udp::communication::TCPClient {
 
   // Event handling
   std::mutex event_handler_mutex_;
-  std::unique_ptr<EventHandler> event_handler_;
+  std::unique_ptr<KssEventHandler> event_handler_;
   bool event_handler_set_ = false;
 };
 

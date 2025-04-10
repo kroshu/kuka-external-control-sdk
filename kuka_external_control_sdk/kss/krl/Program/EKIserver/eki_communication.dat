@@ -2,7 +2,7 @@
 &REL 4
 &PARAM DISKPATH = KRC:\R1\Program\ROS
 DEFDAT eki_communication
-    STRUC EventIntPair EventType event_type, INT event_id
+    STRUC EventTypeTuple EventType event_type, INT event_type_int
 
     CONST CHAR INTERFACE_NAME[64]
     INTERFACE_NAME[] = "EkiKSSinterface"
@@ -21,19 +21,19 @@ DEFDAT eki_communication
     ; ENDFOLD
 
     ; FOLD Constants for easier mapping of event types to integers
-    CONST INT EVENT_COUNT = 11
-    DECL CONST EventIntPair EVENT_INT_PAIRS[11]
-    EVENT_INT_PAIRS[1] = { event_type #STARTED, event_id 0 }
-    EVENT_INT_PAIRS[2] = { event_type #STOPPED, event_id 1 }
-    EVENT_INT_PAIRS[3] = { event_type #CANCELLED, event_id 2 }
-    EVENT_INT_PAIRS[4] = { event_type #RESET_OK, event_id 3 }
-    EVENT_INT_PAIRS[5] = { event_type #ERROR, event_id 4 }
-    EVENT_INT_PAIRS[6] = { event_type #CONNECTED, event_id 5 }
-    EVENT_INT_PAIRS[7] = { event_type #SWITCH_OK, event_id 6 }
-    EVENT_INT_PAIRS[8] = { event_type #INVALID, event_id 7 }
-    EVENT_INT_PAIRS[9] = { event_type #NONE, event_id 8 }
-    EVENT_INT_PAIRS[10] = { event_type #DRIVES_TURNED_ON, event_id 9 }
-    EVENT_INT_PAIRS[11] = { event_type #DRIVES_TURNED_OFF, event_id 10 }
+    DECL CONST EventTypeTuple EVENT_TYPE_TUPLES[12]
+    EVENT_TYPE_TUPLES[1] = { event_type #STARTED, event_type_int 0 }
+    EVENT_TYPE_TUPLES[2] = { event_type #STOPPED, event_type_int 1 }
+    EVENT_TYPE_TUPLES[3] = { event_type #CANCELLED, event_type_int 2 }
+    EVENT_TYPE_TUPLES[4] = { event_type #RESET_OK, event_type_int 3 }
+    EVENT_TYPE_TUPLES[5] = { event_type #ERROR, event_type_int 4 }
+    EVENT_TYPE_TUPLES[6] = { event_type #CONNECTED, event_type_int 5 }
+    EVENT_TYPE_TUPLES[7] = { event_type #SWITCH_OK, event_type_int 6 }
+    EVENT_TYPE_TUPLES[8] = { event_type #INVALID, event_type_int 7 }
+    EVENT_TYPE_TUPLES[9] = { event_type #NONE, event_type_int 8 }
+    EVENT_TYPE_TUPLES[10] = { event_type #DRIVES_TURNED_ON, event_type_int 9 }
+    EVENT_TYPE_TUPLES[11] = { event_type #DRIVES_TURNED_OFF, event_type_int 10 }
+    EVENT_TYPE_TUPLES[12] = { event_type #CYCLE_TIME_CHANGED, event_type_int 11 }
     ; ENDFOLD
 
     DECL BOOL connection_flag = FALSE

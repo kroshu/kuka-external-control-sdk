@@ -101,6 +101,12 @@ Status Client::SendControlModeChange(kuka::external::control::ControlMode contro
   return SendMessageAndWait();
 }
 
+Status Client::SendCycleTimeChange(Configuration::CycleTime cycle_time) {
+  int cycle_time_int = static_cast<int>(cycle_time);
+  sprintf(reinterpret_cast<char*>(send_buff_), change_cycle_time_req_format_, cycle_time_int);
+  return SendMessageAndWait();
+}
+
 void Client::StartReceiverThread() {
   receiver_thread_ = std::thread([this] {
     while (true) {
@@ -251,7 +257,7 @@ bool Client::ParseMessage(char* data_to_parse) {
   return ParseEvent(data_to_parse) || ParseStatus(data_to_parse);
 }
 
-Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status Client::RegisterEventHandler(std::unique_ptr<KssEventHandler>&& event_handler) {
   if (event_handler == nullptr) {
     return Status(ReturnCode::ERROR,
                   "RegisterEventHandler failed: please provide a valid pointer.");
@@ -271,6 +277,10 @@ Status Client::TurnOnDrives() {
 
 Status Client::TurnOffDrives() {
   return SendCommand("DRIVES_OFF");
+}
+
+Status Client::SetCycleTime(Configuration::CycleTime cycle_time) {
+  return SendCycleTimeChange(cycle_time);
 }
 
 }  // namespace kuka::external::control::kss
