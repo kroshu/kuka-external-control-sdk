@@ -42,10 +42,8 @@ public:
     // TODO (Komaromi): Create GPIO config list
     // Add GPIO Configuration list for state interfaces
     std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        // std::make_unique<GPIOConfig>(0, "GPIO_01",
-        // GPIOValueType::BOOL_VALUE),
-        // std::make_unique<GPIOConfig>(1, "GPIO_02", GPIOValueType::BOOL_VALUE)
-    };
+        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE),
+        std::make_unique<GPIOConfig>(1, "GPIO_02", GPIOValueType::BOOL_VALUE)};
     for (size_t i = 0; i < gpio_size; i++) {
       measured_gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
@@ -72,8 +70,7 @@ private:
   const std::string kDelayNodePrefix = "<Delay D=\"";
   const std::string kGpioPrefix = "<GPIO";
   // Add GPIO names for xml parsing
-  const std::vector<std::string> kGpioAttributePrefix = {
-      /*" 01=\"", " 02=\""*/};
+  const std::vector<std::string> kGpioAttributePrefix = {" 01=\"", " 02=\""};
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Rob>";
@@ -97,8 +94,7 @@ public:
     // TODO (Komaromi): Create GPIO config list
     // Add GPIO Configuration list for command interfaces
     std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        // std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE)
-    };
+        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE)};
     for (size_t i = 0; i < gpio_size; i++) {
       gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
@@ -128,7 +124,7 @@ private:
   const std::string kStopNodeSuffix = "</Stop>";
   const std::string kGpioPrefix = "<GPIO";
   // Add GPIO names for xml parsing
-  const std::vector<std::string> kGpioAttributePrefix = {/*" 01=\""*/};
+  const std::vector<std::string> kGpioAttributePrefix = {" 01=\""};
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Sen>";
