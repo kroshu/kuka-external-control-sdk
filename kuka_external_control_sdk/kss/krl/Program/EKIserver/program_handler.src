@@ -1,5 +1,4 @@
-&ACCESS RV3
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS R
 DEF program_handler()
     ; Software License Agreement (BSD License)
     ;
@@ -39,9 +38,9 @@ GLOBAL DEFFCT BOOL ROS_StartProgram()
     ROS_GetProgramName(selected_control_mode, selected_cycle_time, program_name[])
 
     ; Check to see if a program is already selected - should not happen
-    IF ($PRO_STATE1 <> #P_FREE) THEN
+    IF $PRO_STATE1 <> #P_FREE THEN
         ; If a program is already selected, log error and return
-        MsgNotify("Program %1 is already selected", "PC", , $PRO_NAME1[], 1)
+        ROS_Error1String("Program %1 is already selected", $PRO_NAME1[])
         RETURN FALSE
     ENDIF
 
@@ -50,84 +49,67 @@ GLOBAL DEFFCT BOOL ROS_StartProgram()
     k = strAdd(s[], program_name[])
 
     CWRITE($CMD, statement_state, command_mode, s[])
-    IF (NOT WaitForStateTransition(#P_FREE, 1000)) THEN
-        MsgNotify("Timeout selecting program %1", "PC", , program_name[], 5)
+    IF NOT WaitForStateTransition(#P_FREE, 1000) THEN
+        ROS_Error1String("Timeout selecting program %1", program_name[])
         RETURN FALSE
     ENDIF
 
     RETURN TRUE
 ENDFCT
 
-GLOBAL DEFFCT BOOL CancelProgram()
-    ;FOLD Help
-        ; Cancels the robot program.  If no program is selected, this does not return an error.
-        ; @Return
-        ;    TRUE - Successfully cancelled program (or no program was selected)
-        ;    FALSE - Timeout occured while trying to cancel program
-        ;
-    ;ENDFOLD
-
-    MsgNotify("Cancelling program...", "ProgramHandler")
+GLOBAL DEFFCT BOOL ROS_CancelProgram()
+    ROS_Debug("Cancelling program...")
 
     ; Check to see if no program is selected
-    IF ($PRO_STATE1 == #P_FREE) THEN
+    IF $PRO_STATE1 == #P_FREE THEN
         RETURN TRUE
     ENDIF
 
-    IF ($PRO_STATE1 == #P_ACTIVE) THEN
-        MsgNotify("Sending stop command", "ProgramHandler")
+    IF $PRO_STATE1 == #P_ACTIVE THEN
+        ROS_Debug("Sending stop command")
         CWRITE($CMD, statement_state, command_mode, "STOP 1")
-        IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
-            MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+        IF NOT WaitForStateTransition(#P_ACTIVE, 1000) THEN
+            ROS_Error("Timeout stopping program")
             RETURN FALSE
         ENDIF
     ENDIF
 
     ; Cancel the program
-    MsgNotify("Sending cancel command", "ProgramHandler")
+    ROS_Debug("Sending cancel command")
     CWRITE($CMD, statement_state, command_mode, "CANCEL 1")
-    IF (NOT WaitForState(#P_FREE, 1000)) THEN
-        MsgNotify("Timeout cancelling program", "PC", 0, " ", 4)
+    IF NOT WaitForState(#P_FREE, 1000) THEN
+        ROS_Error("Timeout cancelling program")
         RETURN FALSE
     ENDIF
 
     RETURN TRUE
 ENDFCT
 
-GLOBAL DEFFCT BOOL ResetProgram()
-    ;FOLD Help
-        ; Resets the robot program.  If the program is already reset, this does not return an error.
-        ;
-        ;
-        ; @Return
-        ;    TRUE - Successfully reset program
-        ;    FALSE - Timeout occured while trying to reset program
-    ;ENDFOLD
-
+GLOBAL DEFFCT BOOL ROS_ResetProgram()
     ; If program is already reset, just return
-    IF ($PRO_STATE1 == #P_RESET) THEN
+    IF $PRO_STATE1 == #P_RESET THEN
         RETURN TRUE
     ENDIF
 
     ; Check for no program selected
-    IF ($PRO_STATE1 == #P_FREE) THEN
-        MsgNotify("No program selected", "PC", 0, " ", 7)
+    IF $PRO_STATE1 == #P_FREE THEN
+        ROS_Info("No program selected")
         RETURN FALSE
     ENDIF
 
     ; If the program is running, stop it
-    IF ($PRO_STATE1 == #P_ACTIVE) THEN
-        CWRITE($CMD,statement_state,command_mode,"STOP 1")
-        IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
-            MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+    IF $PRO_STATE1 == #P_ACTIVE THEN
+        CWRITE($CMD,statement_state,command_mode, "STOP 1")
+        IF NOT WaitForStateTransition(#P_ACTIVE, 1000) THEN
+            ROS_Error("Timeout stopping program")
             RETURN FALSE
         ENDIF
     ENDIF
 
     ; Reset the program
-    CWRITE($CMD,statement_state,command_mode,"RESET 1")
-    IF (NOT WaitForState(#P_RESET, 1000)) THEN
-        MsgNotify("Timeout resetting program", "PC", 0, " ", 8)
+    CWRITE($CMD,statement_state,command_mode, "RESET 1")
+    IF NOT WaitForState(#P_RESET, 1000) THEN
+        ROS_Error("Timeout resetting program")
         RETURN FALSE
     ENDIF
 
@@ -135,17 +117,10 @@ GLOBAL DEFFCT BOOL ResetProgram()
 ENDFCT
 
 GLOBAL DEFFCT BOOL StopProgram()
-    ;FOLD Help
-        ; Stops the robot program.  If the program is not running or no program is selected, this does not return an error.
-        ;
-        ; @Return
-        ;    TRUE - Successfully stopped program
-        ;    FALSE - Timeout occured while trying to stop program
-    ;ENDFOLD
-    IF ($PRO_STATE1 == #P_ACTIVE) THEN
-        CWRITE($CMD,statement_state,command_mode,"STOP 1")
-        IF (WaitForStateTransition(#P_ACTIVE, 1000) <> TRUE) THEN
-            MsgNotify("Timeout stopping program", "PC", 0, " ", 3)
+    IF $PRO_STATE1 == #P_ACTIVE THEN
+        CWRITE($CMD,statement_state,command_mode, "STOP 1")
+        IF NOT WaitForStateTransition(#P_ACTIVE, 1000) THEN
+            ROS_Error("Timeout stopping program")
             RETURN FALSE
         ENDIF
     ENDIF
@@ -153,24 +128,6 @@ GLOBAL DEFFCT BOOL StopProgram()
 ENDFCT
 
 DEFFCT BOOL WaitForState(ProState: IN, Timeout: IN)
-    ;FOLD Help
-        ;   Used internally to wait for a specific program
-        ;   state or timeout, whichever comes first.
-        ; @Inputs
-        ;   @param ProState
-        ;      ENUM PRO_STATE: #P_ACTIVE,#P_FREE,#P_END,#P_RESET,#P_STOP
-        ;
-        ;   @param Timeout
-        ;      Maximum time to wait in milliseconds.
-        ;
-        ; @Outputs
-        ;   None
-        ;
-        ; @Return
-        ;    TRUE - Program state condition was met
-        ;    FALSE - Timeout occured
-        ;
-    ;ENDFOLD
     DECL PRO_STATE ProState
     INT Timeout
     INT StartTime, TriggerTime
@@ -178,51 +135,29 @@ DEFFCT BOOL WaitForState(ProState: IN, Timeout: IN)
     StartTime = $ROB_TIMER
 
     ; Set the trigger time based on the start time.  Account for integer rollover
-    IF ((INTEGER_MAX-Timeout) < StartTime) THEN
+    IF (INTEGER_MAX - Timeout) < StartTime THEN
         TriggerTime = Timeout - (INTEGER_MAX-StartTime)
     ELSE
         TriggerTime = StartTime + Timeout
     ENDIF
 
-    IF (TriggerTime >= StartTime) THEN
+    IF TriggerTime >= StartTime THEN
         ; No worries about timer rollover
         REPEAT
             WAIT SEC 0.12
-        UNTIL (($PRO_STATE1 == ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime))
+        UNTIL ($PRO_STATE1 == ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime)
 
     ELSE
         ; Timer rollover must be accounted for
         REPEAT
             WAIT SEC 0.12
-        UNTIL (($PRO_STATE1 == ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime)))
+        UNTIL ($PRO_STATE1 == ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime))
     ENDIF
 
-    IF ($PRO_STATE1 == ProState) THEN
-        RETURN TRUE
-    ENDIF
-
-    RETURN FALSE
+    RETURN $PRO_STATE == ProState
 ENDFCT
 
 DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout: IN)
-    ;FOLD Help
-        ;   Used internally to wait for a program state transition FROM the given state
-        ; @Inputs
-        ;   @param ProState
-        ;      ENUM PRO_STATE: #P_ACTIVE,#P_FREE,#P_END,#P_RESET,#P_STOP
-        ;
-        ;   @param Timeout
-        ;      Maximum time to wait in milliseconds.
-        ;
-        ; @Outputs
-        ;   None
-        ;
-        ; @Return
-        ;    TRUE - Program state condition was met
-        ;    FALSE - Timeout occured
-        ;
-        ;
-    ;ENDFOLD
     DECL PRO_STATE ProState
     INT Timeout
     INT StartTime, TriggerTime
@@ -257,17 +192,19 @@ ENDFCT
 
 GLOBAL DEF ROS_SelectControlMode(mode: IN)
     DECL ControlMode mode
-    CHAR mode_string[32]
 
-    mode_string[] = ROS_ControlModeToString(mode)
-    MsgNotify("Control mode set to %1", "ProgramHandler",, mode_string[])
-
+    ROS_Debug1String("Control mode set to %1", ROS_ControlModeToString(mode))
     selected_control_mode = mode
 END
 
 ; Returns the selected control mode as a string
 GLOBAL DEFFCT CHAR [32] ROS_GetSelCtrlModeStr()
     RETURN ROS_ControlModeToString(selected_control_mode)
+ENDFCT
+
+; Returns the selected control mode as an integer
+GLOBAL DEFFCT INT ROS_GetSelCtrlModeInt()
+    RETURN ROS_ControlModeToInt(selected_control_mode)
 ENDFCT
 
 ; Selects the cycle time associated with the specified integer
@@ -280,8 +217,12 @@ GLOBAL DEFFCT BOOL ROS_SelectCycleTime(cycle_time_int: IN)
         RETURN FALSE
     ENDIF
 
-    MsgNotify("Cycle time set to %1", "ProgramHandler",, ROS_CycleTimeToString(selected_cycle_time))
+    ROS_Debug1String("Cycle time set to %1", ROS_CycleTimeToString(selected_cycle_time))
     RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT INT ROS_GetSelCycTimeInt()
+    RETURN ROS_CycleTimeToInt(selected_cycle_time)
 ENDFCT
 
 GLOBAL DEF ROS_ResetProgramHandler()

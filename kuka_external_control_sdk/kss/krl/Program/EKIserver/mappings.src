@@ -1,6 +1,92 @@
-&ACCESS  RVP
+&ACCESS R
 DEF mappings()
+    ; Software License Agreement (BSD License)
+    ;
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
+    ; All rights reserved.
+    ;
+    ; Redistribution and use in source and binary forms, with or without
+    ; modification, are permitted provided that the following conditions are met:
+    ;
+    ;      * Redistributions of source code must retain the above copyright
+    ;        notice, this list of conditions and the following disclaimer.
+    ;      * Redistributions in binary form must reproduce the above copyright
+    ;        notice, this list of conditions and the following disclaimer in the
+    ;        documentation and/or other materials provided with the distribution.
+    ;      * Neither the name of the copyright holder, nor the names of its
+    ;        contributors may be used to endorse or promote products derived
+    ;        from this software without specific prior written permission.
+    ;
+    ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    ; POSSIBILITY OF SUCH DAMAGE.
 END
+
+; Converts a boolean to an integer
+GLOBAL DEFFCT INT ROS_BoolToInt(boolean: IN)
+    BOOL boolean
+
+    IF boolean THEN
+        RETURN 1
+    ENDIF
+
+    RETURN 0
+ENDFCT
+
+; Returns the current operation mode as an integer
+GLOBAL DEFFCT INT ROS_OperationModeToInt()
+    IF $T1 THEN
+        RETURN 1
+    ENDIF
+
+    IF $T2 THEN
+        RETURN 2
+    ENDIF
+
+    IF $AUT THEN
+        RETURN 3
+    ENDIF
+
+    ; $EXT
+    RETURN 4
+ENDFCT
+
+; Returns the command type associated with the given string
+GLOBAL DEFFCT CommandType ROS_StringToCommandType(command_type_string[]: IN)
+    CHAR command_type_string[]
+    INT idx
+
+    FOR idx = 1 TO COMMAND_COUNT
+        IF StrComp(command_type_string[], COMMAND_TYPE_TUPLES[idx].command_type_string[], #NOT_CASE_SENS) THEN
+            RETURN COMMAND_TYPE_TUPLES[idx].command_type
+        ENDIF
+    ENDFOR
+
+    RETURN #CMD_INVALID
+ENDFCT
+
+; Returns the string representation of the specified command type
+GLOBAL DEFFCT CHAR [32] ROS_CommandTypeToString(command_type: IN)
+    DECL CommandType command_type
+    INT idx
+
+    FOR idx = 1 TO COMMAND_COUNT
+        IF COMMAND_TYPE_TUPLES[idx].command_type == command_type THEN
+            RETURN COMMAND_TYPE_TUPLES[idx].command_type_string[]
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "INVALID"
+ENDFCT
 
 ; Returns the control mode associated with the given integer
 GLOBAL DEFFCT ControlMode ROS_IntToControlMode(control_mode_int: IN)
@@ -31,6 +117,21 @@ GLOBAL DEFFCT CHAR [32] ROS_ControlModeToString(control_mode: IN)
     RETURN "NOT_FOUND"
 ENDFCT
 
+; Returns the integer representation of the specified control mode
+GLOBAL DEFFCT INT ROS_ControlModeToInt(control_mode: IN)
+    DECL ControlMode control_mode
+    INT idx
+
+    FOR idx = 1 TO CONTROL_MODE_COUNT
+        IF CONTROL_MODE_TUPLES[idx].control_mode == control_mode THEN
+            RETURN CONTROL_MODE_TUPLES[idx].control_mode_int
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN -1
+ENDFCT
+
 ; Return the cycle time associated with the given integer
 GLOBAL DEFFCT ROS_CycleTime ROS_IntToCycleTime(cycle_time_int: IN)
     INT cycle_time_int
@@ -58,6 +159,36 @@ GLOBAL DEFFCT CHAR [32] ROS_CycleTimeToString(cycle_time: IN)
 
     ; Unreachable
     RETURN "NOT_FOUND"
+ENDFCT
+
+; Returns the integer representation of the specified cycle time
+GLOBAL DEFFCT INT ROS_CycleTimeToInt(cycle_time: IN)
+    DECL ROS_CycleTime cycle_time
+    INT idx
+
+    FOR idx = 1 TO CYCLE_TIME_COUNT
+        IF CYCLE_TIME_TUPLES[idx].cycle_time == cycle_time THEN
+            RETURN CYCLE_TIME_TUPLES[idx].cycle_time_int
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN -1
+ENDFCT
+
+; Returns the string represenation of the specified driver state
+GLOBAL DEFFCT CHAR [32] ROS_DriverStateToString(driver_state: IN)
+    DECL DriverState driver_state
+    INT idx
+
+    FOR idx = 1 TO STATE_COUNT
+        IF DRIVER_STATE_TUPLES[idx].driver_state == driver_state THEN
+            RETURN DRIVER_STATE_TUPLES[idx].driver_state_string[]
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "INVALID"
 ENDFCT
 
 ; Maps the specifed control mode and cycle time to a program name if available

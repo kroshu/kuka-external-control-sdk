@@ -1,9 +1,25 @@
-&ACCESS RV
+&ACCESS R
 DEFDAT mappings PUBLIC
     ; FOLD Custom structure types
+    STRUC CommandTypeTuple CommandType command_type, CHAR command_type_string[32]
     STRUC ControlModeTuple ControlMode control_mode, CHAR control_mode_string[32], INT control_mode_int
     STRUC CycleTimeTuple ROS_CycleTime cycle_time, CHAR cycle_time_string[32], INT cycle_time_int
+    STRUC DriverStateTuple DriverState driver_state, CHAR driver_state_string[32]
     STRUC ProgramConfiguration ControlMode control_mode, ROS_CycleTime cycle_time, CHAR program[64]
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping commands to strings and vice versa
+    DECL CONST CommandTypeTuple COMMAND_TYPE_TUPLES[10]
+    COMMAND_TYPE_TUPLES[1] = { command_type #CMD_CON, command_type_string[] "CON" }
+    COMMAND_TYPE_TUPLES[2] = { command_type #CMD_START, command_type_string[] "START" }
+    COMMAND_TYPE_TUPLES[3] = { command_type #CMD_RESET, command_type_string[] "RESET" }
+    COMMAND_TYPE_TUPLES[4] = { command_type #CMD_CANCEL, command_type_string[] "CANCEL" }
+    COMMAND_TYPE_TUPLES[5] = { command_type #CMD_CHANGE, command_type_string[] "CHANGE" }
+    COMMAND_TYPE_TUPLES[6] = { command_type #CMD_NONE, command_type_string[] "NONE" }
+    COMMAND_TYPE_TUPLES[7] = { command_type #CMD_DRIVES_ON, command_type_string[] "DRIVES_ON" }
+    COMMAND_TYPE_TUPLES[8] = { command_type #CMD_DRIVES_OFF, command_type_string[] "DRIVES_OFF" }
+    COMMAND_TYPE_TUPLES[9] = { command_type #CMD_CHANGE_CYCLE_TIME, command_type_string[] "CHANGE_CYCLE_TIME" }
+    COMMAND_TYPE_TUPLES[10] = { command_type #CMD_GET_STATUS, command_type_string[] "GET_STATUS" }
     ; ENDFOLD
 
     ; FOLD Constants for mapping control modes to strings/integers and vice versa
@@ -18,6 +34,13 @@ DEFDAT mappings PUBLIC
     CYCLE_TIME_TUPLES[1] = { cycle_time #NONE_CYCLE_TIME, cycle_time_string[] "NONE", cycle_time_int -1 }
     CYCLE_TIME_TUPLES[2] = { cycle_time #RSI_4MS, cycle_time_string[] "RSI_4MS", cycle_time_int 0 }
     CYCLE_TIME_TUPLES[3] = { cycle_time #RSI_12MS, cycle_time_string[] "RSI_12MS", cycle_time_int 1 }
+    ; ENDFOLD
+
+    ; FOLD Constants for mapping driver states to strings and vice versa
+    DECL CONST DriverStateTuple DRIVER_STATE_TUPLES[3]
+    DRIVER_STATE_TUPLES[1] = { driver_state #INITIALIZED, driver_state_string[] "INITIALIZED" }
+    DRIVER_STATE_TUPLES[2] = { driver_state #INACTIVE, driver_state_string[] "INACTIVE" }
+    DRIVER_STATE_TUPLES[3] = { driver_state #ACTIVE, driver_state_string[] "ACTIVE" }
     ; ENDFOLD
 
     ; FOLD Constants for mapping program configurations to programs to run

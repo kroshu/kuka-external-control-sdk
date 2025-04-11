@@ -1,10 +1,8 @@
-&ACCESS RVO
-&REL 4
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS R
 DEF eki_communication()
     ; Software License Agreement (BSD License)
     ;
-    ; Copyright (c) 2022, Kuka Robotics Corp
+    ; Copyright (c) 2022, KUKA Hungaria Kft.
     ; All rights reserved.
     ;
     ; Redistribution and use in source and binary forms, with or without
@@ -63,13 +61,13 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     command.cycle_time = -1
 
     ; Verify a valid connection
-    IF (NOT IsClientConnected()) THEN
+    IF NOT IsClientConnected() THEN
         WAIT SEC 0.012
         RETURN
     ENDIF
 
     ; Skip processing if no data received.
-    IF (NOT DidReceiveData()) THEN
+    IF NOT DidReceiveData() THEN
         WAIT SEC 0.012
         RETURN
     ENDIF
@@ -84,24 +82,24 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@CycleTime", command.cycle_time)
     ELSE
-        MsgNotify("No valid data received.")
+        ROS_Error("No valid data received")
         WAIT SEC 0.012
     ENDIF
 END
 
-GLOBAL DEF HandleConnection()
+GLOBAL DEF ROS_HandleConnection()
     IF IsClientConnected() <> connection_flag THEN
         connection_flag = IsClientConnected()
         IF IsClientConnected() THEN
-            MsgNotify("External client connected")
+            ROS_Info("External client connected")
         ELSE
-            MsgNotify("External client disconnected")
+            ROS_Info("External client disconnected")
             EKI_ServerReset()
         ENDIF
     ENDIF
 END
 
-GLOBAL DEF PublishEvent()
+GLOBAL DEF ROS_PublishEvent()
     DECL EKI_STATUS ret
     INT event_int
     CHAR event_msg[64]
@@ -112,7 +110,7 @@ GLOBAL DEF PublishEvent()
 
     IF GetLastEvent() <> #NONE THEN
         IF NOT IsClientConnected() THEN
-            MsgNotify("External client is not connected when trying to send event.")
+            ROS_Error("External client is not connected when trying to send event")
             RETURN
         ENDIF
 
@@ -126,6 +124,9 @@ GLOBAL DEF PublishEvent()
             CASE #SWITCH_OK
                 event_msg[] = ROS_GetSelCtrlModeStr()
                 ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
+            CASE #STATUS_REQUESTED
+                WriteStatusToChannel()
+                x_path_send[] = "Robot/Status"
         ENDSWITCH
 
         ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
@@ -159,9 +160,24 @@ DEFFCT BOOL DidReceiveData()
     RETURN $FLAG[ROS_EKI_RECV_FLAG]
 ENDFCT
 
+DEF WriteStatusToChannel()
+    DECL EKI_STATUS ret
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@ControlMode", ROS_GetSelCtrlModeInt())
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@CycleTime", ROS_GetSelCycTimeInt())
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesEnabled", ROS_BoolToInt($SR_DRIVES_ENABLE))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesPowered", ROS_BoolToInt($PERI_RDY))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@EmergencyStop", ROS_BoolToInt(NOT $ALARM_STOP OR NOT $ALARM_STOP_INTERN))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@GuardStop", ROS_BoolToInt(NOT $USER_SAF))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@InMotion", ROS_BoolToInt($PRO_MOVE))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@MotionPossible", ROS_BoolToInt($COULD_START_MOTION AND $PRO_ACT))
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@OperationMode", ROS_OperationModeToInt())
+END
+
 DEF WriteInitDataToChannel()
     DECL EKI_STATUS eki_ret
     INT counter
+
+    WriteStatusToChannel()
 
     ; Set general parameters
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@VER", INTERFACE_VERSION[])

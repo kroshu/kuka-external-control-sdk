@@ -1,5 +1,4 @@
-&ACCESS RV3
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS R
 DEFDAT program_handler PUBLIC
     ; FOLD Custom enumerations
     GLOBAL CONST INT CYCLE_TIME_COUNT = 3

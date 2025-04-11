@@ -1,6 +1,4 @@
-&ACCESS RV
-&REL 4
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS R
 DEFDAT eki_communication
     STRUC EventTypeTuple EventType event_type, INT event_type_int
 
@@ -21,7 +19,7 @@ DEFDAT eki_communication
     ; ENDFOLD
 
     ; FOLD Constants for easier mapping of event types to integers
-    DECL CONST EventTypeTuple EVENT_TYPE_TUPLES[12]
+    DECL CONST EventTypeTuple EVENT_TYPE_TUPLES[13]
     EVENT_TYPE_TUPLES[1] = { event_type #STARTED, event_type_int 0 }
     EVENT_TYPE_TUPLES[2] = { event_type #STOPPED, event_type_int 1 }
     EVENT_TYPE_TUPLES[3] = { event_type #CANCELLED, event_type_int 2 }
@@ -34,6 +32,7 @@ DEFDAT eki_communication
     EVENT_TYPE_TUPLES[10] = { event_type #DRIVES_TURNED_ON, event_type_int 9 }
     EVENT_TYPE_TUPLES[11] = { event_type #DRIVES_TURNED_OFF, event_type_int 10 }
     EVENT_TYPE_TUPLES[12] = { event_type #CYCLE_TIME_CHANGED, event_type_int 11 }
+    EVENT_TYPE_TUPLES[13] = { event_type #STATUS_REQUESTED, event_type_int 12 }
     ; ENDFOLD
 
     DECL BOOL connection_flag = FALSE

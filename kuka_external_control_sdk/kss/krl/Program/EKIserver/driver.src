@@ -1,6 +1,4 @@
-&ACCESS RVO2
-&REL 11735
-&PARAM DISKPATH = KRC:\R1\Program\ROS
+&ACCESS R
 def driver()
     ; Software License Agreement (BSD License)
     ;
@@ -33,7 +31,7 @@ def driver()
 END
 
 GLOBAL DEF SPS_Init()
-    SetCurrentDriverState(#INITIALIZED)
+    ROS_SetDriverState(#INITIALIZED)
     ROS_SelectControlMode(#INACTIVE)
     EKI_ServerStart()
 END
@@ -42,17 +40,17 @@ GLOBAL DEF SPS_LoopCall()
     DECL Command cmd
 
     ; Check for connection/disconnection events
-    HandleConnection()
+    ROS_HandleConnection()
 
     IF IsClientConnected() THEN
         ; Parse commands into Command structure
         EKI_ReceiveData(cmd)
 
         ; Handle parsed command
-        HandleCommand(cmd)
+        ROS_HandleCommand(cmd)
 
         ; Publish state transition or error events
-        PublishEvent()
+        ROS_PublishEvent()
     ELSE
         ; Wait for a tick if there is no active connection to avoid CPU errors
         WAIT SEC 0.012
