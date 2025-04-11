@@ -75,6 +75,11 @@ Replier::ErrorCode Replier::ReceiveRequestOrTimeout(std::chrono::microseconds re
   }
 }
 
+Replier::ErrorCode Replier::EmptyBuffer(){
+  int recv_ret = socket_.ReceiveAllWithTimeout(std::chrono::milliseconds(kEmtyBufferRecvTimeoutMs), server_buffer_, kMaxBufferSize);
+  return recv_ret == Replier::ErrorCode::kSuccess ? Replier::ErrorCode::kSuccess : Replier::ErrorCode::kSocketError;
+}
+
 Replier::ErrorCode Replier::SendReply(uint8_t* reply_msg_data, size_t reply_msg_size) {
   if (!active_request_) {
     return Replier::ErrorCode::kError;

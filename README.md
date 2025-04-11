@@ -1,2 +1,5 @@
-To get started, first check out the setup instructions [here](kuka_external_control_sdk/doc/Setup.md) to see what is needed to be done before starting a program.
-Afterwards if you choose to use the SDK, read its [documentation](kuka_external_control_sdk/doc/SDK_howto.md) to get familiar with it.
+# KUKA External Control SDK
+
+To get started, first review the [setup instructions](kuka_external_control_sdk/doc/setup.md) to understand the necessary steps before starting a program.
+
+If you decide to use the SDK, read its [documentation](kuka_external_control_sdk/doc/SDK_howto.md) to become familiar with it.

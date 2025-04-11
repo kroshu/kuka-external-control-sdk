@@ -1,0 +1,192 @@
+&ACCESS RVP
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF command_handler()
+
+   ; Software License Agreement (BSD License)
+   ;
+   ; Copyright (c) 2022, Kuka Robotics Corp
+   ; All rights reserved.
+   ;
+   ; Redistribution and use in source and binary forms, with or without
+   ; modification, are permitted provided that the following conditions are met:
+   ;
+   ;      * Redistributions of source code must retain the above copyright
+   ;        notice, this list of conditions and the following disclaimer.
+   ;      * Redistributions in binary form must reproduce the above copyright
+   ;        notice, this list of conditions and the following disclaimer in the
+   ;        documentation and/or other materials provided with the distribution.
+   ;      * Neither the name of the copyright holder, nor the names of its
+   ;        contributors may be used to endorse or promote products derived
+   ;        from this software without specific prior written permission.
+   ;
+   ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   ; POSSIBILITY OF SUCH DAMAGE.
+
+END
+
+GLOBAL DEF HandleCommand(cmd:IN)
+   DECL Command cmd
+   DECL CMDType cmd_enum
+   DECL BOOL cmd_success
+   DECL ControlMode mode
+
+   cmd_enum = ParseCommand(cmd.cmd_str[])
+
+   IF cmd_enum == #CMD_NONE THEN
+      ; If nothing was received, just RETURN
+      RETURN
+   ENDIF
+
+   IF ValidateCommand(cmd_enum) THEN
+
+      SWITCH cmd_enum
+         CASE #CMD_INVALID
+            SetEvent(#Invalid)
+         CASE #CMD_CON
+            SetEvent(#Connected)
+         CASE #CMD_START
+            cmd_success = StartProgram(GetProgName(GetControlMode()))
+            IF cmd_success THEN
+               driver_state = #Active
+               SetEvent(#Started)
+            ELSE
+               SetEvent(#Error)
+            ENDIF
+         CASE #CMD_CANCEL
+            cmd_success = CancelProgram()
+            IF cmd_success THEN
+               driver_state = #Initialized
+               SetControlMode(#Inactive)
+               SetEvent(#Cancelled)
+            ELSE
+               SetEvent(#Error)
+            ENDIF
+         CASE #CMD_RESET
+            cmd_success = ResetProgram()
+            IF cmd_success THEN
+               driver_state = #Inactive
+               SetEvent(#ResetOK)
+            ELSE
+               SetEvent(#Error)
+            ENDIF
+         CASE #CMD_CHANGE
+            SWITCH cmd.control_mode
+               CASE 1
+                  mode = #JointPosition
+               CASE 5
+                  mode = #CartPosition
+               DEFAULT
+                  SetEvent(#Error)
+                  RETURN
+            ENDSWITCH
+            SetControlMode(mode) ; TODO
+            driver_state = #Inactive
+            SetEvent(#SwitchOK)
+      ENDSWITCH
+   ELSE
+      SetEvent(#Invalid)
+      MsgNotify("Invalid transition requested")
+   ENDIF
+
+END
+
+DEFFCT CMDType ParseCommand(cmd[]:IN)
+   CHAR cmd[]
+
+   IF (StrComp(cmd[], "CON", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_CON
+   ENDIF
+
+   IF (StrComp(cmd[], "START", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_START
+   ENDIF
+
+   IF (StrComp(cmd[], "RESET", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_RESET
+   ENDIF
+
+   IF (StrComp(cmd[], "CANCEL", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_CANCEL
+   ENDIF
+
+   IF (StrComp(cmd[], "CHANGE", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_CHANGE
+   ENDIF
+
+   IF (StrComp(cmd[], "None", #NOT_CASE_SENS)) THEN
+      RETURN #CMD_NONE
+   ENDIF
+
+   RETURN #CMD_INVALID
+ENDFCT
+
+DEFFCT BOOL ValidateCommand(cmd:IN)
+   DECL CMDType cmd
+   CHAR cmdString[16]
+   CHAR stateString[16]
+
+   ; Debug messages
+   cmdString[] = CommandToString(cmd)
+   stateString[] = DriverStateToString(driver_state)
+   MsgNotifyTextPar("Got command %1 while in %2.", "CommandHandler", 0, cmdString[], stateString[])
+
+   SWITCH driver_state
+      CASE #Initialized
+         RETURN (cmd == #CMD_CON) OR (cmd == #CMD_CHANGE)
+
+      CASE #Inactive
+         RETURN (cmd == #CMD_START) OR (cmd == #CMD_CHANGE) OR (cmd == #CMD_CANCEL)
+
+      CASE #Active
+         RETURN (cmd == #CMD_CANCEL) OR (cmd == #CMD_RESET)
+   ENDSWITCH
+
+   RETURN FALSE
+ENDFCT
+
+DEFFCT CHAR [16] CommandToString(command: IN)
+   DECL CMDType command
+   SWITCH command
+      CASE #CMD_NONE
+         RETURN "None"
+      CASE #CMD_CON
+         RETURN "Connect"
+      CASE #CMD_START
+         RETURN "Start"
+      CASE #CMD_RESET
+         RETURN "Reset"
+      CASE #CMD_CANCEL
+         RETURN "Cancel"
+      CASE #CMD_CHANGE
+         RETURN "Change"
+      CASE #CMD_INVALID
+         RETURN "Invalid"
+   ENDSWITCH
+ENDFCT
+
+DEFFCT CHAR [16] DriverStateToString(driverState: IN)
+   DECL DriverState driverState
+   SWITCH driverState
+      CASE #Initialized
+         RETURN "Initialized"
+      CASE #Inactive
+         RETURN "Inactive"
+      CASE #Active
+         RETURN "Active"
+   ENDSWITCH
+ENDFCT
+
+GLOBAL DEF SetDriverState(state: IN)
+   DECL DriverState state
+   driver_state = state
+END
