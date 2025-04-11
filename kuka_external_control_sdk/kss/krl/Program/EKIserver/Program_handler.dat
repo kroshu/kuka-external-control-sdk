@@ -1,0 +1,14 @@
+&ACCESS RV3
+DEFDAT program_handler
+   INT IntegerMax=2147483647
+   DECL STATE_T StmtState
+   DECL MODUS_T CmdMode = #SYNC
+   
+   DECL ControlMode control_mode = #Inactive
+   STRUC ControlModeMap ControlMode control_mode, CHAR prog_name[64]
+   
+   DECL CONST INT MAP_SIZE = 2
+   DECL ControlModeMap map[2]
+   map[1] = {control_mode #JointPosition, prog_name[] "R1/rsi_joint_pos()"}
+   map[2] = {control_mode #CartPosition, prog_name[] "R1/rsi_cart_pos()"}
+ENDDAT

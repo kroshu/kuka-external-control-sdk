@@ -26,15 +26,13 @@ class BaseMotionState {
  public:
   BaseMotionState(std::size_t dof) : dof_(dof) {}
 
-  std::vector<double> const& GetMeasuredPositions() { return measured_positions_; }
+  std::vector<double> const& GetMeasuredPositions() const { return measured_positions_; }
 
-  std::vector<double> const& GetMeasuredTorques() { return measured_torques_; }
+  std::vector<double> const& GetMeasuredTorques() const { return measured_torques_; }
 
-  std::vector<double> const& GetMeasuredVelocities() { return measured_velocities_; }
+  std::vector<double> const& GetMeasuredVelocities() const { return measured_velocities_; }
 
-  std::vector<double> const& GetMeasuredCartesianPositions() {
-    return measured_cartesian_positions_;
-  }
+  std::vector<double> const& GetMeasuredCartesianPositions() const { return measured_cartesian_positions_; }
 
  protected:
   bool has_positions_ = false;

@@ -1,0 +1,13 @@
+&ACCESS  RV
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+&REL 11735
+DEFDAT command_handler PUBLIC
+   GLOBAL ENUM DriverState Initialized, Inactive, Active
+   GLOBAL ENUM EventType Started, Stopped, Cancelled, ResetOK, Error, Connected, SwitchOK, Invalid, None
+   GLOBAL ENUM CMDType CMD_NONE,CMD_CON,CMD_START,CMD_RESET,CMD_CANCEL,CMD_CHANGE, CMD_INVALID
+   GLOBAL ENUM ControlMode Inactive, JointPosition, CartPosition
+
+   GLOBAL STRUC Command CHAR cmd_str[16], INT control_mode, INT cmdID
+
+   DECL DriverState driver_state = #Initialized
+ENDDAT

@@ -1,0 +1,36 @@
+<ETHERNETKRL>
+   <CONFIGURATION>
+      <EXTERNAL>
+         <TYPE>Client</TYPE>                    <!-- Users connect as clients -->
+      </EXTERNAL>
+      <INTERNAL>
+         <ENVIRONMENT>Submit</ENVIRONMENT>      <!-- Server run via submit interpreter -->
+         <BUFFERING Limit="512" />              <!-- Allow buffering of up to 512 messages (system max) -->
+         <ALIVE Set_Flag="105" />               <!-- Use $flag[105] to indicate alive/good connection status -->
+         <IP>192.168.38.8</IP>                  <!-- IP address for EKI interface on robot controller (KRC) -->
+         <PORT>54600</PORT>                     <!-- Port of EKI interface on robot controller (in [54600, 54615]) -->
+         <PROTOCOL>TCP</PROTOCOL>               <!-- Use TCP protocol -->
+         <MESSAGES Logging="warning" Display="disabled" />
+      </INTERNAL>
+   </CONFIGURATION>
+
+   <RECEIVE>
+      <XML>
+         <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
+         <ELEMENT Tag="External/@ID" Type="INT" />
+         <ELEMENT Tag="External/@ControlMode" Type="INT" />
+         <ELEMENT Tag="External" Set_Flag="110"/>
+      </XML>
+   </RECEIVE>
+   <SEND>
+      <XML>
+         <!-- ROS Event Info  ========================================= -->
+         <ELEMENT Tag="Robot/Event/@EventID"/>
+         <ELEMENT Tag="Robot/Event/@Message"/>
+         <ELEMENT Tag="Robot/Status/@Mode"/>
+         <ELEMENT Tag="Robot/Status/@ControlMode"/>
+         <ELEMENT Tag="Robot/Status/@EStop"/>
+         <ELEMENT Tag="Robot/Status/@ErrorCode"/>
+      </XML>
+   </SEND>
+</ETHERNETKRL>
