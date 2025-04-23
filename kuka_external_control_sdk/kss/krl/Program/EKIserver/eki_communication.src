@@ -130,10 +130,10 @@ GLOBAL DEF ROS_PublishEvent()
         ENDSWITCH
 
         ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@Mode", 1) ; TODO: op mode
+        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@Mode", 1)
 
         ; Transmit the current Run Mode
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1) ; TODOC
+        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1)
 
         ; Send the message
         ret = EKI_Send(INTERFACE_NAME[], x_path_send[])

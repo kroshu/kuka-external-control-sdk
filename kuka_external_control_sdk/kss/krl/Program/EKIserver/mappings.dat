@@ -24,16 +24,16 @@ DEFDAT mappings PUBLIC
 
     ; FOLD Constants for mapping control modes to strings/integers and vice versa
     DECL CONST ControlModeTuple CONTROL_MODE_TUPLES[3]
-    CONTROL_MODE_TUPLES[1] = { control_mode #INACTIVE, control_mode_string[] "Inactive Control", control_mode_int -1 }
+    CONTROL_MODE_TUPLES[1] = { control_mode #INACTIVE, control_mode_string[] "Inactive Control", control_mode_int 0 }
     CONTROL_MODE_TUPLES[2] = { control_mode #JOINT_POSITION, control_mode_string[] "Joint Position Control", control_mode_int 1 }
     CONTROL_MODE_TUPLES[3] = { control_mode #CART_POSITION, control_mode_string[] "Cartesian Position Control", control_mode_int 5 }
     ; ENDFOLD
 
     ; FOLD Constants for mapping strings to ROS_CycleTime values and vice versa
     DECL CONST CycleTimeTuple CYCLE_TIME_TUPLES[3]
-    CYCLE_TIME_TUPLES[1] = { cycle_time #NONE_CYCLE_TIME, cycle_time_string[] "NONE", cycle_time_int -1 }
-    CYCLE_TIME_TUPLES[2] = { cycle_time #RSI_4MS, cycle_time_string[] "RSI_4MS", cycle_time_int 0 }
-    CYCLE_TIME_TUPLES[3] = { cycle_time #RSI_12MS, cycle_time_string[] "RSI_12MS", cycle_time_int 1 }
+    CYCLE_TIME_TUPLES[1] = { cycle_time #NONE_CYCLE_TIME, cycle_time_string[] "UNSPECIFIED", cycle_time_int 0 }
+    CYCLE_TIME_TUPLES[2] = { cycle_time #RSI_4MS, cycle_time_string[] "RSI_4MS", cycle_time_int 1 }
+    CYCLE_TIME_TUPLES[3] = { cycle_time #RSI_12MS, cycle_time_string[] "RSI_12MS", cycle_time_int 2 }
     ; ENDFOLD
 
     ; FOLD Constants for mapping driver states to strings and vice versa

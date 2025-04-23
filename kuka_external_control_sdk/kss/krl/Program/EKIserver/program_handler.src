@@ -193,7 +193,7 @@ ENDFCT
 GLOBAL DEF ROS_SelectControlMode(mode: IN)
     DECL ControlMode mode
 
-    ROS_Debug1String("Control mode set to %1", ROS_ControlModeToString(mode))
+    ROS_Info1String("Control mode set to %1", ROS_ControlModeToString(mode))
     selected_control_mode = mode
 END
 

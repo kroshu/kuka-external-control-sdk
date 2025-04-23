@@ -47,6 +47,12 @@ GLOBAL DEF ROS_Error(msg[]: IN)
     MsgNotify(msg[], "ERROR")
 END
 
+GLOBAL DEF ROS_Info1String(msg[]: IN, str[]: IN)
+    CHAR msg[]
+    CHAR str[]
+    MsgNotify(msg[], "INFO",, str[])
+END
+
 GLOBAL DEF ROS_Debug1String(msg[]: IN, str[]: IN)
     CHAR msg[]
     CHAR str[]

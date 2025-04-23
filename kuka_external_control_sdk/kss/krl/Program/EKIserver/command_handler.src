@@ -180,7 +180,7 @@ DEF ChangeControlMode(command_struc: IN)
     DECL ControlMode control_mode
 
     control_mode = ROS_IntToControlMode(command_struc.control_mode)
-    IF control_mode== #INACTIVE THEN
+    IF control_mode == #INACTIVE THEN
         SetLastEvent(#ERROR)
         RETURN
     ENDIF
