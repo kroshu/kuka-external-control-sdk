@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,13 +21,14 @@
 #include <mutex>
 #include <variant>
 
-#include "kuka/external-control-sdk/kss/ikssrobot.h"
+#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss {
 
-class Robot : public IKssRobot {
+class Robot : public IRobot {
   // Special methods
  public:
   Robot(Configuration);
@@ -57,16 +58,9 @@ class Robot : public IKssRobot {
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
-  virtual Status RegisterKssEventHandlerExtension(
-    std::unique_ptr<IKssEventHandlerExtension>&& extension) override;
-
-  // KSS-specific functionality
-  virtual Status TurnOnDrives() override;
-  virtual Status TurnOffDrives() override ;
-  virtual Status SetCycleTime(Configuration::CycleTime cycle_time) override;
 
  private:
-  std::unique_ptr<IKssRobot> installed_interface_ = nullptr;
+  std::unique_ptr<IRobot> installed_interface_ = nullptr;
 };
 
 }  // namespace kuka::external::control::kss

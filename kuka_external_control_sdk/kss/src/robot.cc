@@ -87,20 +87,4 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return installed_interface_->RegisterEventHandler(std::move(event_handler));
 }
 
-Status Robot::RegisterKssEventHandlerExtension(std::unique_ptr<IKssEventHandlerExtension>&& extension) {
-  return installed_interface_->RegisterKssEventHandlerExtension(std::move(extension));
-}
-
-Status Robot::TurnOnDrives() {
-  return installed_interface_->TurnOnDrives();
-}
-
-Status Robot::TurnOffDrives() {
-  return installed_interface_->TurnOffDrives();
-}
-
-Status Robot::SetCycleTime(Configuration::CycleTime cycle_time) {
-  return installed_interface_->SetCycleTime(cycle_time);
-}
-
 };  // namespace kuka::external::control::kss

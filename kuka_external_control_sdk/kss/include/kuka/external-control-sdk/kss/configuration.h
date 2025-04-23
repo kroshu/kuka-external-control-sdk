@@ -22,6 +22,13 @@
 
 namespace kuka::external::control::kss {
 
+// RSI cycle time
+enum class CycleTime : uint8_t {
+  UNSPECIFIED = 0,
+  RSI_4MS = 1,
+  RSI_12MS = 2
+};
+
 struct Configuration {
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
@@ -38,13 +45,7 @@ struct Configuration {
    */
   ControlMode initial_control_mode = ControlMode::UNSPECIFIED;
 
-  // RSI cycle time
   // This value is ignored if plain RSI is used
-  enum class CycleTime {
-      RSI_4MS = 0,
-      RSI_12MS = 1,
-  };
-
   CycleTime cycle_time = CycleTime::RSI_12MS;
 
   enum class InstalledInterface {

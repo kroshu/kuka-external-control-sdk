@@ -15,14 +15,14 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 
+#include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
-#include "kuka/external-control-sdk/kss/ikssrobot.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss::rsi {
 
-class Robot : public IKssRobot {
+class Robot : public IRobot {
   // Special methods
  public:
   Robot(Configuration);
@@ -52,12 +52,6 @@ class Robot : public IKssRobot {
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
-  virtual Status RegisterKssEventHandlerExtension(
-    std::unique_ptr<IKssEventHandlerExtension>&& extension) override;
-
-  virtual Status TurnOnDrives() override;
-  virtual Status TurnOffDrives() override;
-  virtual Status SetCycleTime(Configuration::CycleTime) override;
 
  protected:
   MotionState last_motion_state_;

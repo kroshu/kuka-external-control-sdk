@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -95,13 +95,12 @@ Status Client::SendCommand(const std::string& req_type, int id) {
   return SendMessageAndWait();
 }
 
-Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode,
-                                            int id) {
-  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, id, control_mode);
+Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode, int id) {
+  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, id, static_cast<int>(control_mode));
   return SendMessageAndWait();
 }
 
-Status Client::SendCycleTimeChange(Configuration::CycleTime cycle_time) {
+Status Client::SendCycleTimeChange(CycleTime cycle_time) {
   int cycle_time_int = static_cast<int>(cycle_time);
   sprintf(reinterpret_cast<char*>(send_buff_), change_cycle_time_req_format_, cycle_time_int);
   return SendMessageAndWait();
@@ -129,7 +128,6 @@ void Client::StartReceiverThread() {
 void Client::HandleEvent(const EventResponse& event) {
   std::lock_guard<std::mutex> lck(event_handler_mutex_);
   switch (event.event_type) {
-    // Generic events
     case EventType::STARTED:
       event_handler_->OnSampling();
       return;
@@ -145,9 +143,15 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::SWITCH_OK:
       event_handler_->OnControlModeSwitch(event.message);
       return;
-    // KSS-specific events
     case EventType::CONNECTED:
-      event_handler_extension_->OnConnected(init_data_);
+      if (event_handler_extension_ != nullptr) {
+        event_handler_extension_->OnConnected(init_data_);
+      }
+      return;
+    case EventType::STATUS_REQUESTED:
+      if (status_response_handler_ != nullptr) {
+        status_response_handler_->OnStatusResponseReceived(status_response_);
+      }
       return;
     default:
       return;
@@ -197,8 +201,10 @@ bool Client::ParseEvent(char* data_to_parse) {
   strcpy(event_response_.message, "");
 
   // Parse event message
-  int ret = std::sscanf(data_to_parse, event_resp_format_, &event_response_.event_type,
+  int eid = -1;
+  int ret = std::sscanf(data_to_parse, event_resp_format_, &eid,
                         event_response_.message);
+  event_response_.event_type = static_cast<EventType>(eid);
   if (ret <= 0) return false;
   if (ret != 2) {
     // Not all event fields scanned, might add a warning somehow later on
@@ -207,33 +213,40 @@ bool Client::ParseEvent(char* data_to_parse) {
 }
 
 bool Client::ParseStatus(char* data_to_parse) {
+  event_response_.event_type = EventType::STATUS_REQUESTED;
+
   // Reset status fields
-  status_response_.mode = -1;
-  status_response_.control_mode = ControlMode::UNSPECIFIED;
-  status_response_.e_stop = false;
-  status_response_.error_code = -1;
+  status_response_.Reset();
 
   // Parse status message
-  int ret = std::sscanf(data_to_parse, status_resp_format_, &status_response_.mode,
-                        &status_response_.control_mode, &status_response_.e_stop,
-                        &status_response_.error_code);
+  int ret = std::sscanf(data_to_parse, status_resp_format_,
+    reinterpret_cast<uint8_t*>(&status_response_.control_mode_),
+    reinterpret_cast<uint8_t*>(&status_response_.cycle_time_),
+    reinterpret_cast<uint8_t*>(&status_response_.drives_enabled_),
+    reinterpret_cast<uint8_t*>(&status_response_.drives_powered_),
+    reinterpret_cast<uint8_t*>(&status_response_.emergency_stop_),
+    reinterpret_cast<uint8_t*>(&status_response_.guard_stop_),
+    reinterpret_cast<uint8_t*>(&status_response_.in_motion_),
+    reinterpret_cast<uint8_t*>(&status_response_.motion_possible_),
+    reinterpret_cast<uint8_t*>(&status_response_.operation_mode_));
 
-  if (ret <= 0) return false;
-  if (ret != 4) {
-    // Not all event fields scanned, might add a warning somehow later on
-  }
-  return true;
+  return ret == 9; // Ensure all fields are read
+
 }
 
 bool Client::ParseMessage(char* data_to_parse) {
   tinyxml2::XMLDocument doc;
   doc.Parse(data_to_parse);
 
-  tinyxml2::XMLElement* root = doc.RootElement();
+  event_response_.event_type = EventType::NONE;
+
+  tinyxml2::XMLElement* root = doc.RootElement(); // <Robot>
   tinyxml2::XMLElement* common = root->FirstChildElement("Common");
-  tinyxml2::XMLElement* event = common->FirstChildElement("Event");
-  int eid = std::stoi(event->Attribute("EventID"));
-  event_response_.event_type = static_cast<EventType>(eid);
+  if (common != nullptr) {
+    tinyxml2::XMLElement* event = common->FirstChildElement("Event");
+    int eid = std::stoi(event->Attribute("EventID"));
+    event_response_.event_type = static_cast<EventType>(eid);
+  }
 
   if (event_response_.event_type == EventType::CONNECTED) {
     const bool parsed = ParseInitMessage(data_to_parse, init_data_);
@@ -273,15 +286,22 @@ Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handle
   return Status(ReturnCode::OK);
 };
 
-Status Client::RegisterKssEventHandlerExtension(
-  std::unique_ptr<IKssEventHandlerExtension>&& extension) {
+Status Client::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
   if (extension == nullptr) {
-    return Status(ReturnCode::ERROR,
-        "RegisterKssEventHandlerExtension failed: please provide a valid pointer.");
+    return {ReturnCode::ERROR, "RegisterEventHandlerExtension failed: please provide a valid pointer"};
   }
 
   event_handler_extension_ = std::move(extension);
   return Status(ReturnCode::OK);
+}
+
+Status Client::RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler) {
+  if (handler == nullptr) {
+    return {ReturnCode::ERROR, "RegisterStatusResponseHandler failed: please provide a valid pointer"};
+  }
+
+  status_response_handler_ = std::move(handler);
+  return ReturnCode::OK;
 }
 
 Status Client::TurnOnDrives() {
@@ -292,8 +312,12 @@ Status Client::TurnOffDrives() {
   return SendCommand("DRIVES_OFF");
 }
 
-Status Client::SetCycleTime(Configuration::CycleTime cycle_time) {
+Status Client::SetCycleTime(CycleTime cycle_time) {
   return SendCycleTimeChange(cycle_time);
+}
+
+Status Client::GetStatus() {
+  return SendCommand("GET_STATUS");
 }
 
 }  // namespace kuka::external::control::kss

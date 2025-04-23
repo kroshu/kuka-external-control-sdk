@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@
 #include <mutex>
 #include <thread>
 
-#include "kuka/external-control-sdk/kss/ikssrobot.h"
+#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/common/status.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
+#include "kuka/external-control-sdk/kss/eki/extension.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/tcp_client.h"
 
 namespace kuka::external::control::kss::eki {
@@ -41,15 +44,17 @@ class Client : public os::core::udp::communication::TCPClient {
 
   Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler);
 
-  Status RegisterKssEventHandlerExtension(
-    std::unique_ptr<IKssEventHandlerExtension>&& extension);
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
+
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler);
 
   // TODO implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
 
   Status TurnOnDrives();
   Status TurnOffDrives();
-  Status SetCycleTime(Configuration::CycleTime cycle_time);
+  Status SetCycleTime(CycleTime cycle_time);
+  Status GetStatus();
 
  private:
   // Response structures
@@ -66,18 +71,12 @@ class Client : public os::core::udp::communication::TCPClient {
     DRIVES_TURNED_ON = 9,
     DRIVES_TURNED_OFF = 10,
     CYCLE_TIME_CHANGED = 11,
+    STATUS_REQUESTED = 12,
   };
 
   struct EventResponse {
     EventType event_type;
     char message[128];
-  };
-
-  struct StatusResponse {
-    int mode;  // TODO use enum
-    kuka::external::control::ControlMode control_mode;
-    bool e_stop;
-    int error_code;
   };
 
  private:
@@ -91,7 +90,7 @@ class Client : public os::core::udp::communication::TCPClient {
   Status SendControlModeChange(kuka::external::control::ControlMode control_mode, int id = 0);
 
   // Send EKI cycle time change command with given cycle time
-  Status SendCycleTimeChange(Configuration::CycleTime cycle_time);
+  Status SendCycleTimeChange(CycleTime cycle_time);
 
   // Start thread handling incoming events/status messages
   void StartReceiverThread();
@@ -128,8 +127,9 @@ class Client : public os::core::udp::communication::TCPClient {
   static constexpr char event_resp_format_[] =
       "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
   static constexpr char status_resp_format_[] =
-      "<Robot><Common><Status Mode=\"%d\" ControlMode=\"%d\" EStop=\"%d\" "
-      "ErrorCode=\"%d\"></Status></Common></Robot>";
+      "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesEnabled=\"%hhu\" "
+      "DrivesPowered=\"%hhu\" EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
+      "MotionPossible=\"%hhu\" OperationMode=\"%hhu\"></Status></Robot>";
 
   static constexpr char SEMANTIC_VERSION[] = "1.0.0";
 
@@ -147,7 +147,8 @@ class Client : public os::core::udp::communication::TCPClient {
   // Event handling
   std::mutex event_handler_mutex_;
   std::unique_ptr<EventHandler> event_handler_;
-  std::unique_ptr<IKssEventHandlerExtension> event_handler_extension_;
+  std::unique_ptr<IEventHandlerExtension> event_handler_extension_;
+  std::unique_ptr<IStatusResponseHandler> status_response_handler_;
   bool event_handler_set_ = false;
 };
 

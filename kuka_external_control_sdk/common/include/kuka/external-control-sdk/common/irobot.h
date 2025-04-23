@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class EventHandler {
   virtual void OnError(const std::string& reason) {}
 };
 
-enum class ControlMode {
+enum class ControlMode : uint8_t {
   UNSPECIFIED = 0,
   JOINT_POSITION_CONTROL = 1,
   JOINT_IMPEDANCE_CONTROL = 2,
@@ -45,6 +45,14 @@ enum class ControlMode {
   CARTESIAN_IMPEDANCE_CONTROL = 6,
   CARTESIAN_VELOCITY_CONTROL = 7,
   WRENCH_CONTROL = 8
+};
+
+enum class OperationMode : uint8_t {
+  UNSPECIFIED = 0,
+  T1 = 1,
+  T2 = 2,
+  AUT = 3,
+  EXT = 4
 };
 
 class IRobot {
