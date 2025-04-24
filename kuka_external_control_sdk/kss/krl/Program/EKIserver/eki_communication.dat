@@ -1,39 +1,11 @@
 &ACCESS R
-DEFDAT eki_communication
-    STRUC EventTypeTuple EventType event_type, INT event_type_int
-
-    CONST CHAR INTERFACE_NAME[64]
+DEFDAT eki_communication PUBLIC
+    GLOBAL CONST CHAR INTERFACE_NAME[64]
     INTERFACE_NAME[] = "EkiKSSinterface"
     CONST CHAR INTERFACE_VERSION[16]
     INTERFACE_VERSION[] = "1.0.0"
     CONST INT ROS_EKI_CONN_FLAG = 105
     CONST INT ROS_EKI_RECV_FLAG = 110
-
-    ; FOLD Helper constant for decoding axis type information
-    CONST CHAR AXIS_TYPE_MAP[5, 16]
-    AXIS_TYPE_MAP[1,] = "LINEAR"
-    AXIS_TYPE_MAP[2,] = "NOT_USED" ; Not used
-    AXIS_TYPE_MAP[3,] = "ROTATIONAL"
-    AXIS_TYPE_MAP[4,] = "NOT_USED" ; Not used
-    AXIS_TYPE_MAP[5,] = "ENDLESS"
-    ; ENDFOLD
-
-    ; FOLD Constants for easier mapping of event types to integers
-    DECL CONST EventTypeTuple EVENT_TYPE_TUPLES[13]
-    EVENT_TYPE_TUPLES[1] = { event_type #STARTED, event_type_int 0 }
-    EVENT_TYPE_TUPLES[2] = { event_type #STOPPED, event_type_int 1 }
-    EVENT_TYPE_TUPLES[3] = { event_type #CANCELLED, event_type_int 2 }
-    EVENT_TYPE_TUPLES[4] = { event_type #RESET_OK, event_type_int 3 }
-    EVENT_TYPE_TUPLES[5] = { event_type #ERROR, event_type_int 4 }
-    EVENT_TYPE_TUPLES[6] = { event_type #CONNECTED, event_type_int 5 }
-    EVENT_TYPE_TUPLES[7] = { event_type #SWITCH_OK, event_type_int 6 }
-    EVENT_TYPE_TUPLES[8] = { event_type #INVALID, event_type_int 7 }
-    EVENT_TYPE_TUPLES[9] = { event_type #NONE, event_type_int 8 }
-    EVENT_TYPE_TUPLES[10] = { event_type #DRIVES_TURNED_ON, event_type_int 9 }
-    EVENT_TYPE_TUPLES[11] = { event_type #DRIVES_TURNED_OFF, event_type_int 10 }
-    EVENT_TYPE_TUPLES[12] = { event_type #CYCLE_TIME_CHANGED, event_type_int 11 }
-    EVENT_TYPE_TUPLES[13] = { event_type #STATUS_REQUESTED, event_type_int 12 }
-    ; ENDFOLD
 
     DECL BOOL connection_flag = FALSE
     DECL EventType last_event = #NONE

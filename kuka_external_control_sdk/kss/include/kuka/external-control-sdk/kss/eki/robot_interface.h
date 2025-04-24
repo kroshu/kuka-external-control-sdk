@@ -54,7 +54,7 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
 
   Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
 
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler);
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
 
   Status GetStatus();
 
@@ -62,7 +62,6 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
  private:
   Configuration config_;
   Client tcp_client_;
-  std::mutex tcp_client_mtx_;
 };
 
 }  // namespace kuka::external::control::kss

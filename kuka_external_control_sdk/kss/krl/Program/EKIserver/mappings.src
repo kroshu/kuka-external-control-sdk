@@ -59,6 +59,21 @@ GLOBAL DEFFCT INT ROS_OperationModeToInt()
     RETURN 4
 ENDFCT
 
+; Return the axis type string associated with the given integer
+GLOBAL DEFFCT CHAR [32] ROS_AxisTypeIntToString(axis_type_int: IN)
+    INT axis_type_int
+    INT idx
+
+    FOR idx = 1 TO AXIS_TYPE_COUNT
+        IF AXIS_TYPE_TUPLES[idx].axis_type_int == axis_type_int THEN
+            RETURN AXIS_TYPE_TUPLES[idx].axis_type_string[]
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN "INVALID"
+ENDFCT
+
 ; Returns the command type associated with the given string
 GLOBAL DEFFCT CommandType ROS_StringToCommandType(command_type_string[]: IN)
     CHAR command_type_string[]
@@ -191,11 +206,25 @@ GLOBAL DEFFCT CHAR [32] ROS_DriverStateToString(driver_state: IN)
     RETURN "INVALID"
 ENDFCT
 
+; Returns the integer representation of the specified event type
+GLOBAL DEFFCT INT ROS_EventTypeToInt(event_type: IN)
+    DECL EventType event_type
+    INT idx
+
+    FOR idx = 1 TO EVENT_COUNT
+        IF event_type == EVENT_TYPE_TUPLES[idx].event_type THEN
+            RETURN EVENT_TYPE_TUPLES[idx].event_type_int
+        ENDIF
+    ENDFOR
+
+    ; Unreachable
+    RETURN -1
+ENDFCT
+
 ; Maps the specifed control mode and cycle time to a program name if available
-GLOBAL DEF ROS_GetProgramName(control_mode: IN, cycle_time: IN, program_name: OUT)
+GLOBAL DEFFCT CHAR [64] ROS_GetProgramName(control_mode: IN, cycle_time: IN)
     DECL ControlMode control_mode
     DECL ROS_CycleTime cycle_time
-    CHAR program_name[]
     INT idx
     BOOL control_mode_ok
     BOOL cycle_time_ok
@@ -204,10 +233,9 @@ GLOBAL DEF ROS_GetProgramName(control_mode: IN, cycle_time: IN, program_name: OU
         control_mode_ok = PROGRAM_CONFIGS[idx].control_mode == control_mode
         cycle_time_ok = PROGRAM_CONFIGS[idx].cycle_time == cycle_time
         IF control_mode_ok AND cycle_time_ok THEN
-            program_name[] = PROGRAM_CONFIGS[idx].program[]
-            RETURN
+            RETURN PROGRAM_CONFIGS[idx].program[]
         ENDIF
     ENDFOR
 
-    MsgNotify("Invalid program configuration provided", "Mappings")
-END
+    RETURN "INVALID"
+ENDFCT

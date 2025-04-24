@@ -34,7 +34,7 @@ struct InitializationData {
   }
 };
 
-struct StatusResponse {
+struct StatusUpdate {
   ControlMode control_mode_;
   CycleTime cycle_time_;
   bool drives_enabled_;
@@ -63,9 +63,9 @@ public:
   virtual void OnConnected(const InitializationData& init_data) = 0;
 };
 
-class IStatusResponseHandler {
+class IStatusUpdateHandler {
 public:
-  virtual void OnStatusResponseReceived(const StatusResponse& response) = 0;
+  virtual void OnStatusUpdateReceived(const StatusUpdate& response) = 0;
 };
 
 }  // namespace kuka::external::control::kss::eki

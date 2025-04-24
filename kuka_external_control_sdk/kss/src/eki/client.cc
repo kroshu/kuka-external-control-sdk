@@ -113,6 +113,10 @@ void Client::StartReceiverThread() {
         return;
       }
       HandleEvent(event_response_);
+      if (is_last_event_status_) {
+        is_last_event_status_ = false;
+        continue;
+      }
       // Only signal event as request response if a request was issued
       if (request_active_) {
         {
@@ -148,9 +152,10 @@ void Client::HandleEvent(const EventResponse& event) {
         event_handler_extension_->OnConnected(init_data_);
       }
       return;
-    case EventType::STATUS_REQUESTED:
-      if (status_response_handler_ != nullptr) {
-        status_response_handler_->OnStatusResponseReceived(status_response_);
+    case EventType::STATUS:
+      is_last_event_status_ = true;
+      if (status_update_handler_ != nullptr) {
+        status_update_handler_->OnStatusUpdateReceived(status_update_);
       }
       return;
     default:
@@ -213,22 +218,22 @@ bool Client::ParseEvent(char* data_to_parse) {
 }
 
 bool Client::ParseStatus(char* data_to_parse) {
-  event_response_.event_type = EventType::STATUS_REQUESTED;
+  event_response_.event_type = EventType::STATUS;
 
   // Reset status fields
-  status_response_.Reset();
+  status_update_.Reset();
 
   // Parse status message
   int ret = std::sscanf(data_to_parse, status_resp_format_,
-    reinterpret_cast<uint8_t*>(&status_response_.control_mode_),
-    reinterpret_cast<uint8_t*>(&status_response_.cycle_time_),
-    reinterpret_cast<uint8_t*>(&status_response_.drives_enabled_),
-    reinterpret_cast<uint8_t*>(&status_response_.drives_powered_),
-    reinterpret_cast<uint8_t*>(&status_response_.emergency_stop_),
-    reinterpret_cast<uint8_t*>(&status_response_.guard_stop_),
-    reinterpret_cast<uint8_t*>(&status_response_.in_motion_),
-    reinterpret_cast<uint8_t*>(&status_response_.motion_possible_),
-    reinterpret_cast<uint8_t*>(&status_response_.operation_mode_));
+    reinterpret_cast<uint8_t*>(&status_update_.control_mode_),
+    reinterpret_cast<uint8_t*>(&status_update_.cycle_time_),
+    reinterpret_cast<uint8_t*>(&status_update_.drives_enabled_),
+    reinterpret_cast<uint8_t*>(&status_update_.drives_powered_),
+    reinterpret_cast<uint8_t*>(&status_update_.emergency_stop_),
+    reinterpret_cast<uint8_t*>(&status_update_.guard_stop_),
+    reinterpret_cast<uint8_t*>(&status_update_.in_motion_),
+    reinterpret_cast<uint8_t*>(&status_update_.motion_possible_),
+    reinterpret_cast<uint8_t*>(&status_update_.operation_mode_));
 
   return ret == 9; // Ensure all fields are read
 
@@ -295,12 +300,12 @@ Status Client::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtens
   return Status(ReturnCode::OK);
 }
 
-Status Client::RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler) {
+Status Client::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
   if (handler == nullptr) {
     return {ReturnCode::ERROR, "RegisterStatusResponseHandler failed: please provide a valid pointer"};
   }
 
-  status_response_handler_ = std::move(handler);
+  status_update_handler_ = std::move(handler);
   return ReturnCode::OK;
 }
 
@@ -314,10 +319,6 @@ Status Client::TurnOffDrives() {
 
 Status Client::SetCycleTime(CycleTime cycle_time) {
   return SendCycleTimeChange(cycle_time);
-}
-
-Status Client::GetStatus() {
-  return SendCommand("GET_STATUS");
 }
 
 }  // namespace kuka::external::control::kss

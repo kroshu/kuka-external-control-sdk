@@ -46,7 +46,7 @@ class Client : public os::core::udp::communication::TCPClient {
 
   Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
 
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler);
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
 
   // TODO implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
@@ -71,7 +71,7 @@ class Client : public os::core::udp::communication::TCPClient {
     DRIVES_TURNED_ON = 9,
     DRIVES_TURNED_OFF = 10,
     CYCLE_TIME_CHANGED = 11,
-    STATUS_REQUESTED = 12,
+    STATUS = 12,
   };
 
   struct EventResponse {
@@ -135,20 +135,21 @@ class Client : public os::core::udp::communication::TCPClient {
 
   InitializationData init_data_;
   EventResponse event_response_;
-  StatusResponse status_response_;
+  StatusUpdate status_update_;
 
   std::thread receiver_thread_;
   std::condition_variable req_response_cv_;
   std::mutex req_response_cv_mutex_;
   std::atomic<bool> request_active_{false};
 
+  bool is_last_event_status_ = false;
   bool rsi_running_ = false;
 
   // Event handling
   std::mutex event_handler_mutex_;
   std::unique_ptr<EventHandler> event_handler_;
   std::unique_ptr<IEventHandlerExtension> event_handler_extension_;
-  std::unique_ptr<IStatusResponseHandler> status_response_handler_;
+  std::unique_ptr<IStatusUpdateHandler> status_update_handler_;
   bool event_handler_set_ = false;
 };
 

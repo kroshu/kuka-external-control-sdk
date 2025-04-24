@@ -22,8 +22,6 @@ Robot::Robot(Configuration config)
 {}
 
 Status Robot::Setup() {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
-
   os::core::udp::communication::TCPClient::ErrorCode setup_ret = tcp_client_.Setup();
   if (setup_ret != os::core::udp::communication::TCPClient::ErrorCode::kSuccess) {
     return {ReturnCode::ERROR, "Setup failed with error code: " + setup_ret};
@@ -42,7 +40,6 @@ Status Robot::Setup() {
 }
 
 Status Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.StartRSI(control_mode);
 }
 
@@ -52,7 +49,6 @@ Status Robot::StopControlling() {
     return stop_ret;
   }
 
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.StopRSI();
 }
 
@@ -73,27 +69,23 @@ Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtensi
   return tcp_client_.RegisterEventHandlerExtension(std::move(extension));
 }
 
-Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusResponseHandler>&& handler) {
+Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
   return tcp_client_.RegisterStatusResponseHandler(std::move(handler));
 }
 
 Status Robot::TurnOnDrives() {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.TurnOnDrives();
 }
 
 Status Robot::TurnOffDrives() {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.TurnOffDrives();
 }
 
 Status Robot::SetCycleTime(CycleTime cycle_time) {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.SetCycleTime(cycle_time);
 }
 
 Status Robot::GetStatus() {
-  std::lock_guard<std::mutex> lck{tcp_client_mtx_};
   return tcp_client_.GetStatus();
 }
 

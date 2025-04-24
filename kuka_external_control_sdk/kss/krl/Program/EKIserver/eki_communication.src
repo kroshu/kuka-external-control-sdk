@@ -2,7 +2,7 @@
 DEF eki_communication()
     ; Software License Agreement (BSD License)
     ;
-    ; Copyright (c) 2022, KUKA Hungaria Kft.
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
     ; All rights reserved.
     ;
     ; Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,8 @@ END
 GLOBAL DEF EKI_ServerStart()
     DECL EKI_STATUS ret
 
+    ResetComponents()
+
     ; Init connection flag - will be set TRUE internally by EKI after connection is made
     $FLAG[ROS_EKI_CONN_FLAG] = FALSE
     ; Init data recv flag - will be set TRUE internally by EKI after data is received
@@ -42,12 +44,16 @@ GLOBAL DEF EKI_ServerStart()
     ret = EKI_Open(INTERFACE_NAME[])
 END
 
-DEF EKI_ServerReset()
+GLOBAL DEF EKI_ServerReset()
     DECL EKI_STATUS ret
-    ROS_ResetCommandHandler()
-    ROS_ResetProgramHandler()
     ret = EKI_Clear(INTERFACE_NAME[])
     EKI_ServerStart()
+END
+
+DEF ResetComponents()
+    ROS_ResetCommandHandler()
+    ROS_ResetProgramHandler()
+    ROS_ResetStatus()
 END
 
 ; Tries to read received elements from buffer.
@@ -101,7 +107,6 @@ END
 
 GLOBAL DEF ROS_PublishEvent()
     DECL EKI_STATUS ret
-    BOOL bool_ret
     INT event_int
     CHAR event_msg[64]
     CHAR x_path_send[32]
@@ -115,18 +120,17 @@ GLOBAL DEF ROS_PublishEvent()
             RETURN
         ENDIF
 
-        event_int = GetEventId()
+        event_int = ROS_EventTypeToInt(last_event)
 
         ; Only list commands that need special handling
         SWITCH last_event
             CASE #CONNECTED
-                WriteInitDataToChannel()
+                ROS_WriteInitData()
                 x_path_send[] = "Robot"
             CASE #SWITCH_OK
                 event_msg[] = ROS_GetSelCtrlModeStr()
                 ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
-            CASE #STATUS_REQUESTED
-                WriteStatusToChannel()
+            CASE #STATUS_UPDATED
                 x_path_send[] = "Robot/Status"
         ENDSWITCH
 
@@ -140,13 +144,12 @@ GLOBAL DEF ROS_PublishEvent()
         ret = EKI_Send(INTERFACE_NAME[], x_path_send[])
 
         ; Reset event
-        SetLastEvent(#NONE)
-        bool_ret = StrClear(event_msg[])
-        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
+        ROS_SetLastEvent(#NONE)
+        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", " ")
     ENDIF
 END
 
-GLOBAL DEF SetLastEvent(event: IN)
+GLOBAL DEF ROS_SetLastEvent(event: IN)
     DECL EventType event
     last_event = event
 END
@@ -163,24 +166,11 @@ DEFFCT BOOL DidReceiveData()
     RETURN $FLAG[ROS_EKI_RECV_FLAG]
 ENDFCT
 
-DEF WriteStatusToChannel()
-    DECL EKI_STATUS ret
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@ControlMode", ROS_GetSelCtrlModeInt())
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@CycleTime", ROS_GetSelCycTimeInt())
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesEnabled", ROS_BoolToInt($SR_DRIVES_ENABLE))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesPowered", ROS_BoolToInt($PERI_RDY))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@EmergencyStop", ROS_BoolToInt(NOT $ALARM_STOP OR NOT $ALARM_STOP_INTERN))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@GuardStop", ROS_BoolToInt(NOT $USER_SAF))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@InMotion", ROS_BoolToInt($PRO_MOVE))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@MotionPossible", ROS_BoolToInt($COULD_START_MOTION AND $PRO_ACT))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@OperationMode", ROS_OperationModeToInt())
-END
-
-DEF WriteInitDataToChannel()
+GLOBAL DEF ROS_WriteInitData()
     DECL EKI_STATUS eki_ret
     INT counter
 
-    WriteStatusToChannel()
+    ROS_WriteStatus()
 
     ; Set general parameters
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@VER", INTERFACE_VERSION[])
@@ -215,7 +205,7 @@ DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
 
     actual_idx = idx + offset
 
-    bool_ret = StrCopy(axis_type_string[], AXIS_TYPE_MAP[$AXIS_TYPE[actual_idx],])
+    bool_ret = StrCopy(axis_type_string[], ROS_AxisTypeIntToString($AXIS_TYPE[actual_idx]))
     swrite_offset = 0
     SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@Type", base_path[], idx)
     eki_ret = EKI_SetString(INTERFACE_NAME[], x_path[], axis_type_string[])
@@ -235,16 +225,3 @@ DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
     SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@MaxRPM", base_path[], idx)
     eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $VEL_AXIS_MA[actual_idx])
 END
-
-DEFFCT INT GetEventId()
-    INT idx
-
-    FOR idx = 1 TO EVENT_COUNT
-        IF last_event == EVENT_TYPE_TUPLES[idx].event_type THEN
-            RETURN EVENT_TYPE_TUPLES[idx].event_type_int
-        ENDIF
-    ENDFOR
-
-    ; Unreachable
-    RETURN -1
-ENDFCT

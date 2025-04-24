@@ -2,7 +2,7 @@
 def driver()
     ; Software License Agreement (BSD License)
     ;
-    ; Copyright (c) 2022, Kuka Robotics Corp
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
     ; All rights reserved.
     ;
     ; Redistribution and use in source and binary forms, with or without
@@ -31,8 +31,6 @@ def driver()
 END
 
 GLOBAL DEF SPS_Init()
-    ROS_SetDriverState(#INITIALIZED)
-    ROS_SelectControlMode(#INACTIVE)
     EKI_ServerStart()
 END
 

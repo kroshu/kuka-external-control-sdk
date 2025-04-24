@@ -2,7 +2,7 @@
 DEF command_handler()
     ; Software License Agreement (BSD License)
     ;
-    ; Copyright (c) 2022, Kuka Robotics Corp
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
     ; All rights reserved.
     ;
     ; Redistribution and use in source and binary forms, with or without
@@ -37,20 +37,21 @@ GLOBAL DEF ROS_HandleCommand(cmd: IN)
     cmd_enum = ROS_StringToCommandType(cmd.cmd_str[])
 
     IF cmd_enum == #CMD_NONE THEN
-        ; If nothing was received, just RETURN
+        ; If nothing was received, send status update, if necessary
+        ROS_UpdateStatus()
         RETURN
     ENDIF
 
     ; Report error if the command was invalid
     IF NOT IsCommandValid(cmd_enum) THEN
-        SetLastEvent(#INVALID)
+        ROS_SetLastEvent(#INVALID)
         ROS_Error("Invalid transition requested")
         RETURN
     ENDIF
 
     SWITCH cmd_enum
         CASE #CMD_CON
-            SetLastEvent(#CONNECTED)
+            ROS_SetLastEvent(#CONNECTED)
         CASE #CMD_START
             StartProgram()
         CASE #CMD_CANCEL
@@ -61,16 +62,14 @@ GLOBAL DEF ROS_HandleCommand(cmd: IN)
             ChangeControlMode(cmd)
         CASE #CMD_DRIVES_ON
             $DRIVES_ENABLE = TRUE
-            SetLastEvent(#DRIVES_TURNED_ON)
+            ROS_SetLastEvent(#DRIVES_TURNED_ON)
         CASE #CMD_DRIVES_OFF
             $DRIVES_ENABLE = FALSE
-            SetLastEvent(#DRIVES_TURNED_OFF)
+            ROS_SetLastEvent(#DRIVES_TURNED_OFF)
         CASE #CMD_CHANGE_CYCLE_TIME
             ChangeCycleTime(cmd)
-        CASE #CMD_GET_STATUS
-            SetLastEvent(#STATUS_REQUESTED)
         DEFAULT
-            SetLastEvent(#INVALID)
+            ROS_SetLastEvent(#INVALID)
     ENDSWITCH
 END
 
@@ -94,11 +93,6 @@ DEFFCT BOOL IsCommandValid(cmd: IN)
             RETURN IsCommandValidInActive(cmd)
     ENDSWITCH
 ENDFCT
-
-GLOBAL DEF ROS_SetDriverState(state: IN)
-    DECL DriverState state
-    current_driver_state = state
-END
 
 ; Checks if the specified command enum is a valid command in the initialized state
 DEFFCT BOOL IsCommandValidInInit(cmd: IN)
@@ -150,9 +144,9 @@ END
 DEF StartProgram()
     IF ROS_StartProgram() THEN
         current_driver_state = #Active
-        SetLastEvent(#STARTED)
+        ROS_SetLastEvent(#STARTED)
     ELSE
-        SetLastEvent(#ERROR)
+        ROS_SetLastEvent(#ERROR)
     ENDIF
 END
 
@@ -160,18 +154,18 @@ DEF CancelProgram()
     IF ROS_CancelProgram() THEN
         current_driver_state = #Initialized
         ROS_SelectControlMode(#INACTIVE)
-        SetLastEvent(#CANCELLED)
+        ROS_SetLastEvent(#CANCELLED)
     ELSE
-        SetLastEvent(#ERROR)
+        ROS_SetLastEvent(#ERROR)
     ENDIF
 END
 
 DEF ResetProgram()
     IF ROS_ResetProgram() THEN
         current_driver_state = #INACTIVE
-        SetLastEvent(#RESET_OK)
+        ROS_SetLastEvent(#RESET_OK)
     ELSE
-        SetLastEvent(#ERROR)
+        ROS_SetLastEvent(#ERROR)
     ENDIF
 END
 
@@ -181,22 +175,22 @@ DEF ChangeControlMode(command_struc: IN)
 
     control_mode = ROS_IntToControlMode(command_struc.control_mode)
     IF control_mode == #INACTIVE THEN
-        SetLastEvent(#ERROR)
+        ROS_SetLastEvent(#ERROR)
         RETURN
     ENDIF
 
     ROS_SelectControlMode(control_mode)
     current_driver_state = #INACTIVE
-    SetLastEvent(#SWITCH_OK)
+    ROS_SetLastEvent(#SWITCH_OK)
 END
 
 DEF ChangeCycleTime(command_struc: IN)
     DECL Command command_struc
 
     IF NOT ROS_SelectCycleTime(command_struc.cycle_time) THEN
-        SetLastEvent(#ERROR)
+        ROS_SetLastEvent(#ERROR)
         RETURN
     ENDIF
 
-    SetLastEvent(#CYCLE_TIME_CHANGED)
+    ROS_SetLastEvent(#CYCLE_TIME_CHANGED)
 END
