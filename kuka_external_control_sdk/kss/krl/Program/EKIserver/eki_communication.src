@@ -101,6 +101,7 @@ END
 
 GLOBAL DEF ROS_PublishEvent()
     DECL EKI_STATUS ret
+    BOOL bool_ret
     INT event_int
     CHAR event_msg[64]
     CHAR x_path_send[32]
@@ -140,6 +141,8 @@ GLOBAL DEF ROS_PublishEvent()
 
         ; Reset event
         SetLastEvent(#NONE)
+        bool_ret = StrClear(event_msg[])
+        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
     ENDIF
 END
 

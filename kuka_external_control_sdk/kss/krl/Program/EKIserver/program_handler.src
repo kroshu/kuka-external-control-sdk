@@ -154,7 +154,7 @@ DEFFCT BOOL WaitForState(ProState: IN, Timeout: IN)
         UNTIL ($PRO_STATE1 == ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime))
     ENDIF
 
-    RETURN $PRO_STATE == ProState
+    RETURN $PRO_STATE1 == ProState
 ENDFCT
 
 DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout: IN)
