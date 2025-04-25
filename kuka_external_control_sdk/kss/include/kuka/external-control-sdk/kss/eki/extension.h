@@ -2,48 +2,59 @@
 #define KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_
 
 #include <string>
-#include <vector>
+
+#include <tinyxml2.h>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
 namespace kuka::external::control::kss::eki {
 
-enum class AxisType {
-  LINEAR,
-  ROTATIONAL,
-  ENDLESS,
-  UNKOWN
-};
-
 struct InitializationData {
+  bool Parse(const char* data_to_parse) {
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError error = doc.Parse(data_to_parse);
+    if (error != tinyxml2::XMLError::XML_SUCCESS) {
+      return false;
+    }
+
+    tinyxml2::XMLElement* root = doc.RootElement();
+    if (root == nullptr) {
+      return false;
+    }
+
+    tinyxml2::XMLElement* init_elem = root->FirstChildElement("Init");
+    if (init_elem == nullptr) {
+      return false;
+    }
+
+    semantic_version = init_elem->Attribute("VER");
+    num_axes = std::stoi(init_elem->Attribute("NumAxes"));
+    num_external_axes = std::stoi(init_elem->Attribute("NumExternalAxes"));
+    model_name = init_elem->Attribute("Model");
+
+    const std::string rob_ver = init_elem->Attribute("RobVer");
+    // The hardware and software versions are separated by a slash
+    const size_t sep_idx = rob_ver.find('/');
+    hw_version = rob_ver.substr(0, sep_idx);
+    sw_version = rob_ver.substr(sep_idx + 1);
+
+    return true;
+  }
+
+  uint8_t GetTotalAxisCount() const {
+    return num_axes + num_external_axes;
+  }
+
   std::string semantic_version;
-  uint64_t ipoc;
   uint8_t num_axes;
   uint8_t num_external_axes;
   std::string model_name;
   std::string hw_version;
   std::string sw_version;
-  std::vector<AxisType> axis_type;
-  std::vector<int16_t> ratio_numerator;
-  std::vector<int16_t> ratio_denominator;
-  std::vector<int16_t> max_rpm;
-
-  uint8_t GetTotalAxisCount() const {
-    return num_axes + num_external_axes;
-  }
 };
 
 struct StatusUpdate {
-  ControlMode control_mode_;
-  CycleTime cycle_time_;
-  bool drives_powered_;
-  bool emergency_stop_;
-  bool guard_stop_;
-  bool in_motion_;
-  bool motion_possible_;
-  OperationMode operation_mode_;
-
   void Reset() {
     control_mode_ = ControlMode::UNSPECIFIED;
     cycle_time_ = CycleTime::UNSPECIFIED;
@@ -54,6 +65,15 @@ struct StatusUpdate {
     motion_possible_ = false;
     operation_mode_ = OperationMode::UNSPECIFIED;
   }
+
+  ControlMode control_mode_;
+  CycleTime cycle_time_;
+  bool drives_powered_;
+  bool emergency_stop_;
+  bool guard_stop_;
+  bool in_motion_;
+  bool motion_possible_;
+  OperationMode operation_mode_;
 };
 
 class IEventHandlerExtension {

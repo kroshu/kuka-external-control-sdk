@@ -16,7 +16,6 @@
   <RECEIVE>
     <XML>
       <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
-      <ELEMENT Tag="External/@ID" Type="INT" />
       <ELEMENT Tag="External/@ControlMode" Type="INT" />
       <ELEMENT Tag="External/@CycleTime" Type="INT" />
       <ELEMENT Tag="External" Set_Flag="110" />
@@ -24,12 +23,10 @@
   </RECEIVE>
   <SEND>
     <XML>
-      <ELEMENT Tag="Robot/Common/Event/@EventID" />
-      <ELEMENT Tag="Robot/Common/Event/@Message" />
-      <ELEMENT Tag="Robot/Common/Status/@Mode" />
-      <ELEMENT Tag="Robot/Common/Status/@ControlMode" />
-      <ELEMENT Tag="Robot/Common/Status/@EStop" />
-      <ELEMENT Tag="Robot/Common/Status/@ErrorCode" />
+      <!-- BEGIN - Generic parameters -->
+      <ELEMENT Tag="Robot/Response/@EventID" />
+      <ELEMENT Tag="Robot/Response" />
+      <!-- END - Generic parameters -->
       <!-- BEGIN - Status parameters -->
       <ELEMENT Tag="Robot/Status/@ControlMode" />
       <ELEMENT Tag="Robot/Status/@CycleTime" />
@@ -42,59 +39,10 @@
       <!-- END - Status parameters -->
       <!-- BEGIN - Initial parameters -->
       <ELEMENT Tag="Robot/Init/@VER" />
-      <ELEMENT Tag="Robot/Init/@IPOC" />
       <ELEMENT Tag="Robot/Init/@NumAxes" />
       <ELEMENT Tag="Robot/Init/@NumExternalAxes" />
       <ELEMENT Tag="Robot/Init/@Model" />
       <ELEMENT Tag="Robot/Init/@RobVer" />
-      <ELEMENT Tag="Robot/Init/Axis/A1/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A1/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A1/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A1/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/A2/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A2/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A2/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A2/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/A3/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A3/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A3/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A3/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/A4/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A4/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A4/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A4/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/A5/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A5/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A5/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A5/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/A6/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/A6/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/A6/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/A6/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E1/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E1/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E1/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E1/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E2/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E2/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E2/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E2/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E3/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E3/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E3/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E3/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E4/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E4/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E4/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E4/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E5/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E5/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E5/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E5/@MaxRPM" />
-      <ELEMENT Tag="Robot/Init/Axis/E6/@Type" />
-      <ELEMENT Tag="Robot/Init/Axis/E6/@RatioNum" />
-      <ELEMENT Tag="Robot/Init/Axis/E6/@RatioDen" />
-      <ELEMENT Tag="Robot/Init/Axis/E6/@MaxRPM" />
       <!-- END - Initial parameters -->
     </XML>
   </SEND>

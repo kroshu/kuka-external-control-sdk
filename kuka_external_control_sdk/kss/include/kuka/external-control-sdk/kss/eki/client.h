@@ -83,10 +83,10 @@ class Client : public os::core::udp::communication::TCPClient {
   Status SendMessageAndWait();
 
   // Send EKI command with given request type
-  Status SendCommand(const std::string& req_type, int id = 0);
+  Status SendCommand(const std::string& req_type);
 
   // Send EKI control mode change command with given control mode
-  Status SendControlModeChange(kuka::external::control::ControlMode control_mode, int id = 0);
+  Status SendControlModeChange(kuka::external::control::ControlMode control_mode);
 
   // Send EKI cycle time change command with given cycle time
   Status SendCycleTimeChange(CycleTime cycle_time);
@@ -106,6 +106,8 @@ class Client : public os::core::udp::communication::TCPClient {
 
  private:
   void TearDownConnection();
+  bool IsCompatibleWithServer();
+  bool ParseInitMessage(char* data_to_parse);
   bool ParseEvent(char* data_to_parse);
   bool ParseStatus(char* data_to_parse);
   bool ParseMessage(char* data_to_parse);
@@ -117,20 +119,22 @@ class Client : public os::core::udp::communication::TCPClient {
   unsigned char recv_buff_[kRecvBuffSize];
   unsigned char send_buff_[kSendBuffSize];
 
-  static constexpr char simple_req_format_[] = "<External REQTYPE=\"%s\" ID=\"%d\"></External>";
+  static constexpr char simple_req_format_[] = "<External REQTYPE=\"%s\"></External>";
+
   static constexpr char change_control_mode_req_format_[] =
-      "<External REQTYPE=\"CHANGE\" ID=\"%d\" ControlMode=\"%d\"></External>";
+      "<External REQTYPE=\"CHANGE\" ControlMode=\"%d\"></External>";
+
   static constexpr char change_cycle_time_req_format_[] =
       "<External REQTYPE=\"CHANGE_CYCLE_TIME\" CycleTime=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
-      "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
+      "<Robot><Response EventID=\"%d\">%[^\"]</Response></Robot>";
 
-  static constexpr char status_resp_format_[] =
+  static constexpr char status_report_format_[] =
       "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
       "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
       "MotionPossible=\"%hhu\" OperationMode=\"%hhu\"></Status></Robot>";
-  static constexpr uint8_t kStatusRespFieldCount = 8;
+  static constexpr uint8_t kStatusReportFieldCount = 8;
 
   static constexpr char kSemanticVersion[] = "1.0.0";
 

@@ -108,44 +108,37 @@ END
 GLOBAL DEF ROS_PublishEvent()
     DECL EKI_STATUS ret
     INT event_int
-    CHAR event_msg[64]
     CHAR x_path_send[32]
 
     ; Before publishing a response to a command, select the relevant part of the XML
-    x_path_send[] = "Robot/Common"
+    x_path_send[] = "Robot/Response"
 
-    IF GetLastEvent() <> #NONE THEN
+    IF last_event <> #NONE THEN
         IF NOT IsClientConnected() THEN
             ROS_Error("External client is not connected when trying to send event")
             RETURN
         ENDIF
 
         event_int = ROS_EventTypeToInt(last_event)
+        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Response/@EventID", event_int)
 
         ; Only list commands that need special handling
         SWITCH last_event
             CASE #CONNECTED
                 ROS_WriteInitData()
-                x_path_send[] = "Robot"
+                x_path_send[] = "Robot/Init"
             CASE #SWITCH_OK
-                event_msg[] = ROS_GetSelCtrlModeStr()
-                ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", event_msg[])
+                ret = EKI_SetString(INTERFACE_NAME[], "Robot/Response", ROS_GetSelCtrlModeStr())
             CASE #STATUS_UPDATED
                 x_path_send[] = "Robot/Status"
         ENDSWITCH
-
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Event/@EventID", event_int)
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@Mode", 1)
-
-        ; Transmit the current Run Mode
-        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Common/Status/@ControlMode", 1)
 
         ; Send the message
         ret = EKI_Send(INTERFACE_NAME[], x_path_send[])
 
         ; Reset event
         ROS_SetLastEvent(#NONE)
-        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Common/Event/@Message", " ")
+        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Response", " ")
     ENDIF
 END
 
@@ -153,10 +146,6 @@ GLOBAL DEF ROS_SetLastEvent(event: IN)
     DECL EventType event
     last_event = event
 END
-
-GLOBAL DEFFCT EventType GetLastEvent()
-    RETURN last_event
-ENDFCT
 
 GLOBAL DEFFCT BOOL IsClientConnected()
     RETURN $FLAG[ROS_EKI_CONN_FLAG]
@@ -168,60 +157,13 @@ ENDFCT
 
 GLOBAL DEF ROS_WriteInitData()
     DECL EKI_STATUS eki_ret
-    INT counter
 
     ROS_WriteStatus()
 
     ; Set general parameters
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@VER", INTERFACE_VERSION[])
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@IPOC", $ROB_TIMER)
     eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumAxes", $NUM_AX)
     eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumExternalAxes", $EX_AX_NUM)
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@Model", $ROBTRAFO[])
     eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@RobVer", $V_R1MADA[])
-
-    ; Set axis-specific parameters for robot axes
-    FOR counter = 1 TO $NUM_AX
-        WriteAxisParamsToChannel("Robot/Init/Axis/A", counter, 0)
-    ENDFOR
-
-    ; Set axis-specific parameters for external axes (indexed from 7 to 12)
-    FOR counter = 1 TO $EX_AX_NUM
-        WriteAxisParamsToChannel("Robot/Init/Axis/E", counter, 6)
-    ENDFOR
-END
-
-DEF WriteAxisParamsToChannel(base_path[]: IN, idx: IN, offset: IN)
-    CHAR base_path[]
-    INT idx
-    INT offset
-    DECL EKI_STATUS eki_ret
-    DECL STATE_T state_ret
-    BOOL bool_ret
-    INT actual_idx
-    INT swrite_offset
-    CHAR x_path[64]
-    CHAR axis_type_string[16]
-
-    actual_idx = idx + offset
-
-    bool_ret = StrCopy(axis_type_string[], ROS_AxisTypeIntToString($AXIS_TYPE[actual_idx]))
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@Type", base_path[], idx)
-    eki_ret = EKI_SetString(INTERFACE_NAME[], x_path[], axis_type_string[])
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@RatioNum", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $RAT_MOT_AX[actual_idx].N)
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@RatioDen", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $RAT_MOT_AX[actual_idx].D)
-
-    bool_ret = StrClear(x_path[])
-    swrite_offset = 0
-    SWRITE(x_path[], state_ret, swrite_offset, "%s%d/@MaxRPM", base_path[], idx)
-    eki_ret = EKI_SetInt(INTERFACE_NAME[], x_path[], $VEL_AXIS_MA[actual_idx])
 END

@@ -31,7 +31,6 @@ set(sources
   ${utils_directory}/src/os-core-udp-communication/tcp_client.cc
   ${kss_directory}/src/eki/client.cc
   ${kss_directory}/src/eki/robot_interface.cc
-  ${kss_directory}/src/eki/init_sequence.cc
   ${kss_directory}/src/rsi/endpoint.cc
   ${kss_directory}/src/rsi/robot_interface.cc
   ${kss_directory}/src/message_builder.cc
@@ -64,19 +63,9 @@ if (CMAKE_TESTING_ENABLED)
     test_kss_message_builder
     test/test_message_builder.cc
   )
-  add_executable(
-    test_eki_communication
-    test/test_eki_communication.cc
-  )
 
   target_link_libraries(
     test_kss_message_builder
-    GTest::gtest_main
-    kuka-kss-client-library
-    GTest::gtest
-  )
-  target_link_libraries(
-    test_eki_communication
     GTest::gtest_main
     kuka-kss-client-library
     GTest::gtest
@@ -87,19 +76,12 @@ if (CMAKE_TESTING_ENABLED)
     "$<BUILD_INTERFACE:${kss_directory}/include>"
     "$<BUILD_INTERFACE:${kss_directory}/test>"
   )
-  target_include_directories(test_eki_communication PUBLIC
-    "$<BUILD_INTERFACE:${common_directory}/include>"
-    "$<BUILD_INTERFACE:${kss_directory}/include>"
-    "$<BUILD_INTERFACE:${kss_directory}/test>"
-  )
 
   target_compile_features(test_kss_message_builder INTERFACE cxx_std_17 PRIVATE cxx_std_17)
-  target_compile_features(test_eki_communication INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
   include(GoogleTest)
 
   gtest_discover_tests(test_kss_message_builder)
-  gtest_discover_tests(test_eki_communication)
 endif()
 
 install(TARGETS ${target_name} EXPORT SdkExport

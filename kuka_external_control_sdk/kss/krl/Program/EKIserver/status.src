@@ -76,6 +76,7 @@ GLOBAL DEF ROS_UpdateStatus()
 
     IF should_update OR first_update THEN
         ROS_WriteStatus()
+        ROS_Debug("Status updated")
         ROS_SetLastEvent(#STATUS_UPDATED)
         first_update = FALSE
     ENDIF

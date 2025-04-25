@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
 #include <cstring>
 
 #include <tinyxml2.h>
 
 #include "kuka/external-control-sdk/kss/eki/client.h"
-#include "kuka/external-control-sdk/kss/eki/init_sequence.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
@@ -90,13 +90,13 @@ Status Client::SendMessageAndWait() {
                      : Status(ReturnCode::TIMEOUT, "Request sent but response timeouted");
 }
 
-Status Client::SendCommand(const std::string& req_type, int id) {
-  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data(), id);
+Status Client::SendCommand(const std::string& req_type) {
+  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data());
   return SendMessageAndWait();
 }
 
-Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode, int id) {
-  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, id, static_cast<int>(control_mode));
+Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode) {
+  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, static_cast<int>(control_mode));
   return SendMessageAndWait();
 }
 
@@ -200,6 +200,41 @@ void Client::TearDownConnection() {
   socket_->Shutdown();
 }
 
+std::array<uint8_t, 3> ExtractNumbers(const std::string& version) {
+  std::array<uint8_t, 3> numbers = {0, 0, 0};
+  size_t start = 0, end = 0, index = 0;
+
+  while ((end = version.find('.', start)) != std::string::npos) {
+    numbers[index++] = static_cast<uint8_t>(std::stoi(version.substr(start, end - start)));
+    start = end + 1;
+  }
+
+  return numbers;
+}
+
+bool Client::IsCompatibleWithServer() {
+  const auto server_ver = ExtractNumbers(init_data_.semantic_version);
+  const auto client_ver = ExtractNumbers(kSemanticVersion);
+  return server_ver[0] == client_ver[0];
+}
+
+bool Client::ParseInitMessage(char* data_to_parse) {
+  const bool parsed = init_data_.Parse(data_to_parse);
+  if (parsed) {
+    if (!IsCompatibleWithServer()) {
+      TearDownConnection();
+      event_response_.event_type = EventType::ERROR;
+      sprintf(
+        event_response_.message,
+        "The server (%s) and client (%s) versions are not compatible",
+        init_data_.semantic_version.c_str(),
+        kSemanticVersion
+      );
+    }
+  }
+  return parsed;
+}
+
 bool Client::ParseEvent(char* data_to_parse) {
   // Reset event fields
   event_response_.event_type = EventType::NONE;
@@ -224,7 +259,7 @@ bool Client::ParseStatus(char* data_to_parse) {
   status_update_.Reset();
 
   // Parse status message
-  int ret = std::sscanf(data_to_parse, status_resp_format_,
+  int ret = std::sscanf(data_to_parse, status_report_format_,
     reinterpret_cast<uint8_t*>(&status_update_.control_mode_),
     reinterpret_cast<uint8_t*>(&status_update_.cycle_time_),
     reinterpret_cast<uint8_t*>(&status_update_.drives_powered_),
@@ -234,46 +269,29 @@ bool Client::ParseStatus(char* data_to_parse) {
     reinterpret_cast<uint8_t*>(&status_update_.motion_possible_),
     reinterpret_cast<uint8_t*>(&status_update_.operation_mode_));
 
-  return ret == kStatusRespFieldCount; // Ensure all fields are read
-
+  return ret == kStatusReportFieldCount; // Ensure all fields are read
 }
 
 bool Client::ParseMessage(char* data_to_parse) {
   tinyxml2::XMLDocument doc;
-  doc.Parse(data_to_parse);
-
-  event_response_.event_type = EventType::NONE;
-
-  tinyxml2::XMLElement* root = doc.RootElement(); // <Robot>
-  tinyxml2::XMLElement* common = root->FirstChildElement("Common");
-  if (common != nullptr) {
-    tinyxml2::XMLElement* event = common->FirstChildElement("Event");
-    int eid = std::stoi(event->Attribute("EventID"));
-    event_response_.event_type = static_cast<EventType>(eid);
+  tinyxml2::XMLError error = doc.Parse(data_to_parse);
+  if (error != tinyxml2::XMLError::XML_SUCCESS) {
+    return false;
   }
 
-  if (event_response_.event_type == EventType::CONNECTED) {
-    const bool parsed = ParseInitMessage(data_to_parse, init_data_);
-    if (parsed) {
-      // Check that the client and server versions are compatible
-      const bool compatible = CheckSemVerCompatibility(init_data_.semantic_version.c_str(), kSemanticVersion);
+  tinyxml2::XMLElement* root = doc.RootElement();
 
-      // If they are not compatible, close the connection and report an error
-      if (!compatible) {
-        TearDownConnection();
-        event_response_.event_type = EventType::ERROR;
-        sprintf(
-          event_response_.message,
-          "The server (%s) and client (%s) versions are not compatible",
-          init_data_.semantic_version.c_str(),
-          kSemanticVersion
-        );
-      }
-    }
-    return parsed;
+  if (root->FirstChildElement("Init") != nullptr) {
+    event_response_.event_type = EventType::CONNECTED;
+    return ParseInitMessage(data_to_parse);
   }
 
-  return ParseEvent(data_to_parse) || ParseStatus(data_to_parse);
+  if (root->FirstChildElement("Status") != nullptr) {
+    event_response_.event_type = EventType::STATUS;
+    return ParseStatus(data_to_parse);
+  }
+
+  return ParseEvent(data_to_parse);
 }
 
 Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
