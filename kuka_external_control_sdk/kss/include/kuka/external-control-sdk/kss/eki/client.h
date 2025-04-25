@@ -125,6 +125,7 @@ class Client : public os::core::udp::communication::TCPClient {
 
   static constexpr char event_resp_format_[] =
       "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
+
   static constexpr char status_resp_format_[] =
       "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
       "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
