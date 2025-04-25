@@ -56,8 +56,6 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
 
   Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
 
-  Status GetStatus();
-
   // Members and methods necessary for network configuration and error handling.
  private:
   Configuration config_;

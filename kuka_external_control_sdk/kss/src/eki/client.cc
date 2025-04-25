@@ -227,7 +227,6 @@ bool Client::ParseStatus(char* data_to_parse) {
   int ret = std::sscanf(data_to_parse, status_resp_format_,
     reinterpret_cast<uint8_t*>(&status_update_.control_mode_),
     reinterpret_cast<uint8_t*>(&status_update_.cycle_time_),
-    reinterpret_cast<uint8_t*>(&status_update_.drives_enabled_),
     reinterpret_cast<uint8_t*>(&status_update_.drives_powered_),
     reinterpret_cast<uint8_t*>(&status_update_.emergency_stop_),
     reinterpret_cast<uint8_t*>(&status_update_.guard_stop_),
@@ -235,7 +234,7 @@ bool Client::ParseStatus(char* data_to_parse) {
     reinterpret_cast<uint8_t*>(&status_update_.motion_possible_),
     reinterpret_cast<uint8_t*>(&status_update_.operation_mode_));
 
-  return ret == 9; // Ensure all fields are read
+  return ret == 8; // Ensure all fields are read
 
 }
 

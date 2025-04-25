@@ -85,8 +85,4 @@ Status Robot::SetCycleTime(CycleTime cycle_time) {
   return tcp_client_.SetCycleTime(cycle_time);
 }
 
-Status Robot::GetStatus() {
-  return tcp_client_.GetStatus();
-}
-
 };  // namespace kuka::external::control::kss

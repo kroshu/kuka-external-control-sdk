@@ -2,7 +2,6 @@
 DEFDAT status
     DECL ControlMode control_mode = #INACTIVE
     DECL ROS_CycleTime cycle_time = #NONE_CYCLE_TIME
-    BOOL drives_enabled = FALSE
     BOOL drives_powered = FALSE
     BOOL emergency_stop = FALSE
     BOOL guard_stop = FALSE

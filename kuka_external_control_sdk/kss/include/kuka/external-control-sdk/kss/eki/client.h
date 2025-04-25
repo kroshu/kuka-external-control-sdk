@@ -54,7 +54,6 @@ class Client : public os::core::udp::communication::TCPClient {
   Status TurnOnDrives();
   Status TurnOffDrives();
   Status SetCycleTime(CycleTime cycle_time);
-  Status GetStatus();
 
  private:
   // Response structures
@@ -127,8 +126,8 @@ class Client : public os::core::udp::communication::TCPClient {
   static constexpr char event_resp_format_[] =
       "<Robot><Common><Event EventID=\"%d\" Message=\"%[^\"]\"></Event></Common></Robot>";
   static constexpr char status_resp_format_[] =
-      "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesEnabled=\"%hhu\" "
-      "DrivesPowered=\"%hhu\" EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
+      "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
+      "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
       "MotionPossible=\"%hhu\" OperationMode=\"%hhu\"></Status></Robot>";
 
   static constexpr char SEMANTIC_VERSION[] = "1.0.0";

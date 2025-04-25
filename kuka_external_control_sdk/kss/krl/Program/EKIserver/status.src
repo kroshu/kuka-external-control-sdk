@@ -44,11 +44,6 @@ GLOBAL DEF ROS_UpdateStatus()
         should_update = TRUE
     ENDIF
 
-    IF $SR_DRIVES_ENABLE <> drives_enabled THEN
-        drives_enabled = $SR_DRIVES_ENABLE
-        should_update = TRUE
-    ENDIF
-
     IF $PERI_RDY <> drives_powered THEN
         drives_powered = $PERI_RDY
         should_update = TRUE
@@ -94,7 +89,6 @@ GLOBAL DEF ROS_WriteStatus()
     DECL EKI_STATUS ret
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@ControlMode", ROS_ControlModeToInt(control_mode))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@CycleTime", ROS_CycleTimeToInt(cycle_time))
-    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesEnabled", ROS_BoolToInt(drives_enabled))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@DrivesPowered", ROS_BoolToInt(drives_powered))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@EmergencyStop", ROS_BoolToInt(emergency_stop))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@GuardStop", ROS_BoolToInt(guard_stop))

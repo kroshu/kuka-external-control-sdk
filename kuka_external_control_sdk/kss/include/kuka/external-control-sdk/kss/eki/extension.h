@@ -37,7 +37,6 @@ struct InitializationData {
 struct StatusUpdate {
   ControlMode control_mode_;
   CycleTime cycle_time_;
-  bool drives_enabled_;
   bool drives_powered_;
   bool emergency_stop_;
   bool guard_stop_;
@@ -48,7 +47,6 @@ struct StatusUpdate {
   void Reset() {
     control_mode_ = ControlMode::UNSPECIFIED;
     cycle_time_ = CycleTime::UNSPECIFIED;
-    drives_enabled_ = false;
     drives_powered_ = false;
     emergency_stop_ = false;
     guard_stop_ = false;
