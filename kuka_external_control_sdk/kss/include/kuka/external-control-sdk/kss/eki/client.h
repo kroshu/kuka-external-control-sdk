@@ -129,8 +129,9 @@ class Client : public os::core::udp::communication::TCPClient {
       "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
       "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
       "MotionPossible=\"%hhu\" OperationMode=\"%hhu\"></Status></Robot>";
+  static constexpr uint8_t kStatusRespFieldCount = 8;
 
-  static constexpr char SEMANTIC_VERSION[] = "1.0.0";
+  static constexpr char kSemanticVersion[] = "1.0.0";
 
   InitializationData init_data_;
   EventResponse event_response_;
