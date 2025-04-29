@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         #!/bin/bash
-        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev&& mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
+        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev tinyxml2-dev && mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
 
     - name: Build and install
       run: cmake -DBUILD_TESTING=1 .. && make install
