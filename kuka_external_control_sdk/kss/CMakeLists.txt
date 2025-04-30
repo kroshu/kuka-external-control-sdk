@@ -19,7 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
-find_package(tinyxml2 CONFIG REQUIRED)
+find_package(tinyxml2 REQUIRED)
 
 set(sources
   ${common_directory}/src/status.cc
