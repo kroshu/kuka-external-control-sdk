@@ -48,7 +48,10 @@ target_include_directories(${target_name} PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
-target_link_libraries(${target_name} PUBLIC Threads::Threads PUBLIC tinyxml2)
+target_link_libraries(${target_name}
+  PUBLIC  Threads::Threads
+  PRIVATE tinyxml2
+)
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
