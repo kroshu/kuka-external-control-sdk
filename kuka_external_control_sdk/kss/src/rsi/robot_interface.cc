@@ -46,14 +46,14 @@ Status Robot::StopControlling() {
   if (!endpoint_.IsRequestActive()) {
     if (this->ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs)).return_code !=
           kuka::external::control::ReturnCode::OK) {
-        return Status(ReturnCode::ERROR, "Failed to receive before sending stop signal");
+      return Status(ReturnCode::ERROR, "Failed to receive before sending stop signal");
     }
   }
 
   if (!stop_send_str_view.has_value()) {
-      result = {ReturnCode::ERROR, "Parsing last control signal to proper XML format failed"};
+    result = {ReturnCode::ERROR, "Parsing last control signal to proper XML format failed"};
   } else if (!endpoint_.MessageSend(stop_send_str_view.value())) {
-      result = {ReturnCode::ERROR, "Sending last RSI stop command failed - cancelling RSI program"};
+    result = {ReturnCode::ERROR, "Sending last RSI stop command failed - cancelling RSI program"};
   }
 
   endpoint_.Reset();
