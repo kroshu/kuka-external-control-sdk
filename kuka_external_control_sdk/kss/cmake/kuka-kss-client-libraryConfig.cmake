@@ -5,7 +5,7 @@ find_dependency(tinyxml2 QUIET)
 
 if(NOT tinyxml2_FOUND)
   message(STATUS "tinyxml2 not found")
-  find_package(tinyxml2_vendor REQUIRED)
+  find_dependency(tinyxml2_vendor REQUIRED)
 endif()
 
 
