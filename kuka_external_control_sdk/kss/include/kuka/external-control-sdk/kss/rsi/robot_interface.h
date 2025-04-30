@@ -66,7 +66,6 @@ class Robot : public IRobot {
 
   // Members and methods for implementing control
  private:
-  Status ParseIncomingXML(std::string_view xml_str);
   Status UpdateMotionState(std::string_view xml_str);
 
  private:
