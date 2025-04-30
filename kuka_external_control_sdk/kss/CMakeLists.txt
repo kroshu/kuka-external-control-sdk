@@ -19,7 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
-find_package(tinyxml2 REQUIRED)
+find_package(tinyxml2_vendor REQUIRED)
 
 set(sources
   ${common_directory}/src/status.cc
@@ -48,7 +48,7 @@ target_include_directories(${target_name} PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
-target_link_libraries(${target_name} PUBLIC Threads::Threads PUBLIC tinyxml2::tinyxml2)
+target_link_libraries(${target_name} PUBLIC Threads::Threads PUBLIC tinyxml2)
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
