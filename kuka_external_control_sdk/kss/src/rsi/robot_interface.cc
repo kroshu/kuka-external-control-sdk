@@ -60,7 +60,6 @@ Status Robot::StopControlling() {
   return result;
 }
 
-
 Status Robot::StopMonitoring() {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
