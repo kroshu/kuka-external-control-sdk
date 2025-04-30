@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ class MotionState : public BaseMotionState {
   }
 
   MotionState(const MotionState& other) = default;
+  MotionState& operator=(const MotionState& other);
 
   void CreateFromXML(const char* incoming_xml);
   int GetIpoc() { return ipoc_; }
@@ -69,8 +70,7 @@ class MotionState : public BaseMotionState {
 
 class ControlSignal : public BaseControlSignal {
  public:
-  ControlSignal(std::size_t dof, const MotionState& initial_positions)
-      : BaseControlSignal(dof), kInitialPositions(initial_positions) {
+  ControlSignal(std::size_t dof) : BaseControlSignal(dof), initial_positions_(dof) {
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
     for (int i = 1; i <= dof; ++i) {
@@ -80,6 +80,9 @@ class ControlSignal : public BaseControlSignal {
 
   // Create XML containing relative positions in rad
   std::optional<std::string_view> CreateXMLString(int last_ipoc, bool stop_control = false);
+
+  void SetInitialPositions(const MotionState& initial_positions);
+  bool InitialPositionsPositionsSet() const { return initial_positions_set_; }
 
  private:
   void AppendToXMLString(std::string_view str);
@@ -95,7 +98,8 @@ class ControlSignal : public BaseControlSignal {
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Sen>";
 
-  const MotionState& kInitialPositions;
+  bool initial_positions_set_ = false;
+  MotionState initial_positions_;
 
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;

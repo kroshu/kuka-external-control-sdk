@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ namespace kuka::external::control::kss::rsi {
 Robot::Robot(Configuration config)
     : config_(config)
     , last_motion_state_(config.dof)
-    , initial_motion_state_(config.dof) {}
+    , initial_motion_state_(config.dof)
+    , control_signal_(config.dof) {}
 
 Status Robot::Setup() {
   if (!endpoint_.Setup(config_.client_port)) {
@@ -40,7 +41,7 @@ Status Robot::StartMonitoring() {
 
 Status Robot::StopControlling() {
   Status result = {ReturnCode::OK, ""};
-  auto stop_send_str_view = control_signal_->CreateXMLString(last_ipoc_, true);
+  auto stop_send_str_view = control_signal_.CreateXMLString(last_ipoc_, true);
 
   if (!endpoint_.IsRequestActive()) {
     if (this->ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs)).return_code !=
@@ -85,12 +86,12 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&&) {
 }
 
 Status Robot::SendControlSignal() {
-  if (control_signal_ == nullptr) {
+  if (!control_signal_.InitialPositionsPositionsSet()) {
     return {ReturnCode::ERROR,
             "Control signal not initialized, please call ReceiveMotionState() first"};
   }
 
-  auto ctr_signal_xml = control_signal_->CreateXMLString(last_ipoc_, false);
+  auto ctr_signal_xml = control_signal_.CreateXMLString(last_ipoc_, false);
   if (!ctr_signal_xml.has_value()) {
     return {ReturnCode::ERROR, "Parsing control signal to proper XML format failed"};
   }
@@ -108,16 +109,19 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
 
   if (std::isnan(initial_motion_state_.GetMeasuredPositions()[0])) {
     initial_motion_state_.CreateFromXML(endpoint_.GetReceivedMessage().data());
-    control_signal_ = std::make_unique<ControlSignal>(config_.dof, initial_motion_state_);
+    control_signal_.SetInitialPositions(initial_motion_state_);
   }
 
   return UpdateMotionState(endpoint_.GetReceivedMessage());
 }
 
 BaseControlSignal& Robot::GetControlSignal() {
-  return *control_signal_;
-}  // TODO: Fix segfault if not initialized
-BaseMotionState& Robot::GetLastMotionState() { return last_motion_state_; }
+  return control_signal_;
+}
+
+BaseMotionState& Robot::GetLastMotionState() {
+  return last_motion_state_;
+}
 
 Status Robot::UpdateMotionState(std::string_view xml_str) {
   last_motion_state_.CreateFromXML(xml_str.data());

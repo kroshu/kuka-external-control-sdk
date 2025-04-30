@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ class Robot : public IRobot {
  protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
-  std::unique_ptr<ControlSignal> control_signal_{nullptr};
+  ControlSignal control_signal_;
 
   Configuration config_;
   int last_ipoc_ = 0;

@@ -16,7 +16,7 @@ bool Endpoint::Setup(unsigned short local_udp_port) {
 bool Endpoint::ReceiveOrTimeout(std::chrono::milliseconds receive_request_timeout) {
   os::core::udp::communication::Replier::ErrorCode recv_ret = replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess) {
-    memset(recv_msg_, '\0', 1024);
+    memset(recv_msg_, '\0', kBufferSize);
     strncpy(recv_msg_, (const char*)replier_socket_->GetRequestMessage().first,
             replier_socket_->GetRequestMessage().second);
     return true;
