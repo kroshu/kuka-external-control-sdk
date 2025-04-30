@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kuka/external-control-sdk/kss/eki/client.h"
+#include <array>
 #include <cstring>
 
-#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
+#include <tinyxml2.h>
+
+#include "kuka/external-control-sdk/kss/eki/client.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
+
 
 namespace kuka::external::control::kss::eki {
 
@@ -27,10 +31,8 @@ Client::Client(const std::string& server_address, unsigned short server_port)
 }
 
 Client::~Client() {
-  StopRSI();
-  // Shutting down socket to interrupt blocking receive
-  // In receiver thread
-  socket_->Shutdown();
+  TearDownConnection();
+
   if (receiver_thread_.joinable()) {
     receiver_thread_.join();
   }
@@ -88,14 +90,19 @@ Status Client::SendMessageAndWait() {
                      : Status(ReturnCode::TIMEOUT, "Request sent but response timeouted");
 }
 
-Status Client::SendCommand(const std::string& req_type, int id) {
-  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data(), id);
+Status Client::SendCommand(const std::string& req_type) {
+  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data());
   return SendMessageAndWait();
 }
 
-Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode,
-                                            int id) {
-  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, id, control_mode);
+Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode) {
+  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, static_cast<int>(control_mode));
+  return SendMessageAndWait();
+}
+
+Status Client::SendCycleTimeChange(CycleTime cycle_time) {
+  int cycle_time_int = static_cast<int>(cycle_time);
+  sprintf(reinterpret_cast<char*>(send_buff_), change_cycle_time_req_format_, cycle_time_int);
   return SendMessageAndWait();
 }
 
@@ -106,6 +113,10 @@ void Client::StartReceiverThread() {
         return;
       }
       HandleEvent(event_response_);
+      if (is_last_event_status_) {
+        is_last_event_status_ = false;
+        continue;
+      }
       // Only signal event as request response if a request was issued
       if (request_active_) {
         {
@@ -124,9 +135,6 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::STARTED:
       event_handler_->OnSampling();
       return;
-    case EventType::SWITCH_OK:
-      event_handler_->OnControlModeSwitch(event.message);
-      return;
     case EventType::STOPPED:
       event_handler_->OnStopped("RSI program stopped");
       return;
@@ -136,7 +144,20 @@ void Client::HandleEvent(const EventResponse& event) {
     case EventType::ERROR:
       event_handler_->OnError(event.message);
       return;
-
+    case EventType::SWITCH_OK:
+      event_handler_->OnControlModeSwitch(event.message);
+      return;
+    case EventType::CONNECTED:
+      if (event_handler_extension_ != nullptr) {
+        event_handler_extension_->OnConnected(init_data_);
+      }
+      return;
+    case EventType::STATUS:
+      is_last_event_status_ = true;
+      if (status_update_handler_ != nullptr) {
+        status_update_handler_->OnStatusUpdateReceived(status_update_);
+      }
+      return;
     default:
       return;
   }
@@ -162,12 +183,56 @@ int Client::Dissect(char* cursor_ptr, std::size_t available_bytes) {
     return available_bytes + 1;
   }
 
-  // Parse event or status response with format string - return with error if failed
-  if (ParseEvent(cursor_ptr) || ParseStatus(cursor_ptr)) {
+  // Parse event or status response with format string
+  if (ParseMessage(cursor_ptr)) {
     return available_bytes;
-  } else {
-    return -1;
   }
+
+  // Return with error if parsing failed
+  return -1;
+}
+
+void Client::TearDownConnection() {
+  StopRSI();
+
+  // Shutting down socket to interrupt blocking receive
+  // In receiver thread
+  socket_->Shutdown();
+}
+
+std::array<uint8_t, 3> ExtractNumbers(const std::string& version) {
+  std::array<uint8_t, 3> numbers = {0, 0, 0};
+  size_t start = 0, end = 0, index = 0;
+
+  while ((end = version.find('.', start)) != std::string::npos) {
+    numbers[index++] = static_cast<uint8_t>(std::stoi(version.substr(start, end - start)));
+    start = end + 1;
+  }
+
+  return numbers;
+}
+
+bool Client::IsCompatibleWithServer() {
+  const auto server_ver = ExtractNumbers(init_data_.semantic_version);
+  const auto client_ver = ExtractNumbers(kSemanticVersion);
+  return server_ver[0] == client_ver[0];
+}
+
+bool Client::ParseInitMessage(char* data_to_parse) {
+  const bool parsed = init_data_.Parse(data_to_parse);
+  if (parsed) {
+    if (!IsCompatibleWithServer()) {
+      TearDownConnection();
+      event_response_.event_type = EventType::ERROR;
+      sprintf(
+        event_response_.message,
+        "The server (%s) and client (%s) versions are not compatible",
+        init_data_.semantic_version.c_str(),
+        kSemanticVersion
+      );
+    }
+  }
+  return parsed;
 }
 
 bool Client::ParseEvent(char* data_to_parse) {
@@ -176,8 +241,10 @@ bool Client::ParseEvent(char* data_to_parse) {
   strcpy(event_response_.message, "");
 
   // Parse event message
-  int ret = std::sscanf(data_to_parse, event_resp_format_, &event_response_.event_type,
+  int eid = -1;
+  int ret = std::sscanf(data_to_parse, event_resp_format_, &eid,
                         event_response_.message);
+  event_response_.event_type = static_cast<EventType>(eid);
   if (ret <= 0) return false;
   if (ret != 2) {
     // Not all event fields scanned, might add a warning somehow later on
@@ -186,22 +253,45 @@ bool Client::ParseEvent(char* data_to_parse) {
 }
 
 bool Client::ParseStatus(char* data_to_parse) {
+  event_response_.event_type = EventType::STATUS;
+
   // Reset status fields
-  status_response_.mode = -1;
-  status_response_.control_mode = ControlMode::UNSPECIFIED;
-  status_response_.e_stop = false;
-  status_response_.error_code = -1;
+  status_update_.Reset();
 
   // Parse status message
-  int ret = std::sscanf(data_to_parse, status_resp_format_, &status_response_.mode,
-                        &status_response_.control_mode, &status_response_.e_stop,
-                        &status_response_.error_code);
+  int ret = std::sscanf(data_to_parse, status_report_format_,
+    reinterpret_cast<uint8_t*>(&status_update_.control_mode_),
+    reinterpret_cast<uint8_t*>(&status_update_.cycle_time_),
+    reinterpret_cast<uint8_t*>(&status_update_.drives_powered_),
+    reinterpret_cast<uint8_t*>(&status_update_.emergency_stop_),
+    reinterpret_cast<uint8_t*>(&status_update_.guard_stop_),
+    reinterpret_cast<uint8_t*>(&status_update_.in_motion_),
+    reinterpret_cast<uint8_t*>(&status_update_.motion_possible_),
+    reinterpret_cast<uint8_t*>(&status_update_.operation_mode_));
 
-  if (ret <= 0) return false;
-  if (ret != 4) {
-    // Not all event fields scanned, might add a warning somehow later on
+  return ret == kStatusReportFieldCount; // Ensure all fields are read
+}
+
+bool Client::ParseMessage(char* data_to_parse) {
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.Parse(data_to_parse);
+  if (error != tinyxml2::XMLError::XML_SUCCESS) {
+    return false;
   }
-  return true;
+
+  tinyxml2::XMLElement* root = doc.RootElement();
+
+  if (root->FirstChildElement("Init") != nullptr) {
+    event_response_.event_type = EventType::CONNECTED;
+    return ParseInitMessage(data_to_parse);
+  }
+
+  if (root->FirstChildElement("Status") != nullptr) {
+    event_response_.event_type = EventType::STATUS;
+    return ParseStatus(data_to_parse);
+  }
+
+  return ParseEvent(data_to_parse);
 }
 
 Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
@@ -217,5 +307,35 @@ Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handle
 
   return Status(ReturnCode::OK);
 };
+
+Status Client::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
+  if (extension == nullptr) {
+    return {ReturnCode::ERROR, "RegisterEventHandlerExtension failed: please provide a valid pointer"};
+  }
+
+  event_handler_extension_ = std::move(extension);
+  return Status(ReturnCode::OK);
+}
+
+Status Client::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
+  if (handler == nullptr) {
+    return {ReturnCode::ERROR, "RegisterStatusResponseHandler failed: please provide a valid pointer"};
+  }
+
+  status_update_handler_ = std::move(handler);
+  return ReturnCode::OK;
+}
+
+Status Client::TurnOnDrives() {
+  return SendCommand("DRIVES_ON");
+}
+
+Status Client::TurnOffDrives() {
+  return SendCommand("DRIVES_OFF");
+}
+
+Status Client::SetCycleTime(CycleTime cycle_time) {
+  return SendCycleTimeChange(cycle_time);
+}
 
 }  // namespace kuka::external::control::kss

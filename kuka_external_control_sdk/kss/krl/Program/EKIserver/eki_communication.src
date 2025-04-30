@@ -1,183 +1,169 @@
-&ACCESS RVO
-&REL 4
-&PARAM DISKPATH = KRC:\R1\Program\ROS
-DEF eki_communication ( )
-   ; Software License Agreement (BSD License)
-   ;
-   ; Copyright (c) 2022, Kuka Robotics Corp
-   ; All rights reserved.
-   ;
-   ; Redistribution and use in source and binary forms, with or without
-   ; modification, are permitted provided that the following conditions are met:
-   ;
-   ;      * Redistributions of source code must retain the above copyright
-   ;        notice, this list of conditions and the following disclaimer.
-   ;      * Redistributions in binary form must reproduce the above copyright
-   ;        notice, this list of conditions and the following disclaimer in the
-   ;        documentation and/or other materials provided with the distribution.
-   ;      * Neither the name of the copyright holder, nor the names of its
-   ;        contributors may be used to endorse or promote products derived
-   ;        from this software without specific prior written permission.
-   ;
-   ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-   ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-   ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-   ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-   ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-   ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-   ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-   ; POSSIBILITY OF SUCH DAMAGE.
-
-END
-
-GLOBAL DEF EKI_ServerInit()
-
-   InterfaceName[] = "EkiKSSinterface"
-
+&ACCESS R
+DEF eki_communication()
+    ; Software License Agreement (BSD License)
+    ;
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
+    ; All rights reserved.
+    ;
+    ; Redistribution and use in source and binary forms, with or without
+    ; modification, are permitted provided that the following conditions are met:
+    ;
+    ;      * Redistributions of source code must retain the above copyright
+    ;        notice, this list of conditions and the following disclaimer.
+    ;      * Redistributions in binary form must reproduce the above copyright
+    ;        notice, this list of conditions and the following disclaimer in the
+    ;        documentation and/or other materials provided with the distribution.
+    ;      * Neither the name of the copyright holder, nor the names of its
+    ;        contributors may be used to endorse or promote products derived
+    ;        from this software without specific prior written permission.
+    ;
+    ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    ; POSSIBILITY OF SUCH DAMAGE.
 END
 
 GLOBAL DEF EKI_ServerStart()
-   decl eki_status eki_ret
+    DECL EKI_STATUS ret
 
-   ; Init connection flag - will be set TRUE internally by EKI after connection is made
-   $flag[ROS_EKI_Conn_Flag] = FALSE
-   ; Init data recv flag - will be set TRUE internally by EKI after data is received
-   $flag[ROS_EKI_Recv_Flag] = FALSE
+    ResetComponents()
 
-   ; TODO: check ret values
-   eki_ret = EKI_Init(InterfaceName[])
-   eki_ret = EKI_Open(InterfaceName[])
+    ; Init connection flag - will be set TRUE internally by EKI after connection is made
+    $FLAG[ROS_EKI_CONN_FLAG] = FALSE
+    ; Init data recv flag - will be set TRUE internally by EKI after data is received
+    $FLAG[ROS_EKI_RECV_FLAG] = FALSE
+
+    ret = EKI_Init(INTERFACE_NAME[])
+    ret = EKI_Open(INTERFACE_NAME[])
 END
 
-DEF EKI_ServerReset()
-   decl eki_status eki_ret
-   eki_ret = EKI_Clear(InterfaceName[])
-   EKI_ServerStart()
+GLOBAL DEF EKI_ServerReset()
+    DECL EKI_STATUS ret
+    ret = EKI_Clear(INTERFACE_NAME[])
+    EKI_ServerStart()
+END
+
+DEF ResetComponents()
+    ROS_ResetCommandHandler()
+    ROS_ResetProgramHandler()
+    ROS_ResetStatus()
 END
 
 ; Tries to read received elements from buffer.
-GLOBAL DEF EKI_ReceiveData(cmd: OUT)
-   DECL EKI_Status eki_ret
-   DECL EKI_Status eki_ret_req
-   DECL Command cmd
+GLOBAL DEF EKI_ReceiveData(command: OUT)
+    DECL Command command
+    DECL EKI_STATUS ret
 
-   ; Init cmd
-   cmd.cmd_str[] = "None"
-   cmd.cmdID = -1
-   cmd.control_mode = -1
+    ; Init cmd
+    command.cmd_str[] = "None"
+    command.control_mode = -1
+    command.cycle_time = -1
 
-   ; Verify a valid connection
-   IF (NOT Connected()) THEN
-      WAIT SEC 0.012
-      RETURN
-   ENDIF
+    ; Verify a valid connection
+    IF NOT IsClientConnected() THEN
+        WAIT SEC 0.012
+        RETURN
+    ENDIF
 
-   ; Skip processing if no data received.
-   IF (NOT $FLAG[ROS_EKI_Recv_Flag]) THEN
-      WAIT SEC 0.012
-      RETURN
-   ENDIF
+    ; Skip processing if no data received.
+    IF NOT DidReceiveData() THEN
+        WAIT SEC 0.012
+        RETURN
+    ENDIF
 
-   ; Reset flag immediately after msg notification
-   $FLAG[ROS_EKI_Recv_Flag] = FALSE
+    ; Reset flag immediately after msg notification
+    $FLAG[ROS_EKI_RECV_FLAG] = FALSE
 
-   eki_ret_req = eki_checkbuffer(InterfaceName[], "External/@REQTYPE")
+    ret = EKI_CheckBuffer(INTERFACE_NAME[], "External/@REQTYPE")
 
-   IF eki_ret_req.buff > 0 THEN
-
-      eki_ret_req = eki_getString(InterfaceName[], "External/@REQTYPE", cmd.cmd_str[])
-      eki_ret = eki_getINT(InterfaceName[], "External/@ID", cmd.cmdID)
-      eki_ret = eki_getINT(InterfaceName[], "External/@ControlMode", cmd.control_mode)
-
-      ; Nothing valid in buffer
-   ELSE
-      MsgNotify("No valid data received")
-      WAIT SEC 0.012
-   ENDIF
-
+    IF ret.buff > 0 THEN
+        ret = EKI_GetString(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_str[])
+        ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
+        ret = EKI_GetInt(INTERFACE_NAME[], "External/@CycleTime", command.cycle_time)
+    ELSE
+        ROS_Error("No valid data received")
+        WAIT SEC 0.012
+    ENDIF
 END
 
-GLOBAL DEF HandleConnection()
-   IF (Connected() <> connection_flag) THEN
-      connection_flag = Connected()
-      IF (Connected() == TRUE) THEN
-         MsgNotify("External client connected")
-      ELSE
-         MsgNotify("External client disconnected")
-         EKI_ServerReset()
-      ENDIF
-   ENDIF
+GLOBAL DEF ROS_HandleConnection()
+    IF IsClientConnected() <> connection_flag THEN
+        connection_flag = IsClientConnected()
+        IF IsClientConnected() THEN
+            ROS_Info("External client connected")
+        ELSE
+            ROS_Info("External client disconnected")
+            EKI_ServerReset()
+        ENDIF
+    ENDIF
 END
 
-GLOBAL DEF PublishEvent()
-   DECL EKI_STATUS eki_ret
-   DECL INT event_int
-   DECL CHAR event_msg[64]
+GLOBAL DEF ROS_PublishEvent()
+    DECL EKI_STATUS ret
+    INT event_int
+    CHAR x_path_send[32]
 
-   IF GetEvent() <> #None THEN
-      IF Connected() == FALSE THEN
-         MsgNotify("External client is not connected when trying to send event")
-         RETURN
-      ENDIF
+    ; Before publishing a response to a command, select the relevant part of the XML
+    x_path_send[] = "Robot/Response"
 
-      ; TODO make this nicer if possible
-      SWITCH last_event
-         CASE #Started
-            event_int = 0
-         CASE #Stopped
-            event_int = 1
-         CASE #Cancelled
-            event_int = 2
-         CASE #ResetOK
-            event_int = 3
-         CASE #Error
-            event_int = 4
-         CASE #Connected
-            event_int = 5
-         CASE #SwitchOK
-            event_int = 6
-            SWITCH GetControlMode()
-               CASE #JointPosition
-                  event_msg[] = "joint position control"
-               CASE #CartPosition
-                  event_msg[] = "cartesian position control"
-               DEFAULT
-                  event_msg[] = "inactive control"
-            ENDSWITCH
-            eki_ret = eki_setString(InterfaceName[], "Robot/Event/@Message", event_msg[])
-         CASE #Invalid
-            event_int = 7
-         DEFAULT
-            event_int = 8
-      ENDSWITCH
+    IF last_event <> #NONE THEN
+        IF NOT IsClientConnected() THEN
+            ROS_Error("External client is not connected when trying to send event")
+            RETURN
+        ENDIF
 
-      eki_ret = eki_setInt(InterfaceName[], "Robot/Event/@EventID", event_int)
-      eki_ret = eki_setInt(InterfaceName[], "Robot/Status/@Mode", 1) ; TODO: op mode
+        event_int = ROS_EventTypeToInt(last_event)
+        ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Response/@EventID", event_int)
 
-      ; Transmit the current Run Mode
-      eki_ret = eki_setInt(InterfaceName[], "Robot/Status/@ControlMode", 1) ; TODO
+        ; Only list commands that need special handling
+        SWITCH last_event
+            CASE #CONNECTED
+                ROS_WriteInitData()
+                x_path_send[] = "Robot/Init"
+            CASE #SWITCH_OK
+                ret = EKI_SetString(INTERFACE_NAME[], "Robot/Response", ROS_GetSelCtrlModeStr())
+            CASE #STATUS_UPDATED
+                x_path_send[] = "Robot/Status"
+        ENDSWITCH
 
-      ; Send the message
-      ;eki_ret = eki_send(InterfaceName[], "Robot/Status")
-      eki_ret = eki_send(InterfaceName[], "Robot/Event")
+        ; Send the message
+        ret = EKI_Send(INTERFACE_NAME[], x_path_send[])
 
-      ; Reset event
-      SetEvent(#None)
-   ENDIF
+        ; Reset event
+        ROS_SetLastEvent(#NONE)
+        ret = EKI_SetString(INTERFACE_NAME[], "Robot/Response", " ")
+    ENDIF
 END
 
-GLOBAL DEFFCT BOOL Connected()
-   RETURN $FLAG[ROS_EKI_Conn_Flag]
+GLOBAL DEF ROS_SetLastEvent(event: IN)
+    DECL EventType event
+    last_event = event
+END
+
+GLOBAL DEFFCT BOOL IsClientConnected()
+    RETURN $FLAG[ROS_EKI_CONN_FLAG]
 ENDFCT
 
-GLOBAL DEF SetEvent(event: IN)
-   DECL EventType event
-   last_event = event
-END
-
-GLOBAL DEFFCT EventType GetEvent()
-   RETURN last_event
+DEFFCT BOOL DidReceiveData()
+    RETURN $FLAG[ROS_EKI_RECV_FLAG]
 ENDFCT
+
+GLOBAL DEF ROS_WriteInitData()
+    DECL EKI_STATUS eki_ret
+
+    ROS_WriteStatus()
+
+    ; Set general parameters
+    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@VER", INTERFACE_VERSION[])
+    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumAxes", $NUM_AX)
+    eki_ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Init/@NumExternalAxes", $EX_AX_NUM)
+    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@Model", $ROBTRAFO[])
+    eki_ret = EKI_SetString(INTERFACE_NAME[], "Robot/Init/@RobVer", $V_R1MADA[])
+END

@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
-   
+
 namespace kuka::external::control::kss::eki {
 
 Robot::Robot(Configuration config)
@@ -60,7 +60,29 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 
   return StartControlling(control_mode);
 }
+
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
+
+Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
+  return tcp_client_.RegisterEventHandlerExtension(std::move(extension));
+}
+
+Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
+  return tcp_client_.RegisterStatusResponseHandler(std::move(handler));
+}
+
+Status Robot::TurnOnDrives() {
+  return tcp_client_.TurnOnDrives();
+}
+
+Status Robot::TurnOffDrives() {
+  return tcp_client_.TurnOffDrives();
+}
+
+Status Robot::SetCycleTime(CycleTime cycle_time) {
+  return tcp_client_.SetCycleTime(cycle_time);
+}
+
 };  // namespace kuka::external::control::kss

@@ -19,6 +19,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
+find_package(tinyxml2_vendor REQUIRED)
 
 set(sources
   ${common_directory}/src/status.cc
@@ -47,8 +48,9 @@ target_include_directories(${target_name} PUBLIC
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
 )
 
-target_link_libraries(${target_name} PUBLIC
-    Threads::Threads
+target_link_libraries(${target_name}
+  PUBLIC  Threads::Threads
+  PRIVATE tinyxml2
 )
 
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
@@ -59,6 +61,7 @@ if (CMAKE_TESTING_ENABLED)
     add_subdirectory(/usr/src/googletest GTest)
   endif()
   enable_testing()
+
   add_executable(
     test_kss_message_builder
     test/test_message_builder.cc
@@ -78,7 +81,9 @@ if (CMAKE_TESTING_ENABLED)
   )
 
   target_compile_features(test_kss_message_builder INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+
   include(GoogleTest)
+
   gtest_discover_tests(test_kss_message_builder)
 endif()
 

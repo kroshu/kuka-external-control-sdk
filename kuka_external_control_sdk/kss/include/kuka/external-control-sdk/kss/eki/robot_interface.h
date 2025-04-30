@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
 
 #ifndef KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
 #define KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
+
+#include <mutex>
 
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/eki/client.h"
@@ -32,15 +34,27 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
  public:
   virtual Status Setup() override;
 
-  virtual Status StartControlling(
-      kuka::external::control::ControlMode) override;  // call EKI service
+  // Call EKI service
+  virtual Status StartControlling(kuka::external::control::ControlMode) override;
 
-  virtual Status StopControlling() override;  // Set stop flag + send
+  // Set stop flag + send
+  virtual Status StopControlling() override;
 
-  virtual Status SwitchControlMode(
-      ControlMode control_mode) override;  // call EKI service, only in inactive
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler)
-      override;  // EKI response / new EKI client-server with external the service
+  // Call EKI service, only in inactive
+  virtual Status SwitchControlMode(ControlMode control_mode) override;
+
+  // EKI response / new EKI client-server with external the service
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+
+  Status TurnOnDrives();
+
+  Status TurnOffDrives();
+
+  Status SetCycleTime(CycleTime cycle_time);
+
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
+
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
 
   // Members and methods necessary for network configuration and error handling.
  private:

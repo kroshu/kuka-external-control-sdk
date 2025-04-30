@@ -66,10 +66,10 @@ bool TCPClient::Receive(unsigned char* recv_data, std::chrono::microseconds time
        received_bytes == 0)) {
     // TODO handle different errors
     return false;
-  } else {
-    memcpy(recv_data, message.first, message.second);
-    return true;
   }
+
+  memcpy(recv_data, message.first, message.second);
+  return true;
 }
 
 }  // namespace os::core::udp::communication
