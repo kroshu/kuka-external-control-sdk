@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.13)
 
 project("external-control-sdk")
 
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/Findtinyxml2.cmake)
+
 get_filename_component(PARENT_DIR ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 
 set(common_directory ${PARENT_DIR}/common)
