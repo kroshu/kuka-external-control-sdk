@@ -21,16 +21,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
-
-# Try to find tinyxml2 via config mode first
-find_package(tinyxml2 CONFIG QUIET)
-
-# If not found, try using the custom Findtinyxml2.cmake module
-if(NOT tinyxml2_FOUND)
-  find_package(tinyxml2 QUIET MODULE)
-endif()
-
-# If still not found, fall back to tinyxml2_vendor (ROS 2 specific)
+find_package(tinyxml2 QUIET)
 if(NOT tinyxml2_FOUND)
   find_package(tinyxml2_vendor REQUIRED)
 endif()
