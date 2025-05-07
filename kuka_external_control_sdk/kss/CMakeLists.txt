@@ -27,7 +27,7 @@ find_package(tinyxml2 CONFIG QUIET)
 
 # If not found, try using the custom Findtinyxml2.cmake module
 if(NOT tinyxml2_FOUND)
-  find_package(tinyxml2_vendor QUITE MODULE)
+  find_package(tinyxml2 QUIET MODULE)
 endif()
 
 # If still not found, fall back to tinyxml2_vendor (ROS 2 specific)
