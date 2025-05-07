@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 project("external-control-sdk")
 
-include(${CMAKE_CURRENT_LIST_DIR}/cmake/Findtinyxml2.cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 get_filename_component(PARENT_DIR ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
 
@@ -21,7 +21,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
-find_package(tinyxml2 QUIET)
+
+# Try to find tinyxml2 via config mode first
+find_package(tinyxml2 CONFIG QUIET)
+
+# If not found, try using the custom Findtinyxml2.cmake module
+if(NOT tinyxml2_FOUND)
+  find_package(tinyxml2_vendor QUITE MODULE)
+endif()
+
+# If still not found, fall back to tinyxml2_vendor (ROS 2 specific)
 if(NOT tinyxml2_FOUND)
   find_package(tinyxml2_vendor REQUIRED)
 endif()
