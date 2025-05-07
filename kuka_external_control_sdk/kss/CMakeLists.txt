@@ -20,9 +20,7 @@ set(CMAKE_INSTALL_LIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 find_package(Threads REQUIRED)
 find_package(tinyxml2 QUIET)
-
 if(NOT tinyxml2_FOUND)
-  message(STATUS "tinyxml2 not found")
   find_package(tinyxml2_vendor REQUIRED)
 endif()
 
