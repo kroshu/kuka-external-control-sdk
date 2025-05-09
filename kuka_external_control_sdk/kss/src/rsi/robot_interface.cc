@@ -85,7 +85,7 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&&) {
 }
 
 Status Robot::SendControlSignal() {
-  if (!control_signal_.InitialPositionsPositionsSet()) {
+  if (!control_signal_.InitialPositionsSet()) {
     return {ReturnCode::ERROR,
             "Control signal not initialized, please call ReceiveMotionState() first"};
   }

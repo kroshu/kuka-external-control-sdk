@@ -82,7 +82,7 @@ class ControlSignal : public BaseControlSignal {
   std::optional<std::string_view> CreateXMLString(int last_ipoc, bool stop_control = false);
 
   void SetInitialPositions(const MotionState& initial_positions);
-  bool InitialPositionsPositionsSet() const { return initial_positions_set_; }
+  bool InitialPositionsSet() const { return initial_positions_set_; }
 
  private:
   void AppendToXMLString(std::string_view str);
