@@ -354,10 +354,52 @@ int Socket::ReceiveFromOrTimeout(const std::chrono::microseconds& timeout,
   }
 }
 
+int Socket::ReceiveAllWithTimeout(const std::chrono::microseconds &timeout, unsigned char* buffer, int buffer_size, int flags) {
+  if (!IsActive()) {
+    return SetError(ErrorCode::kNotActive);
+  }
+
+  if (IsDGRAM() && local_address_ == std::nullopt) {
+    return SetError(ErrorCode::kNotBound);
+  }
+
+  int select_ret = 0;
+  int recvd_bytes = 0;
+  // Receive all messages in buffer
+  do {
+    select_ret = Select(timeout);
+    // Timeout - don't recv anymore
+    if(select_ret <= 0) break;
+    recvd_bytes = recv(socket_fd_, buffer, buffer_size,  MSG_DONTWAIT | flags);
+  } while (recvd_bytes > 0);
+
+  // some  select error
+  if (select_ret < 0) {
+    return SetError(ErrorCode::kError);
+  }
+
+  // Recv error
+  if (recvd_bytes < 0) {
+    return SetError(ErrorCode::kSocketError);
+  }
+
+  // Timeout, no messages left in buffer
+  // OR connection closed by peer
+  return SetError(ErrorCode::kSuccess);
+}
+
 int Socket::Close() {
   if (IsActive()) {
     ::close(socket_fd_);
     socket_fd_ = -1;
+    return SetError(ErrorCode::kSuccess);
+  }
+  return SetError(ErrorCode::kNotActive);
+}
+
+int Socket::Shutdown() {
+  if (IsActive()) {
+    ::shutdown(socket_fd_, SHUT_RDWR);
     return SetError(ErrorCode::kSuccess);
   }
   return SetError(ErrorCode::kNotActive);

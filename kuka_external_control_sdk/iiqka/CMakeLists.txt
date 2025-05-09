@@ -12,7 +12,7 @@ set(utils_directory ${PARENT_DIR}/utils)
 set(proto_api_directory ${iiqka_directory}/proto-api)
 set(test_directory ${iiqka_directory}/test)
 
-set(target_name "kuka-external-control-sdk")
+set(target_name "kuka-iiqka-client-library")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE )
@@ -29,7 +29,7 @@ pkg_check_modules(gRPC REQUIRED grpc++)
 set(motion_external_proto_api_path "${proto_api_directory}/motion-external")
 set(motion_services_ecs_proto_api_path "${proto_api_directory}/motion-services-ecs")
 
-add_library(kuka-external-control-sdk-protobuf STATIC
+add_library(kuka-iiqka-client-library-protobuf STATIC
 "${motion_external_proto_api_path}/control_attributes.proto"
 "${motion_external_proto_api_path}/utils.proto"
 "${motion_external_proto_api_path}/external_control_mode.proto"
@@ -44,20 +44,20 @@ add_library(kuka-external-control-sdk-protobuf STATIC
 
 set(PROTO_BINARY_DIR ${CMAKE_INSTALL_LIBDIR})
 
-target_link_libraries(kuka-external-control-sdk-protobuf PUBLIC  ${gRPC_LIBRARIES}
+target_link_libraries(kuka-iiqka-client-library-protobuf PUBLIC  ${gRPC_LIBRARIES}
 ${PROTOBUF_LIBRARY})
 
-target_include_directories(kuka-external-control-sdk-protobuf PUBLIC
+target_include_directories(kuka-iiqka-client-library-protobuf PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
 )
 
 protobuf_generate(
-    TARGET kuka-external-control-sdk-protobuf
+    TARGET kuka-iiqka-client-library-protobuf
     LANGUAGE cpp
     PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
 protobuf_generate(
-    TARGET kuka-external-control-sdk-protobuf
+    TARGET kuka-iiqka-client-library-protobuf
     LANGUAGE grpc
     GENERATE_EXTENSIONS .grpc.pb.hh .grpc.pb.cc
     PLUGIN "protoc-gen-grpc=/usr/bin/grpc_cpp_plugin"
@@ -76,14 +76,14 @@ set(sources
   ${iiqka_directory}/src/robot.cc
 )
 
-# Build external-control-sdk library
+# Build iiQKA client library
 
 add_library(${target_name} STATIC ${sources})
 
 target_link_libraries(${target_name} PUBLIC
   Threads::Threads
   OpenSSL::SSL
-  kuka-external-control-sdk-protobuf
+  kuka-iiqka-client-library-protobuf
 )
 
 target_include_directories(${target_name} PUBLIC
@@ -150,16 +150,16 @@ endif()
 
 # Install and export
 
-install(TARGETS ${target_name} kuka-external-control-sdk-protobuf EXPORT SdkExport
+install(TARGETS ${target_name} kuka-iiqka-client-library-protobuf EXPORT SdkExport
     ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(EXPORT SdkExport NAMESPACE Kuka:: FILE kuka-external-control-sdkTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-external-control-sdk)
+install(EXPORT SdkExport NAMESPACE Kuka:: FILE kuka-iiqka-client-libraryTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library)
 
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-external-control-sdkConfig.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-external-control-sdk
-        ) 
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-iiqka-client-libraryConfig.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library
+        )
 
 install(DIRECTORY ${iiqka_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
