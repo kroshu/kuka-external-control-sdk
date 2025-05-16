@@ -27,7 +27,8 @@ Robot::Robot(Configuration config) {
         installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
         break;
     default:
-        throw std::runtime_error("Configuration contains invalid interface, please choose between EKI, MXA or plain RSI.");
+        throw std::runtime_error("Configuration contains invalid interface, please choose between EKI or plain RSI.");
+
     };
 }
 
