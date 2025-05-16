@@ -41,7 +41,7 @@ There are several KUKA-specific files located in the [`kss/krl/`](../kss/krl/) d
 2. Copy the [`kss/krl/EthernetKRL/EkiKSSinterface.xml`](../kss/krl/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
 3. Copy all files from the [`kss/krl/SensorInterface/`](../kss/krl/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
 
-After moving all the files to the correct locations, modify the `KRC/STEU/Mada/$option.dat` file. Change the flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
+After moving all the files to the correct locations, modify the `KRC/STEU/Mada/$option.dat` file. Change the `$CHCK_MOVENA` flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
 
 ```krl
 ; Original setting
