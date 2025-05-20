@@ -53,12 +53,7 @@ Status Robot::StopControlling() {
 }
 
 Status Robot::SwitchControlMode(ControlMode control_mode) {
-  Status stop_ret = StopControlling();
-  if (stop_ret.return_code != ReturnCode::OK && stop_ret.return_code != ReturnCode::WARN) {
-    return stop_ret;
-  }
-
-  return StartControlling(control_mode);
+  return {ReturnCode::UNSUPPORTED, "Changing control modes via EKI is not yet implemented"};
 }
 
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {

@@ -38,11 +38,9 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
-  /** The control mode to begin external control in.
-   *  At the present, the following modes are supported:
-   *  1 - Joint position control
-   *  5? - cart pos
-   */
+  // The control mode to begin external control in.
+  // At the present, the following modes are supported:
+  // 1 - Joint position control
   ControlMode initial_control_mode = ControlMode::UNSPECIFIED;
 
   // This value is ignored if plain RSI is used
