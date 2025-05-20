@@ -83,6 +83,7 @@ class ControlSignal : public BaseControlSignal {
 
   void SetInitialPositions(const MotionState& initial_positions);
   bool InitialPositionsSet() const { return initial_positions_set_; }
+  void Reset() { initial_positions_set_ = false; }
 
  private:
   void AppendToXMLString(std::string_view str);

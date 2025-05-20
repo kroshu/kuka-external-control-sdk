@@ -57,6 +57,7 @@ Status Robot::StopControlling() {
   }
 
   endpoint_.Reset();
+  control_signal_.Reset();
   return result;
 }
 
@@ -106,7 +107,7 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
     return {ReturnCode::ERROR, "Receiving RSI state failed"};
   }
 
-  if (std::isnan(initial_motion_state_.GetMeasuredPositions()[0])) {
+  if (!control_signal_.InitialPositionsSet()) {
     initial_motion_state_.CreateFromXML(endpoint_.GetReceivedMessage().data());
     control_signal_.SetInitialPositions(initial_motion_state_);
   }

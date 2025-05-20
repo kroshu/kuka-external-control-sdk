@@ -62,7 +62,7 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     DECL EKI_STATUS ret
 
     ; Init cmd
-    command.cmd_str[] = "None"
+    command.cmd_int = 5 ; By default use the none command
     command.control_mode = -1
     command.cycle_time = -1
 
@@ -84,7 +84,7 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     ret = EKI_CheckBuffer(INTERFACE_NAME[], "External/@REQTYPE")
 
     IF ret.buff > 0 THEN
-        ret = EKI_GetString(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_str[])
+        ret = EKI_GetInt(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_int)
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
         ret = EKI_GetInt(INTERFACE_NAME[], "External/@CycleTime", command.cycle_time)
     ELSE

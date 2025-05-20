@@ -15,7 +15,7 @@
   </CONFIGURATION>
   <RECEIVE>
     <XML>
-      <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
+      <ELEMENT Tag="External/@REQTYPE" Type="INT" />
       <ELEMENT Tag="External/@ControlMode" Type="INT" />
       <ELEMENT Tag="External/@CycleTime" Type="INT" />
       <ELEMENT Tag="External" Set_Flag="110" />
