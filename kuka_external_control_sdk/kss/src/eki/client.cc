@@ -119,10 +119,7 @@ void Client::StartReceiverThread() {
       }
       // Only signal event as request response if a request was issued
       if (request_active_) {
-        {
-          std::lock_guard<std::mutex> recv_lk(req_response_cv_mutex_);
-          request_active_ = false;
-        }
+        request_active_ = false;
         req_response_cv_.notify_one();
       }
     }
