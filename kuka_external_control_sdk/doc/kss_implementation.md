@@ -18,7 +18,7 @@ The basic implementation offers no additional functionality beyond what is speci
 - `SwitchControlMode(ControlMode control_mode)`
 - `RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler)`
 
-Since the `StartControlling` method is not supported, you might wonder how to start controlling the robot. The timeout before receiving the very first motion state from the robot controller should be set to a longer period of time. Once the program starts waiting for this motion state, you should manually start one of the RSI programs (e.g., `rsi_joint_pos_12ms.src`) previously deployed to the robot controller by selecting it on the SmartHMI. Once the first message from RSI arrives at the external control system, you will be able to control the robot.
+Since the `StartControlling` method is not supported, you might wonder how to start controlling the robot. The timeout before receiving the very first motion state from the robot controller should be set to a longer period of time. Once the program starts waiting for this motion state, you should manually start one of the RSI programs (i.e., `rsi_joint_pos_4ms` or `rsi_joint_pos_12ms.src`) previously deployed to the robot controller by selecting it on the SmartHMI. Once the first message from RSI arrives at the external control system, you will be able to control the robot.
 
 If you wish to look into the implementation, you may want to start with [`robot_interface.h`](../kss/include/kuka/external-control-sdk/kss/rsi/robot_interface.h).
 

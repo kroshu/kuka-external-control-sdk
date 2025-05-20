@@ -6,7 +6,6 @@ DEFDAT mappings PUBLIC
     STRUC ControlModeTuple ControlMode control_mode, CHAR control_mode_string[32], INT control_mode_int
     STRUC CycleTimeTuple ROS_CycleTime cycle_time, CHAR cycle_time_string[32], INT cycle_time_int
     STRUC DriverStateTuple DriverState driver_state, CHAR driver_state_string[32]
-    STRUC EventTypeTuple EventType event_type, INT event_type_int
     STRUC ProgramConfiguration ControlMode control_mode, ROS_CycleTime cycle_time, CHAR program[64]
     ; ENDFOLD
 
@@ -53,20 +52,20 @@ DEFDAT mappings PUBLIC
     ; ENDFOLD
 
     ; FOLD Constants for easier mapping of event types to integers
-    DECL CONST EventTypeTuple EVENT_TYPE_TUPLES[13]
-    EVENT_TYPE_TUPLES[1] = { event_type #STARTED, event_type_int 0 }
-    EVENT_TYPE_TUPLES[2] = { event_type #STOPPED, event_type_int 1 }
-    EVENT_TYPE_TUPLES[3] = { event_type #CANCELLED, event_type_int 2 }
-    EVENT_TYPE_TUPLES[4] = { event_type #RESET_OK, event_type_int 3 }
-    EVENT_TYPE_TUPLES[5] = { event_type #ERROR, event_type_int 4 }
-    EVENT_TYPE_TUPLES[6] = { event_type #CONNECTED, event_type_int 5 }
-    EVENT_TYPE_TUPLES[7] = { event_type #SWITCH_OK, event_type_int 6 }
-    EVENT_TYPE_TUPLES[8] = { event_type #INVALID, event_type_int 7 }
-    EVENT_TYPE_TUPLES[9] = { event_type #NONE, event_type_int 8 }
-    EVENT_TYPE_TUPLES[10] = { event_type #DRIVES_TURNED_ON, event_type_int 9 }
-    EVENT_TYPE_TUPLES[11] = { event_type #DRIVES_TURNED_OFF, event_type_int 10 }
-    EVENT_TYPE_TUPLES[12] = { event_type #CYCLE_TIME_CHANGED, event_type_int 11 }
-    EVENT_TYPE_TUPLES[13] = { event_type #STATUS_UPDATED, event_type_int 12 }
+    DECL CONST EventType EVENT_TYPES[13]
+    EVENT_TYPES[1] = #STARTED
+    EVENT_TYPES[2] = #STOPPED
+    EVENT_TYPES[3] = #CANCELLED
+    EVENT_TYPES[4] = #RESET_OK
+    EVENT_TYPES[5] = #ERROR
+    EVENT_TYPES[6] = #CONNECTED
+    EVENT_TYPES[7] = #SWITCH_OK
+    EVENT_TYPES[8] = #INVALID
+    EVENT_TYPES[9] = #NONE
+    EVENT_TYPES[10] = #DRIVES_TURNED_ON
+    EVENT_TYPES[11] = #DRIVES_TURNED_OFF
+    EVENT_TYPES[12] = #CYCLE_TIME_CHANGED
+    EVENT_TYPES[13] = #STATUS_UPDATED
     ; ENDFOLD
 
     ; FOLD Constants for mapping program configurations to programs to run

@@ -40,7 +40,7 @@ Client::~Client() {
 
 Status Client::Start() {
   StartReceiverThread();
-  auto connect_status = SendCommand("CON");
+  auto connect_status = SendCommand(CommandType::CONNECT);
   return connect_status.return_code == ReturnCode::OK
              ? (event_handler_set_
                     ? Status(ReturnCode::OK, "EKI communication started")
@@ -55,7 +55,7 @@ Status Client::StartRSI(kuka::external::control::ControlMode control_mode) {
     return ctrl_change_resp;
   }
 
-  auto start_resp = SendCommand("START");
+  auto start_resp = SendCommand(CommandType::START);
   if (start_resp.return_code != ReturnCode::OK) {
     return start_resp;
   }
@@ -65,7 +65,7 @@ Status Client::StartRSI(kuka::external::control::ControlMode control_mode) {
 
 Status Client::StopRSI() {
   if (rsi_running_) {
-    auto cancel_resp = SendCommand("CANCEL");
+    auto cancel_resp = SendCommand(CommandType::CANCEL);
     if (cancel_resp.return_code != ReturnCode::OK) {
       return cancel_resp;
     }
@@ -90,8 +90,8 @@ Status Client::SendMessageAndWait() {
                      : Status(ReturnCode::TIMEOUT, "Request sent but response timeouted");
 }
 
-Status Client::SendCommand(const std::string& req_type) {
-  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, req_type.data());
+Status Client::SendCommand(const CommandType cmd_type) {
+  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, static_cast<int>(cmd_type));
   return SendMessageAndWait();
 }
 
@@ -327,11 +327,11 @@ Status Client::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandle
 }
 
 Status Client::TurnOnDrives() {
-  return SendCommand("DRIVES_ON");
+  return SendCommand(CommandType::DRIVES_ON);
 }
 
 Status Client::TurnOffDrives() {
-  return SendCommand("DRIVES_OFF");
+  return SendCommand(CommandType::DRIVES_OFF);
 }
 
 Status Client::SetCycleTime(CycleTime cycle_time) {

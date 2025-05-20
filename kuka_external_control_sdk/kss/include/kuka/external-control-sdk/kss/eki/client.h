@@ -28,6 +28,18 @@
 
 namespace kuka::external::control::kss::eki {
 
+enum class CommandType : std::uint8_t {
+  CONNECT = 0,
+  START = 1,
+  RESET = 2,
+  CANCEL = 3,
+  CHANGE = 4,
+  CMD_NONE = 5,
+  DRIVES_ON = 6,
+  DRIVES_OFF = 7,
+  CHANGE_CYCLE_TIME = 8,
+};
+
 class Client : public os::core::udp::communication::TCPClient {
  public:
   Client(const std::string& server_address, unsigned short server_port);
@@ -83,7 +95,7 @@ class Client : public os::core::udp::communication::TCPClient {
   Status SendMessageAndWait();
 
   // Send EKI command with given request type
-  Status SendCommand(const std::string& req_type);
+  Status SendCommand(const CommandType cmd_type);
 
   // Send EKI control mode change command with given control mode
   Status SendControlModeChange(kuka::external::control::ControlMode control_mode);
@@ -119,13 +131,13 @@ class Client : public os::core::udp::communication::TCPClient {
   unsigned char recv_buff_[kRecvBuffSize];
   unsigned char send_buff_[kSendBuffSize];
 
-  static constexpr char simple_req_format_[] = "<External REQTYPE=\"%s\"></External>";
+  static constexpr char simple_req_format_[] = "<External REQTYPE=\"%d\"></External>";
 
   static constexpr char change_control_mode_req_format_[] =
-      "<External REQTYPE=\"CHANGE\" ControlMode=\"%d\"></External>";
+      "<External REQTYPE=\"4\" ControlMode=\"%d\"></External>";
 
   static constexpr char change_cycle_time_req_format_[] =
-      "<External REQTYPE=\"CHANGE_CYCLE_TIME\" CycleTime=\"%d\"></External>";
+      "<External REQTYPE=\"8\" CycleTime=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
       "<Robot><Response EventID=\"%d\">%[^\"]</Response></Robot>";

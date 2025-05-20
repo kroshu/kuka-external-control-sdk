@@ -212,8 +212,8 @@ GLOBAL DEFFCT INT ROS_EventTypeToInt(event_type: IN)
     INT idx
 
     FOR idx = 1 TO EVENT_COUNT
-        IF event_type == EVENT_TYPE_TUPLES[idx].event_type THEN
-            RETURN EVENT_TYPE_TUPLES[idx].event_type_int
+        IF event_type == EVENT_TYPES[idx] THEN
+            RETURN idx - 1
         ENDIF
     ENDFOR
 
