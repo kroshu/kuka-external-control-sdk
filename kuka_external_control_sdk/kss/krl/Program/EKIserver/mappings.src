@@ -74,33 +74,18 @@ GLOBAL DEFFCT CHAR [32] ROS_AxisTypeIntToString(axis_type_int: IN)
     RETURN "INVALID"
 ENDFCT
 
-; Returns the command type associated with the given string
-GLOBAL DEFFCT CommandType ROS_StringToCommandType(command_type_string[]: IN)
-    CHAR command_type_string[]
+; Returns the command type associated with the given integer
+GLOBAL DEFFCT CommandType ROS_IntToCommandType(command_type_int: IN)
+    INT command_type_int
     INT idx
 
     FOR idx = 1 TO COMMAND_COUNT
-        IF StrComp(command_type_string[], COMMAND_TYPE_TUPLES[idx].command_type_string[], #NOT_CASE_SENS) THEN
-            RETURN COMMAND_TYPE_TUPLES[idx].command_type
+        IF command_type_int == idx - 1 THEN
+            RETURN COMMAND_TYPES[idx]
         ENDIF
     ENDFOR
 
     RETURN #CMD_INVALID
-ENDFCT
-
-; Returns the string representation of the specified command type
-GLOBAL DEFFCT CHAR [32] ROS_CommandTypeToString(command_type: IN)
-    DECL CommandType command_type
-    INT idx
-
-    FOR idx = 1 TO COMMAND_COUNT
-        IF COMMAND_TYPE_TUPLES[idx].command_type == command_type THEN
-            RETURN COMMAND_TYPE_TUPLES[idx].command_type_string[]
-        ENDIF
-    ENDFOR
-
-    ; Unreachable
-    RETURN "INVALID"
 ENDFCT
 
 ; Returns the control mode associated with the given integer

@@ -34,7 +34,7 @@ GLOBAL DEF ROS_HandleCommand(cmd: IN)
     DECL Command cmd
     DECL CommandType cmd_enum
 
-    cmd_enum = ROS_StringToCommandType(cmd.cmd_str[])
+    cmd_enum = ROS_IntToCommandType(cmd.cmd_int)
 
     IF cmd_enum == #CMD_NONE THEN
         ; If nothing was received, send status update, if necessary
@@ -75,13 +75,6 @@ END
 
 DEFFCT BOOL IsCommandValid(cmd: IN)
     DECL CommandType cmd
-    CHAR cmd_string[32]
-    CHAR state_string[32]
-
-    ; Info message
-    cmd_string[] = ROS_CommandTypeToString(cmd)
-    state_string[] = ROS_DriverStateToString(current_driver_state)
-    ROS_Debug2Strings("Received command %1 while in state %2", cmd_string[], state_string[])
 
     ; Actual check
     SWITCH current_driver_state
