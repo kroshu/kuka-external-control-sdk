@@ -17,6 +17,7 @@
   <depend>protobuf-compiler-grpc</depend>
 
   <exec_depend>ament_cmake</exec_depend>
+  <exec_depend>tinyxml2_vendor</exec_depend>
 
   <test_depend>gtest</test_depend>
 

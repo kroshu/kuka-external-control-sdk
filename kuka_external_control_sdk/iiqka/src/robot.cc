@@ -417,4 +417,5 @@ Status Robot::SetupUDPChannel() {
 
   return replier_setup;
 }
+
 };  // namespace kuka::external::control::iiqka
