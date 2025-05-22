@@ -15,7 +15,7 @@ DEFDAT command_handler PUBLIC
     ; ENDFOLD
 
     ; FOLD Custom structure types
-    GLOBAL STRUC Command CHAR cmd_str[32], INT control_mode, INT cycle_time
+    GLOBAL STRUC Command INT cmd_int, INT control_mode, INT cycle_time
     ; ENDFOLD
 
     ; FOLD State variables
