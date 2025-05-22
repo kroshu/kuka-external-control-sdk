@@ -41,14 +41,15 @@ Status Robot::StartMonitoring() {
 
 Status Robot::StopControlling() {
   Status result = {ReturnCode::OK, ""};
-  auto stop_send_str_view = control_signal_.CreateXMLString(last_ipoc_, true);
 
   if (!endpoint_.IsRequestActive()) {
-    if (this->ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs)).return_code !=
-          kuka::external::control::ReturnCode::OK) {
-      return Status(ReturnCode::ERROR, "Failed to receive before sending stop signal");
+    auto ret = ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs));
+    if (ret.return_code != kuka::external::control::ReturnCode::OK) {
+      return {ReturnCode::ERROR, "Failed to receive before sending stop signal"};
     }
   }
+
+  auto stop_send_str_view = control_signal_.CreateXMLString(last_ipoc_, true);
 
   if (!stop_send_str_view.has_value()) {
     result = {ReturnCode::ERROR, "Parsing last control signal to proper XML format failed"};
