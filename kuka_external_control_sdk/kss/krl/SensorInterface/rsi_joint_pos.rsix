@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Do not change! The content of this file is generated. -->
 <!-- Generated with RSIVisual WorkVisual plugin. -->
-<!-- RobotSensorInterface 5.0 B507 -->
+<!-- RobotSensorInterface 4.1 B567 -->
 <RsiContext xsi:schemaLocation="RsiContext RsiContext.xsd" SchemaVersion="2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="RsiContext">
    <RsiObjects xmlns="RsiDriver">
       <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="Ethernet_1">
@@ -47,12 +47,12 @@
       </RsiObject>
       <RsiObject ObjTypeId="82" ObjType="AxisCorrMon" ObjId="AxisCorrMon_1">
          <Parameters>
-            <Parameter IsPublic="true" Name="MaxA1" ParamId="0" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxA2" ParamId="1" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxA3" ParamId="2" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxA4" ParamId="3" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxA5" ParamId="4" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxA6" ParamId="5" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxA1" ParamId="0" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA2" ParamId="1" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA3" ParamId="2" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA4" ParamId="3" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA5" ParamId="4" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA6" ParamId="5" ParamValue="180" />
             <Parameter Name="MaxE1" ParamId="6" ParamValue="6" />
             <Parameter Name="MaxE2" ParamId="7" ParamValue="6" />
             <Parameter Name="MaxE3" ParamId="8" ParamValue="6" />
@@ -80,7 +80,7 @@
       </RsiObject>
    </RsiObjects>
    <BlueprintCollections SchemaVersion="2.0.0" xmlns="RsiBlueprint">
-      <BlueprintCollection Name="RSI" Version="2.1.3">
+      <BlueprintCollection Name="RSI" Version="2.0.3">
          <Subset Name="Editor">
             <Element Name="Comment" DisplayCategory="Comment">
                <Description>Tooltip_COMMENT</Description>
@@ -658,22 +658,6 @@
                   </Output>
                </Outputs>
             </Element>
-            <Element Name="Division" Id="100">
-               <Description>Tooltip_Division</Description>
-               <Inputs>
-                  <Input Name="Dividend" Index="0">
-                     <Description>Tooltip_Division_Dividend</Description>
-                  </Input>
-                  <Input Name="Divisor" Index="1">
-                     <Description>Tooltip_Division_Divisor</Description>
-                  </Input>
-               </Inputs>
-               <Outputs>
-                  <Output Name="Quotient" Index="0">
-                     <Description>Tooltip_Division_Quotient</Description>
-                  </Output>
-               </Outputs>
-            </Element>
             <Element Name="Equal" Id="7">
                <Description>Tooltip_EQUAL</Description>
                <Inputs>
@@ -1026,15 +1010,6 @@
                      <Description>Tooltip_TRAFO_USERFRAME_FraC</Description>
                   </DoubleParameter>
                </Parameters>
-            </Element>
-            <Element Name="SumUp" Id="101">
-               <Description>Tooltip_SUMUP</Description>
-               <Inputs>
-                  <Input Name="In1" Index="0" />
-               </Inputs>
-               <Outputs>
-                  <Output Name="Out1" Index="0" />
-               </Outputs>
             </Element>
          </Subset>
          <Subset Name="Motion Manipulation">
@@ -1934,11 +1909,8 @@
                         <Value>O10</Value>
                      </EnumValues>
                   </EnumParameter>
-                  <DoubleParameter Name="Cutoff" Index="3" CanBeSetAtRuntime="false" Min="1E-06" Default="1">
-                     <Description>
-                        <Remarks>Remarks_IIRFILTER_Cutoff</Remarks>
-                        <Summary>Tooltip_IIRFILTER_Cuttoff</Summary>
-                     </Description>
+                  <DoubleParameter Name="Cutoff" Index="3" CanBeSetAtRuntime="false" Min="0" Default="1">
+                     <Description>Tooltip_IIRFILTER_Cuttoff</Description>
                   </DoubleParameter>
                </Parameters>
             </Element>
@@ -2457,12 +2429,12 @@
       </Construct>
       <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,453.1">
          <Parameters>
-            <DoubleParameter Name="MaxA1" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxA2" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxA3" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxA4" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxA5" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxA6" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxA1" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA2" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA3" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA4" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA5" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA6" CanBeSetFromKrl="true" Value="180" />
          </Parameters>
       </Construct>
       <Construct Name="Monitor_1" BlueprintName="Monitor" BlueprintCollection="RSI" Location="400,453.1">
