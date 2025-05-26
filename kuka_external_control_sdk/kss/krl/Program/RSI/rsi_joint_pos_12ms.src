@@ -26,6 +26,9 @@ DEF rsi_joint_pos_12ms()
         HALT
     ENDIF
 
+    ; Set AxisCorr parameters to allow full range of motion
+    ROS_SetAxisCorrLimits(cont_id)
+
     ; Start RSI execution
     ret = RSI_ON(#ABSOLUTE, #IPO)
     IF (ret <> RSIOK) THEN
