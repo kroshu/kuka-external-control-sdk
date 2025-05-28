@@ -140,7 +140,7 @@ class Client : public os::core::udp::communication::TCPClient {
       "<External REQTYPE=\"8\" CycleTime=\"%d\"></External>";
 
   static constexpr char event_resp_format_[] =
-      "<Robot><Response EventID=\"%d\">%[^\"]</Response></Robot>";
+      "<Robot><Response EventID=\"%d\">%[^<]</Response></Robot>";
 
   static constexpr char status_report_format_[] =
       "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
