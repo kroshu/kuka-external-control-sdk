@@ -235,7 +235,7 @@ bool Client::ParseInitMessage(char* data_to_parse) {
 bool Client::ParseEvent(char* data_to_parse) {
   // Reset event fields
   event_response_.event_type = EventType::NONE;
-  strcpy(event_response_.message, "");
+  event_response_.message[0] = '\0';
 
   // Parse event message
   int eid = -1;
