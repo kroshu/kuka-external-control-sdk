@@ -36,6 +36,7 @@
       <ELEMENT Tag="Robot/Status/@InMotion" />
       <ELEMENT Tag="Robot/Status/@MotionPossible" />
       <ELEMENT Tag="Robot/Status/@OperationMode" />
+      <ELEMENT Tag="Robot/Status/@RobotStopped" />
       <!-- END - Status parameters -->
       <!-- BEGIN - Initial parameters -->
       <ELEMENT Tag="Robot/Init/@VER" />

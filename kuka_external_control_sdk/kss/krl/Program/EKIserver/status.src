@@ -74,6 +74,11 @@ GLOBAL DEF ROS_UpdateStatus()
         should_update = TRUE
     ENDIF
 
+    IF $STOPMESS <> robot_stopped THEN
+        robot_stopped = $STOPMESS
+        should_update = TRUE
+    ENDIF
+
     IF should_update OR first_update THEN
         ROS_WriteStatus()
         ROS_Debug("Status updated")
@@ -96,4 +101,5 @@ GLOBAL DEF ROS_WriteStatus()
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@InMotion", ROS_BoolToInt(in_motion))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@MotionPossible", ROS_BoolToInt(motion_possible))
     ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@OperationMode", operation_mode)
+    ret = EKI_SetInt(INTERFACE_NAME[], "Robot/Status/@RobotStopped", ROS_BoolToInt(robot_stopped))
 END

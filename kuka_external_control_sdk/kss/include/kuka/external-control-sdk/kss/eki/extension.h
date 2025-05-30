@@ -64,6 +64,7 @@ struct StatusUpdate {
     in_motion_ = false;
     motion_possible_ = false;
     operation_mode_ = OperationMode::UNSPECIFIED;
+    robot_stopped_ = false;
   }
 
   ControlMode control_mode_;
@@ -74,6 +75,7 @@ struct StatusUpdate {
   bool in_motion_;
   bool motion_possible_;
   OperationMode operation_mode_;
+  bool robot_stopped_;
 };
 
 class IEventHandlerExtension {

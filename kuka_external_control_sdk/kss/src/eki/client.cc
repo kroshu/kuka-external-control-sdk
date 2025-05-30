@@ -264,7 +264,8 @@ bool Client::ParseStatus(char* data_to_parse) {
     reinterpret_cast<uint8_t*>(&status_update_.guard_stop_),
     reinterpret_cast<uint8_t*>(&status_update_.in_motion_),
     reinterpret_cast<uint8_t*>(&status_update_.motion_possible_),
-    reinterpret_cast<uint8_t*>(&status_update_.operation_mode_));
+    reinterpret_cast<uint8_t*>(&status_update_.operation_mode_),
+    reinterpret_cast<uint8_t*>(&status_update_.robot_stopped_));
 
   return ret == kStatusReportFieldCount; // Ensure all fields are read
 }
