@@ -62,6 +62,7 @@ GLOBAL DEF ROS_HandleCommand(cmd: IN)
             ChangeControlMode(cmd)
         CASE #CMD_DRIVES_ON
             $DRIVES_ENABLE = TRUE
+            CONFIRM 0
             ROS_SetLastEvent(#DRIVES_TURNED_ON)
         CASE #CMD_DRIVES_OFF
             $DRIVES_ENABLE = FALSE
@@ -135,6 +136,7 @@ GLOBAL DEF ROS_ResetCommandHandler()
 END
 
 DEF StartProgram()
+    CONFIRM 0
     IF ROS_StartProgram() THEN
         current_driver_state = #Active
         ROS_SetLastEvent(#STARTED)
@@ -144,6 +146,7 @@ DEF StartProgram()
 END
 
 DEF CancelProgram()
+    CONFIRM 0
     IF ROS_CancelProgram() THEN
         current_driver_state = #Initialized
         ROS_SelectControlMode(#INACTIVE)
@@ -154,6 +157,7 @@ DEF CancelProgram()
 END
 
 DEF ResetProgram()
+    CONFIRM 0
     IF ROS_ResetProgram() THEN
         current_driver_state = #INACTIVE
         ROS_SetLastEvent(#RESET_OK)
