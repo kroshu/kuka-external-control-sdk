@@ -145,8 +145,8 @@ class Client : public os::core::udp::communication::TCPClient {
   static constexpr char status_report_format_[] =
       "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
       "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
-      "MotionPossible=\"%hhu\" OperationMode=\"%hhu\"></Status></Robot>";
-  static constexpr uint8_t kStatusReportFieldCount = 8;
+      "MotionPossible=\"%hhu\" OperationMode=\"%hhu\" RobotStopped=\"%hhu\"></Status></Robot>";
+  static constexpr uint8_t kStatusReportFieldCount = 9;
 
   static constexpr char kSemanticVersion[] = "1.0.0";
 
