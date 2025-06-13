@@ -1,14 +1,14 @@
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_
-
-#include <string>
+#ifndef KUKA_EXTERNAL_CONTROL__KSS_EXTENSION_H_
+#define KUKA_EXTERNAL_CONTROL__KSS_EXTENSION_H_
 
 #include <tinyxml2.h>
+
+#include <string>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
-namespace kuka::external::control::kss::eki {
+namespace kuka::external::control::kss {
 
 struct InitializationData {
   bool Parse(const char* data_to_parse) {
@@ -42,9 +42,7 @@ struct InitializationData {
     return true;
   }
 
-  uint8_t GetTotalAxisCount() const {
-    return num_axes + num_external_axes;
-  }
+  uint8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 
   std::string semantic_version;
   uint8_t num_axes;
@@ -55,6 +53,8 @@ struct InitializationData {
 };
 
 struct StatusUpdate {
+  StatusUpdate() { Reset(); }
+
   void Reset() {
     control_mode_ = ControlMode::UNSPECIFIED;
     cycle_time_ = CycleTime::UNSPECIFIED;
@@ -79,14 +79,15 @@ struct StatusUpdate {
 };
 
 class IEventHandlerExtension {
-public:
+ public:
   virtual void OnConnected(const InitializationData& init_data) = 0;
 };
 
 class IStatusUpdateHandler {
-public:
+ public:
   virtual void OnStatusUpdateReceived(const StatusUpdate& response) = 0;
 };
 
-}  // namespace kuka::external::control::kss::eki
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_
+}  // namespace kuka::external::control::kss
+
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_EXTENSION_H_

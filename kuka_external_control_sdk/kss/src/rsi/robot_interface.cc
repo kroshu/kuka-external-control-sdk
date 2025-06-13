@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
+
 #include <cmath>
 
 namespace kuka::external::control::kss::rsi {
@@ -130,4 +131,24 @@ Status Robot::UpdateMotionState(std::string_view xml_str) {
   return {ReturnCode::OK, "Parsed incoming RSI server message"};
 }
 
-};  // namespace kuka::external::control::kss
+Status Robot::TurnOnDrives() {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
+Status Robot::TurnOffDrives() {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
+Status Robot::SetCycleTime(CycleTime cycle_time) {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
+Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&&) {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
+Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&&) {
+  return {ReturnCode::UNSUPPORTED, error_text};
+}
+
+}  // namespace kuka::external::control::kss::rsi

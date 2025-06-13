@@ -17,8 +17,10 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace kuka::external::control::kss {
 
@@ -125,8 +127,7 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(int last_ipoc, bo
     AppendToXMLString(joint_position_attribute_prefixes_[i]);
     int ret = std::snprintf(
         double_buffer, sizeof(double_buffer), kJointPositionAttributeFormat.data(),
-        (joint_position_values_[i] - initial_positions_.GetMeasuredPositions()[i]) *
-            (180 / M_PI));
+        (joint_position_values_[i] - initial_positions_.GetMeasuredPositions()[i]) * (180 / M_PI));
     if (ret <= 0) {
       return std::nullopt;
     }
