@@ -84,9 +84,13 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return client_.RegisterEventHandler(std::move(event_handler));
 }
 
-Status Robot::TurnOnDrives() { return {ReturnCode::OK}; }
+Status Robot::TurnOnDrives() {
+  return {ReturnCode::OK, "TurnOnDrives is a no-op (short-circuited)"};
+}
 
-Status Robot::TurnOffDrives() { return {ReturnCode::OK}; }
+Status Robot::TurnOffDrives() {
+  return {ReturnCode::OK, "TurnOffDrives is a no-op (short-circuited)"};
+}
 
 Status Robot::SetCycleTime(CycleTime cycle_time) {
   cycle_time_ = cycle_time;
