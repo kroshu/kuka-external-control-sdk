@@ -45,15 +45,11 @@ Status Robot::StopControlling() {
   }
 
   Status rsi_stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
-  if (rsi_stop_ret.return_code == ReturnCode::ERROR) {
-    CancelRSI();
-    return rsi_stop_ret;
-  }
+  CancelRSI();
 
-  client_.ResetRSI();
-  rsi_running_ = false;
-
-  return {ReturnCode::OK, "RSI successfully stopped via stop flag"};
+  return rsi_stop_ret.return_code == ReturnCode::OK
+             ? Status{ReturnCode::OK, "RSI stopped"}
+             : Status{ReturnCode::WARN, rsi_stop_ret.message};
 }
 
 Status Robot::CancelRSI() {
@@ -94,7 +90,7 @@ Status Robot::TurnOffDrives() { return {ReturnCode::OK}; }
 
 Status Robot::SetCycleTime(CycleTime cycle_time) {
   cycle_time_ = cycle_time;
-  return {ReturnCode::OK};
+  return {ReturnCode::OK, "Cycle time set"};
 }
 
 Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {

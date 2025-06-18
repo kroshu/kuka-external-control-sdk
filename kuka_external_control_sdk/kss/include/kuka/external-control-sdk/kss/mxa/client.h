@@ -100,7 +100,8 @@ class Client {
   KRC_READMXAERROR mxa_read_mxa_error_;
   KRC_SETOVERRIDE mxa_set_override_;
   KRC_WRITEAXISGROUP mxa_write_;
-  KRC_TECHFUNCTION mxa_tech_function_;
+  KRC_TECHFUNCTION mxa_tech_function_m_;
+  KRC_TECHFUNCTION mxa_tech_function_s_;
 
   void HandleBlockError(const std::string& fb_name, int error_id);
   bool block_error_active_ = false;
@@ -109,6 +110,8 @@ class Client {
   const bool error_reset_allowed_;
   std::atomic<bool> start_cmd_dispatcher_{false};
   std::atomic<bool> rsi_started_{false};
+  std::atomic<bool> rsi_started_notification_sent_{false};
+  std::atomic<bool> first_stopmess_{true};
 
   std::atomic<bool> cancel_requested_{false};
   bool cancelled_{false};

@@ -84,8 +84,10 @@ Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handle
 Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
   // Start CMD dispatcher on first start
   start_cmd_dispatcher_ = true;
-  mxa_tech_function_.INT_DATA[1] = static_cast<int>(control_mode);
-  mxa_tech_function_.INT_DATA[2] = static_cast<int>(cycle_time);
+
+  mxa_tech_function_m_.INT_DATA[1] = static_cast<int>(control_mode);
+  mxa_tech_function_m_.INT_DATA[2] = static_cast<int>(cycle_time);
+  rsi_started_notification_sent_ = false;
   rsi_started_ = true;
 
   // TODO maybe add a wait here for the program start?
@@ -100,8 +102,6 @@ Status Client::CancelRSI() {
   std::this_thread::sleep_for(std::chrono::milliseconds(kWaitBeforeCancelMs));
   cancelled_ = false;
   cancel_requested_ = true;
-  mxa_tech_function_.INT_DATA[1] = 0;
-  mxa_tech_function_.INT_DATA[2] = 0;
 
   std::unique_lock<std::mutex> cancel_lock(cancel_finished_mutex_);
   cancel_finished_cv_.wait(cancel_lock, [this] { return cancelled_; });
@@ -133,6 +133,8 @@ void Client::HandleBlockError(const std::string& fb_name, int error_id) {
 void Client::ResetRSI() {
   cancel_requested_ = false;
   rsi_started_ = false;
+  start_cmd_dispatcher_ = false;
+  first_stopmess_ = true;
 }
 
 bool Client::ShouldRSIStop() { return should_rsi_stop_; }
@@ -175,7 +177,8 @@ void Client::StartKeepAliveThread() {
     mxa_read_mxa_error_.AXISGROUPIDX = axis_group_id_;
     mxa_set_override_.AXISGROUPIDX = axis_group_id_;
     mxa_write_.AXISGROUPIDX = axis_group_id_;
-    mxa_tech_function_.AXISGROUPIDX = axis_group_id_;
+    mxa_tech_function_m_.AXISGROUPIDX = axis_group_id_;
+    mxa_tech_function_s_.AXISGROUPIDX = axis_group_id_;
 
     // Set AutExt block values
     mxa_aut_ext_.CONF_MESS = false;
@@ -192,17 +195,27 @@ void Client::StartKeepAliveThread() {
     // Set constant override
     mxa_set_override_.OVERRIDE = 100;
 
-    // Set tech function constant inputs
-    // All types of parameters must be set, even if not used
-    BOOL tech_function_bool_data[kMxaTechFunctionParamSize] = {0};
-    DINT tech_function_int_data[kMxaTechFunctionParamSize] = {0};
-    REAL tech_function_real_data[kMxaTechFunctionParamSize] = {0.0};
-    mxa_tech_function_.TECHFUNCTIONID = 2;
-    mxa_tech_function_.PARAMETERCOUNT = 2;
-    mxa_tech_function_.BUFFERMODE = 2;
-    mxa_tech_function_.BOOL_DATA = tech_function_bool_data;
-    mxa_tech_function_.INT_DATA = tech_function_int_data;
-    mxa_tech_function_.REAL_DATA = tech_function_real_data;
+    // robot interpreter tech function
+    BOOL tech_function_m_bool_data[kMxaTechFunctionParamSize] = {0};
+    DINT tech_function_m_int_data[kMxaTechFunctionParamSize] = {0};
+    REAL tech_function_m_real_data[kMxaTechFunctionParamSize] = {0.0};
+    mxa_tech_function_m_.TECHFUNCTIONID = 2;
+    mxa_tech_function_m_.PARAMETERCOUNT = 2;
+    mxa_tech_function_m_.BUFFERMODE = 2;
+    mxa_tech_function_m_.BOOL_DATA = tech_function_m_bool_data;
+    mxa_tech_function_m_.INT_DATA = tech_function_m_int_data;
+    mxa_tech_function_m_.REAL_DATA = tech_function_m_real_data;
+
+    // submit interpreter tech function
+    BOOL tech_function_s_bool_data[kMxaTechFunctionParamSize] = {0};
+    DINT tech_function_s_int_data[kMxaTechFunctionParamSize] = {0};
+    REAL tech_function_s_real_data[kMxaTechFunctionParamSize] = {0.0};
+    mxa_tech_function_s_.TECHFUNCTIONID = 3;
+    mxa_tech_function_s_.PARAMETERCOUNT = 1;  // must be >= 1, though not used
+    mxa_tech_function_s_.BUFFERMODE = 0;
+    mxa_tech_function_s_.BOOL_DATA = tech_function_s_bool_data;
+    mxa_tech_function_s_.INT_DATA = tech_function_s_int_data;
+    mxa_tech_function_s_.REAL_DATA = tech_function_s_real_data;
 
     while (!stop_requested_) {
       if (udp_subscriber_->WaitForAndReceive(kUDPTimeoutMs) ==
@@ -246,7 +259,7 @@ void Client::StartKeepAliveThread() {
       // block
       mxa_aut_ext_.OnCycle();
       // Stop RSI if RSI started and ESTOP active
-      if (!should_rsi_stop_ && mxa_tech_function_.BUSY && !mxa_aut_ext_.ALARM_STOP) {
+      if (!should_rsi_stop_ && mxa_tech_function_m_.BUSY && !mxa_aut_ext_.ALARM_STOP) {
         event_handler_->OnError("ESTOP active");
         should_rsi_stop_ = true;
       }
@@ -262,7 +275,7 @@ void Client::StartKeepAliveThread() {
       // Initiate resetting command dispatcher if requested
       if (auto_start_reset) {
         // Prepare reset - set signal to zero to be able to execute a rising edge
-        if (!start_cmd_dispatcher_ && mxa_auto_start_.DISPACTIVE) {
+        if (!start_cmd_dispatcher_) {
           auto_start_reset = false;
         }
       } else {
@@ -278,7 +291,7 @@ void Client::StartKeepAliveThread() {
       // Errors during execution stay present to be able to check them but can be eliminated after a
       // restart
       mxa_error_.MESSAGERESET =
-          error_reset_allowed_ && (tick <= (kInitTimeoutTicks + 1)) ? error_msg_present : false;
+          error_reset_allowed_ && tick <= kInitTimeoutTicks + 1 ? error_msg_present : false;
       mxa_error_.OnCycle();
 
       // Check whether mxa error present
@@ -303,7 +316,12 @@ void Client::StartKeepAliveThread() {
           error_msg = "Error occured with ID: " + std::to_string(mxa_error_.ERRORID);
         }
 
-        event_handler_->OnError(error_msg);
+        if (mxa_error_.ERRORID == 801 && first_stopmess_) {
+          first_stopmess_ = false;
+        } else {
+          event_handler_->OnError(error_msg);
+        }
+
         error_msg_present = true;
         present_error_id = mxa_error_.ERRORID;
       } else if (!mxa_error_.ERROR) {
@@ -318,26 +336,30 @@ void Client::StartKeepAliveThread() {
       }
 
       // Start program if MXA managed to switch to standby status and start requested
-      mxa_tech_function_.EXECUTECMD = mxa_read_status_.STATUS >= 3 && rsi_started_;
-      mxa_tech_function_.OnCycle();
-      if (mxa_tech_function_.ERROR) {
-        HandleBlockError("KRC_TECHFUNCTION - start", mxa_tech_function_.ERRORID);
+      mxa_tech_function_m_.EXECUTECMD = mxa_read_status_.STATUS >= 3 && rsi_started_;
+      mxa_tech_function_m_.OnCycle();
+      if (mxa_tech_function_m_.ERROR) {
+        HandleBlockError("KRC_TECHFUNCTION2", mxa_tech_function_m_.ERRORID);
+      }
+      if (rsi_started_ && !rsi_started_notification_sent_) {
+        event_handler_->OnSampling();
+        rsi_started_notification_sent_ = true;
       }
 
-      // Cancel program if requested
-      mxa_tech_function_.EXECUTECMD = cancel_requested_;
-      mxa_tech_function_.OnCycle();
-      if (mxa_tech_function_.ERROR) {
-        HandleBlockError("KRC_TECHFUNCTION - cancel", mxa_tech_function_.ERRORID);
+      // cancel command dispatcher with tech function
+      mxa_tech_function_s_.EXECUTECMD = cancel_requested_;
+      mxa_tech_function_s_.OnCycle();
+      if (mxa_tech_function_s_.ERROR) {
+        HandleBlockError("KRC_TECHFUNCTION3", mxa_tech_function_s_.ERRORID);
       }
-      if (mxa_tech_function_.DONE && cancel_requested_) {
+      if (mxa_tech_function_s_.DONE) {
         SetToCancelled();
       }
 
       // Before writing the output buffer, send status update
-      if (status_update_handler_) {
-        status_update.control_mode_ = static_cast<ControlMode>(mxa_tech_function_.INT_DATA[1]);
-        status_update.cycle_time_ = static_cast<CycleTime>(mxa_tech_function_.INT_DATA[2]);
+      if (status_update_handler_ != nullptr) {
+        status_update.control_mode_ = static_cast<ControlMode>(mxa_tech_function_m_.INT_DATA[1]);
+        status_update.cycle_time_ = static_cast<CycleTime>(mxa_tech_function_m_.INT_DATA[2]);
         status_update.drives_powered_ = mxa_aut_ext_.PERI_RDY;
         status_update.emergency_stop_ = !mxa_aut_ext_.ALARM_STOP;
         status_update.guard_stop_ = !mxa_aut_ext_.USER_SAFE;
