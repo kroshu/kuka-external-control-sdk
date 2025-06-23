@@ -1,36 +1,50 @@
 <ETHERNETKRL>
-   <CONFIGURATION>
-      <EXTERNAL>
-         <TYPE>Client</TYPE>                    <!-- Users connect as clients -->
-      </EXTERNAL>
-      <INTERNAL>
-         <ENVIRONMENT>Submit</ENVIRONMENT>      <!-- Server run via submit interpreter -->
-         <BUFFERING Limit="512" />              <!-- Allow buffering of up to 512 messages (system max) -->
-         <ALIVE Set_Flag="105" />               <!-- Use $flag[105] to indicate alive/good connection status -->
-         <IP>192.168.38.8</IP>                  <!-- IP address for EKI interface on robot controller (KRC) -->
-         <PORT>54600</PORT>                     <!-- Port of EKI interface on robot controller (in [54600, 54615]) -->
-         <PROTOCOL>TCP</PROTOCOL>               <!-- Use TCP protocol -->
-         <MESSAGES Logging="warning" Display="disabled" />
-      </INTERNAL>
-   </CONFIGURATION>
-
-   <RECEIVE>
-      <XML>
-         <ELEMENT Tag="External/@REQTYPE" Type="STRING" />
-         <ELEMENT Tag="External/@ID" Type="INT" />
-         <ELEMENT Tag="External/@ControlMode" Type="INT" />
-         <ELEMENT Tag="External" Set_Flag="110"/>
-      </XML>
-   </RECEIVE>
-   <SEND>
-      <XML>
-         <!-- ROS Event Info  ========================================= -->
-         <ELEMENT Tag="Robot/Event/@EventID"/>
-         <ELEMENT Tag="Robot/Event/@Message"/>
-         <ELEMENT Tag="Robot/Status/@Mode"/>
-         <ELEMENT Tag="Robot/Status/@ControlMode"/>
-         <ELEMENT Tag="Robot/Status/@EStop"/>
-         <ELEMENT Tag="Robot/Status/@ErrorCode"/>
-      </XML>
-   </SEND>
+  <CONFIGURATION>
+    <EXTERNAL>
+      <TYPE>Client</TYPE>
+    </EXTERNAL>
+    <INTERNAL>
+      <ENVIRONMENT>Submit</ENVIRONMENT>
+      <BUFFERING Limit="512" />
+      <ALIVE Set_Flag="105" Ping="120" />
+      <IP>172.31.1.147</IP>
+      <PORT>54600</PORT>
+      <PROTOCOL>TCP</PROTOCOL>
+      <MESSAGES Logging="warning" Display="disabled" />
+    </INTERNAL>
+  </CONFIGURATION>
+  <RECEIVE>
+    <XML>
+      <ELEMENT Tag="External/@REQTYPE" Type="INT" />
+      <ELEMENT Tag="External/@ControlMode" Type="INT" />
+      <ELEMENT Tag="External/@CycleTime" Type="INT" />
+      <ELEMENT Tag="External" Set_Flag="110" />
+    </XML>
+  </RECEIVE>
+  <SEND>
+    <XML>
+      <!-- BEGIN - Generic parameters -->
+      <ELEMENT Tag="Robot/Response/@EventID" />
+      <ELEMENT Tag="Robot/Response" />
+      <!-- END - Generic parameters -->
+      <!-- BEGIN - Status parameters -->
+      <ELEMENT Tag="Robot/Status/@ControlMode" />
+      <ELEMENT Tag="Robot/Status/@CycleTime" />
+      <ELEMENT Tag="Robot/Status/@DrivesPowered" />
+      <ELEMENT Tag="Robot/Status/@EmergencyStop" />
+      <ELEMENT Tag="Robot/Status/@GuardStop" />
+      <ELEMENT Tag="Robot/Status/@InMotion" />
+      <ELEMENT Tag="Robot/Status/@MotionPossible" />
+      <ELEMENT Tag="Robot/Status/@OperationMode" />
+      <ELEMENT Tag="Robot/Status/@RobotStopped" />
+      <!-- END - Status parameters -->
+      <!-- BEGIN - Initial parameters -->
+      <ELEMENT Tag="Robot/Init/@VER" />
+      <ELEMENT Tag="Robot/Init/@NumAxes" />
+      <ELEMENT Tag="Robot/Init/@NumExternalAxes" />
+      <ELEMENT Tag="Robot/Init/@Model" />
+      <ELEMENT Tag="Robot/Init/@RobVer" />
+      <!-- END - Initial parameters -->
+    </XML>
+  </SEND>
 </ETHERNETKRL>

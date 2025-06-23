@@ -47,7 +47,9 @@ class Endpoint {
   void EmptyBuffer();
 
   std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{nullptr};
-  char recv_msg_[1024];
+
+  static constexpr std::size_t kBufferSize = 1024;
+  char recv_msg_[kBufferSize];
 };
 
 }  // namespace kuka::external::control::kss

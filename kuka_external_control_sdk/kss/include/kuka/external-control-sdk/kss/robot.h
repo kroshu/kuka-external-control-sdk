@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@
 #include <mutex>
 #include <variant>
 
-#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
