@@ -1,4 +1,4 @@
-# External Control Setup for KSS with EKI and RSI
+# External Control Setup for KSS with EKI
 
 This document describes the necessary steps for setting up external control using the **Ethernet KRL Interface** (EKI) and **Robot Sensor Interface** (RSI) on a controller running **KUKA System Software** (KSS).
 
@@ -19,6 +19,18 @@ During configuration and setup, connect your computer with WorkVisual installed 
 
 Create a new network interface on the KRC for RSI. Ensure the RSI interface is on a different subnet than the KLI. Set the network interface of the computer performing external control to be on the same subnet as the RSI interface.
 
+To add a new network interface on the robot controller, follow these steps:
+
+1. Select at least the *Expert* user group.
+2. Navigate to *Main menu* &rarr; *Start-up* &rarr; *Network configuration*.
+3. Click on the *Advanced...* button.
+4. At the bottom, click *Add interface*.
+5. Select the new interface, which will be listed as *virtual6 (virtual)* by default.
+6. Set *Address type* to *Mixed IP address*.
+7. Choose an IP address that is on a different subnet than the KLI interface. By default, it can be set to `172.32.1.147`.
+8. At the bottom, click *Save*.
+9. Restart the robot control controller to ensure configuration changes are applied.
+
 Update the IP address in the [`kss/krl/SensorInterface/rsi_ethernet.xml`](../kss/krl/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
 
 ## Steps within WorkVisual
@@ -29,7 +41,7 @@ There are several KUKA-specific files located in the [`kss/krl/`](../kss/krl/) d
 2. Copy the [`kss/krl/EthernetKRL/EkiKSSinterface.xml`](../kss/krl/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
 3. Copy all files from the [`kss/krl/SensorInterface/`](../kss/krl/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
 
-After moving all the files to the correct locations, modify the `KRC/STEU/Mada/$option.dat` file. Change the flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
+After moving all the files to the correct locations, modify the `KRC/STEU/Mada/$option.dat` file. Change the `$CHCK_MOVENA` flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
 
 ```krl
 ; Original setting
@@ -45,4 +57,4 @@ Once you have completed these steps, deploy the project onto the controller. Aft
 
 ## Steps on the SmartHMI
 
-To use external control, you have to change the mode to `EXT` on the SmartHMI.
+To use external control, you have to change the operation mode to `EXT` on the SmartHMI.

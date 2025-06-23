@@ -1,16 +1,12 @@
-&ACCESS  RV
-&PARAM DISKPATH = KRC:\R1\Program\ROS
-&REL 4
-DEFDAT  EKI_COMMUNICATION
+&ACCESS R
+DEFDAT eki_communication PUBLIC
+    GLOBAL CONST CHAR INTERFACE_NAME[64]
+    INTERFACE_NAME[] = "EkiKSSinterface"
+    CONST CHAR INTERFACE_VERSION[16]
+    INTERFACE_VERSION[] = "1.0.0"
+    CONST INT ROS_EKI_CONN_FLAG = 105
+    CONST INT ROS_EKI_RECV_FLAG = 110
 
-   CHAR InterfaceName[64]
-   InterfaceName[]="EkiKSSinterface"
-
-   INT ROS_EKI_Conn_Flag=105
-   INT ROS_EKI_Recv_Flag=110
-
-   DECL BOOL connection_flag=FALSE
-
-   DECL EventType last_event=#None
-
+    DECL BOOL connection_flag = FALSE
+    DECL EventType last_event = #NONE
 ENDDAT

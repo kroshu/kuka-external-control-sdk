@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2025 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 
-#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
@@ -56,7 +56,7 @@ class Robot : public IRobot {
  protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
-  std::unique_ptr<ControlSignal> control_signal_{nullptr};
+  ControlSignal control_signal_;
 
   Configuration config_;
   int last_ipoc_ = 0;
@@ -66,9 +66,8 @@ class Robot : public IRobot {
 
   // Members and methods for implementing control
  private:
-  Status ParseIncomingXML(std::string_view xml_str);
   Status UpdateMotionState(std::string_view xml_str);
- 
+
  private:
   static constexpr char error_text[] =  "Not supported by plain RSI";
 };

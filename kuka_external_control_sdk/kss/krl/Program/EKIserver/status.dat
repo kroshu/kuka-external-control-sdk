@@ -1,0 +1,14 @@
+&ACCESS R
+DEFDAT status
+    DECL ControlMode control_mode = #INACTIVE
+    DECL ROS_CycleTime cycle_time = #NONE_CYCLE_TIME
+    BOOL drives_powered = FALSE
+    BOOL emergency_stop = FALSE
+    BOOL guard_stop = FALSE
+    BOOL in_motion = FALSE
+    BOOL motion_possible = FALSE
+    INT operation_mode = 0
+    BOOL robot_stopped = FALSE
+
+    BOOL first_update = TRUE
+ENDDAT
