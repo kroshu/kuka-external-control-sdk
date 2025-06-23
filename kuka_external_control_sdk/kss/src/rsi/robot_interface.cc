@@ -18,10 +18,9 @@
 namespace kuka::external::control::kss::rsi {
 
 Robot::Robot(Configuration config)
-    : config_(config)
-    , last_motion_state_(config.dof)
-    , initial_motion_state_(config.dof)
-    , control_signal_(config.dof) {}
+    : config_(config), last_motion_state_(config.dof, config.gpio_state_size),
+      initial_motion_state_(config.dof, config.gpio_state_size)
+    , control_signal_(config.dof, config.gpio_state_size) {}
 
 Status Robot::Setup() {
   if (!endpoint_.Setup(config_.client_port)) {
@@ -66,7 +65,8 @@ Status Robot::StopMonitoring() {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) {
+Status
+Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
@@ -74,9 +74,7 @@ Status Robot::CancelMonitoringSubscription() {
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-bool Robot::HasMonitoringSubscription() {
-  return false;
-}
+bool Robot::HasMonitoringSubscription() { return false; }
 
 Status Robot::SwitchControlMode(ControlMode control_mode) {
   return {ReturnCode::UNSUPPORTED, error_text};
@@ -94,7 +92,8 @@ Status Robot::SendControlSignal() {
 
   auto ctr_signal_xml = control_signal_.CreateXMLString(last_ipoc_, false);
   if (!ctr_signal_xml.has_value()) {
-    return {ReturnCode::ERROR, "Parsing control signal to proper XML format failed"};
+    return {ReturnCode::ERROR,
+            "Parsing control signal to proper XML format failed"};
   }
 
   if (!endpoint_.MessageSend(ctr_signal_xml.value())) {
@@ -103,7 +102,8 @@ Status Robot::SendControlSignal() {
   return {ReturnCode::OK, "Sent RSI control signal"};
 }
 
-Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
+Status
+Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
   if (!endpoint_.ReceiveOrTimeout(receive_request_timeout)) {
     return {ReturnCode::ERROR, "Receiving RSI state failed"};
   }
@@ -130,4 +130,4 @@ Status Robot::UpdateMotionState(std::string_view xml_str) {
   return {ReturnCode::OK, "Parsed incoming RSI server message"};
 }
 
-};  // namespace kuka::external::control::kss
+}; // namespace kuka::external::control::kss::rsi
