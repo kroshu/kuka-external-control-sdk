@@ -87,9 +87,8 @@ private:
 
 class ControlSignal : public BaseControlSignal {
 public:
-  ControlSignal(std::size_t dof, std::size_t gpio_size,
-                const MotionState &initial_positions)
-      : BaseControlSignal(dof), kInitialPositions(initial_positions) {
+  ControlSignal(std::size_t dof, std::size_t gpio_size)
+      : BaseControlSignal(dof), initial_positions_(dof, gpio_size) {
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 

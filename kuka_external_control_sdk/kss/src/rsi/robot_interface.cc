@@ -20,7 +20,7 @@ namespace kuka::external::control::kss::rsi {
 Robot::Robot(Configuration config)
     : config_(config), last_motion_state_(config.dof, config.gpio_state_size),
       initial_motion_state_(config.dof, config.gpio_state_size)
-    , control_signal_(config.dof) {}
+    , control_signal_(config.dof, config.gpio_state_size) {}
 
 Status Robot::Setup() {
   if (!endpoint_.Setup(config_.client_port)) {
