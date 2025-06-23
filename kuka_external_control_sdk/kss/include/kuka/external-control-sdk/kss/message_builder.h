@@ -19,7 +19,6 @@
 #include <array>
 #include <cstring>
 #include <limits>
-#include <limits>
 #include <optional>
 #include <string>
 
@@ -30,7 +29,8 @@ namespace kuka::external::control::kss {
 
 class MotionState : public BaseMotionState {
 public:
-  MotionState(std::size_t dof, std::size_t gpio_size) : BaseMotionState(dof) {
+  MotionState(std::size_t dof, std::vector<GPIOConfiguration> gpio_config_list)
+      : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_velocities_.resize(dof, std::numeric_limits<double>::quiet_NaN());
@@ -40,20 +40,15 @@ public:
     first_cartesian_position_index_ += kMessagePrefix.length();
     first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
 
-    // TODO (Komaromi): Create GPIO config list
-    // Add GPIO Configuration list for state interfaces
-    std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE),
-        std::make_unique<GPIOConfig>(1, "GPIO_02", GPIOValueType::BOOL_VALUE)};
-    for (size_t i = 0; i < gpio_size; i++) {
+    for (auto &&gpio_config : gpio_config_list) {
       measured_gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(gpio_config_list[i])));
+              gpio_config));
     }
   }
 
-  MotionState(const MotionState& other) = default;
-  MotionState& operator=(const MotionState& other);
+  MotionState(const MotionState &other) = default;
+  MotionState &operator=(const MotionState &other);
 
   void CreateFromXML(const char *incoming_xml);
   int GetIpoc() { return ipoc_; }
@@ -87,19 +82,22 @@ private:
 
 class ControlSignal : public BaseControlSignal {
 public:
-  ControlSignal(std::size_t dof, std::size_t gpio_size)
-      : BaseControlSignal(dof), initial_positions_(dof, gpio_size) {
+  ControlSignal(std::size_t dof,
+                std::vector<GPIOConfiguration> gpio_state_config_list,
+                std::vector<GPIOConfiguration> gpio_command_config_list)
+      : BaseControlSignal(dof), initial_positions_(dof, gpio_state_config_list) {
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
-    // TODO (Komaromi): Create GPIO config list
+    // TODO (Komaromi): Create GPIO9 config list
     // Add GPIO Configuration list for command interfaces
-    std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE)};
-    for (size_t i = 0; i < gpio_size; i++) {
+    // std::unique_ptr<GPIOConfiguration> gpio_config_list[] = {
+    //     std::make_unique<GPIOConfiguration>()(0, "GPIO_01",
+    //                                           GPIOValueType::BOOL_VALUE)};
+    for (auto &&gpio_config : gpio_command_config_list) {
       gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(gpio_config_list[i])));
+              gpio_config));
     }
 
     for (int i = 1; i <= dof; ++i) {
@@ -112,11 +110,11 @@ public:
   std::optional<std::string_view> CreateXMLString(int last_ipoc,
                                                   bool stop_control = false);
 
-  void SetInitialPositions(const MotionState& initial_positions);
+  void SetInitialPositions(const MotionState &initial_positions);
   bool InitialPositionsSet() const { return initial_positions_set_; }
   void Reset() { initial_positions_set_ = false; }
 
- private:
+private:
   void AppendToXMLString(std::string_view str);
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";

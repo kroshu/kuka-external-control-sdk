@@ -22,15 +22,11 @@ namespace kuka::external::control {
 class BaseGPIOValue {
 public:
   BaseGPIOValue() = default;
-  BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
-      : gpio_config_(std::move(gpio_config)) {}
+  BaseGPIOValue(GPIOConfiguration gpio_config)
+      : gpio_config_(gpio_config) {}
   ~BaseGPIOValue() = default;
 
-  // uint32_t const &GetGPIOId() const { return gpio_id_; }
-  // void SetGPIOId(uint32_t id) { gpio_id_ = id; }
-  // GPIOValueType const &GetValueType() const { return value_type_; }
-  // void SetValueType(GPIOValueType type) { value_type_ = type; }
-  std::unique_ptr<BaseGPIOConfig> const &GetGPIOConfig() const {
+  GPIOConfiguration const &GetGPIOConfig() const {
     return gpio_config_;
   }
   bool const &GetBoolValue() const { return value_.bool_value_; }
@@ -40,11 +36,6 @@ public:
   }
   double const &GetDoubleValue() const { return value_.double_value_; }
   void SetDoubleValue(double value) { value_.double_value_ = value; }
-  uint64_t const &GetRawValue() const { return value_.raw_value_; }
-  void SetRawValue(uint64_t value) { value_.raw_value_ = value; }
-  void SetRawValue(double value) {
-    value_.raw_value_ = static_cast<uint64_t>(value);
-  }
   int64_t const &GetLongValue() const { return value_.long_value_; }
   void SetLongValue(int64_t value) { value_.long_value_ = value; }
   void SetLongValue(double value) {
@@ -54,11 +45,10 @@ public:
 protected:
   // uint32_t gpio_id_;
   // GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
-  std::unique_ptr<BaseGPIOConfig> gpio_config_;
+  const GPIOConfiguration gpio_config_;
   union {
     bool bool_value_;
     double double_value_;
-    uint64_t raw_value_;
     int64_t long_value_;
   } value_;
   // std::variant<bool,double,uint64_t,int64_t> value_;

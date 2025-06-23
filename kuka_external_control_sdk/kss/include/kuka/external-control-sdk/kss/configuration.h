@@ -38,11 +38,11 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
-  // GPIO states size
-  std::size_t gpio_state_size = 0;
+  // GPIO states
+  std::vector<GPIOConfiguration> gpio_state_configs;
 
   // GPIO commands size
-  std::size_t gpio_command_size = 0;
+  std::vector<GPIOConfiguration> gpio_command_configs;
 
 
   // The control mode to begin external control in.
