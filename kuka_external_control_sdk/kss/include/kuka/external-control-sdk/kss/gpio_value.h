@@ -33,20 +33,7 @@ public:
   ~GPIOValue() = default;
 
   GPIOValue &operator=(double value) {
-    switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOLEAN:
-      this->SetBoolValue(value);
-      break;
-    case GPIOValueType::ANALOG:
-      this->SetDoubleValue(value);
-      break;
-    case GPIOValueType::DIGITAL:
-      this->SetLongValue(value);
-      break;
-    case GPIOValueType::UNSPECIFIED:
-    default:
-      break;
-    }
+    this->SetValue(value);
     return *this;
   }
 };

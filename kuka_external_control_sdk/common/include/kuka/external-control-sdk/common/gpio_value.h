@@ -78,6 +78,11 @@ public:
       return false;
     }
   }
+  BaseGPIOValue &operator=(double value) {
+    this->SetValue(value);
+    return *this;
+  }
+
   bool SetBoolValue(double value) {
     return SetBoolValue(static_cast<bool>(value));
   }

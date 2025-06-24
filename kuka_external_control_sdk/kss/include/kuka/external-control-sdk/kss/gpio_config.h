@@ -22,12 +22,26 @@ namespace kuka::external::control::kss {
 class GPIOConfig : public BaseGPIOConfig {
 public:
   GPIOConfig() : BaseGPIOConfig(){};
-  GPIOConfig(std::string name, GPIOValueType value_type,
+  GPIOConfig(std::string name, std::string value_type,
              bool enable_limits = false, double min_value = 0.0,
              double max_value = 0.0)
       : BaseGPIOConfig() {
-    this->name_ = name;
-    this->value_type_ = value_type;
+    this->name_ = std::move(name);
+    // Convert string to GPIOValueType enum
+    if (value_type == "bool" || value_type == "BOOL" ||
+        value_type == "boolean" || value_type == "BOOLEAN") {
+      this->value_type_ = GPIOValueType::BOOLEAN;
+    } else if (value_type == "double" || value_type == "DOUBLE" ||
+               value_type == "float" || value_type == "FLOAT" ||
+               value_type == "analog" || value_type == "ANALOG") {
+      this->value_type_ = GPIOValueType::ANALOG;
+    } else if (value_type == "int" || value_type == "INT" ||
+               value_type == "long" || value_type == "LONG" ||
+               value_type == "digital" || value_type == "DIGITAL") {
+      this->value_type_ = GPIOValueType::DIGITAL;
+    } else {
+      this->value_type_ = GPIOValueType::UNSPECIFIED;
+    }
     this->min_value_ = min_value;
     this->max_value_ = max_value;
     this->enable_limits_ = enable_limits;

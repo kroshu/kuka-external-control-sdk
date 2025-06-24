@@ -29,6 +29,12 @@ enum class GPIOValueType {
 class BaseGPIOConfig {
 public:
   BaseGPIOConfig() = default;
+  BaseGPIOConfig(std::string name, GPIOValueType value_type,
+                 bool enable_limits = false, double min_value = 0.0,
+                 double max_value = 0.0)
+      : name_(std::move(name)), value_type_(value_type),
+        enable_limits_(enable_limits), min_value_(min_value),
+        max_value_(max_value) {}
   ~BaseGPIOConfig() = default;
 
   std::string const &GetName() const { return name_; }
@@ -37,12 +43,11 @@ public:
   double const &GetMaxValue() const { return max_value_; }
   bool const &GetEnableLimits() const { return enable_limits_; }
 
-
 protected:
   std::string name_;
   GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
   // This might be useful in cases with only gpio command interfaces
-  //std::variant<bool, double, int64_t> initial_value_;
+  // std::variant<bool, double, int64_t> initial_value_;
 
   double min_value_;
   double max_value_;
