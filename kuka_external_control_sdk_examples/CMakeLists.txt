@@ -42,6 +42,12 @@ target_include_directories(${control-artifact_name}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 )
 
+# EKI + RSI example
+add_executable(eki_rsi_example src/eki_rsi_example.cc)
+target_compile_features(eki_rsi_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
+target_link_libraries(eki_rsi_example PRIVATE Kuka::kuka-external-control-sdk)
+target_include_directories(eki_rsi_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
+
 # Install package.xml file so this package can be processed by ROS toolings
 # See REP 136 for details
 # Installing this in non-ROS environments won't have any effect, but it won't harm, either.

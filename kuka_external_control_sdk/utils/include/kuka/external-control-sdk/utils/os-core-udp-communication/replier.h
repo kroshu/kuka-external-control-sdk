@@ -34,6 +34,7 @@ class Replier {
  public:  //<operations>
   virtual ErrorCode ReceiveRequest();
   virtual ErrorCode ReceiveRequestOrTimeout(std::chrono::microseconds recv_timeout);
+  virtual ErrorCode EmptyBuffer();
   virtual ErrorCode SendReply(uint8_t* reply_msg_data, size_t reply_msg_size);
 
  public:  //<properties>
@@ -52,6 +53,8 @@ class Replier {
   bool active_request_ = false;
   SocketAddress last_remote_address_;
   int last_request_size_ = 0;
+
+  static constexpr int kEmtyBufferRecvTimeoutMs = 40;
 };
 }  // namespace os::core::udp::communication
 

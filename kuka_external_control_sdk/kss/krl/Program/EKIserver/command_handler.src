@@ -1,0 +1,193 @@
+&ACCESS R
+DEF command_handler()
+    ; Software License Agreement (BSD License)
+    ;
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
+    ; All rights reserved.
+    ;
+    ; Redistribution and use in source and binary forms, with or without
+    ; modification, are permitted provided that the following conditions are met:
+    ;
+    ;      * Redistributions of source code must retain the above copyright
+    ;        notice, this list of conditions and the following disclaimer.
+    ;      * Redistributions in binary form must reproduce the above copyright
+    ;        notice, this list of conditions and the following disclaimer in the
+    ;        documentation and/or other materials provided with the distribution.
+    ;      * Neither the name of the copyright holder, nor the names of its
+    ;        contributors may be used to endorse or promote products derived
+    ;        from this software without specific prior written permission.
+    ;
+    ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    ; POSSIBILITY OF SUCH DAMAGE.
+END
+
+GLOBAL DEF ROS_HandleCommand(cmd: IN)
+    DECL Command cmd
+    DECL CommandType cmd_enum
+
+    cmd_enum = ROS_IntToCommandType(cmd.cmd_int)
+
+    IF cmd_enum == #CMD_NONE THEN
+        ; If nothing was received, send status update, if necessary
+        ROS_UpdateStatus()
+        RETURN
+    ENDIF
+
+    ; Report error if the command was invalid
+    IF NOT IsCommandValid(cmd_enum) THEN
+        ROS_SetLastEvent(#INVALID)
+        ROS_Error("Invalid transition requested")
+        RETURN
+    ENDIF
+
+    SWITCH cmd_enum
+        CASE #CMD_CON
+            ROS_SetLastEvent(#CONNECTED)
+        CASE #CMD_START
+            StartProgram()
+        CASE #CMD_CANCEL
+            CancelProgram()
+        CASE #CMD_RESET
+            ResetProgram()
+        CASE #CMD_CHANGE
+            ChangeControlMode(cmd)
+        CASE #CMD_DRIVES_ON
+            $DRIVES_ENABLE = TRUE
+            CONFIRM 0
+            ROS_SetLastEvent(#DRIVES_TURNED_ON)
+        CASE #CMD_DRIVES_OFF
+            $DRIVES_ENABLE = FALSE
+            ROS_SetLastEvent(#DRIVES_TURNED_OFF)
+        CASE #CMD_CHANGE_CYCLE_TIME
+            ChangeCycleTime(cmd)
+        DEFAULT
+            ROS_SetLastEvent(#INVALID)
+    ENDSWITCH
+END
+
+DEFFCT BOOL IsCommandValid(cmd: IN)
+    DECL CommandType cmd
+
+    ; Actual check
+    SWITCH current_driver_state
+        CASE #INITIALIZED
+            RETURN IsCommandValidInInit(cmd)
+        CASE #INACTIVE
+            RETURN IsCommandValidInInactive(cmd)
+        CASE #ACTIVE
+            RETURN IsCommandValidInActive(cmd)
+    ENDSWITCH
+ENDFCT
+
+; Checks if the specified command enum is a valid command in the initialized state
+DEFFCT BOOL IsCommandValidInInit(cmd: IN)
+    DECL CommandType cmd
+    INT idx
+
+    FOR idx = 1 TO INITIALIZED_VALID_COUNT
+        IF INIT_VALID_COMMANDS[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT
+
+; Checks if the specified command enum is a valid command in the inactive state
+DEFFCT BOOL IsCommandValidInInactive(cmd: IN)
+    DECL CommandType cmd
+    INT idx
+
+    FOR idx = 1 TO INACTIVE_VALID_COUNT
+        IF INACTIVE_VALID_COMMANDS[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT
+
+; Checks if the specified command enum is a valid command in the active state
+DEFFCT BOOL IsCommandValidInActive(cmd: IN)
+    DECL CommandType cmd
+    INT idx
+
+    FOR idx = 1 TO ACTIVE_VALID_COUNT
+        IF ACTIVE_VALID_COMMANDS[idx] == cmd THEN
+            RETURN TRUE
+        ENDIF
+    ENDFOR
+
+    RETURN FALSE
+ENDFCT
+
+; Resets the command handler state. Should be called whenever the external client disconnects.
+GLOBAL DEF ROS_ResetCommandHandler()
+    current_driver_state = #INITIALIZED
+END
+
+DEF StartProgram()
+    CONFIRM 0
+    IF ROS_StartProgram() THEN
+        current_driver_state = #Active
+        ROS_SetLastEvent(#STARTED)
+    ELSE
+        ROS_SetLastEvent(#ERROR)
+    ENDIF
+END
+
+DEF CancelProgram()
+    CONFIRM 0
+    IF ROS_CancelProgram() THEN
+        current_driver_state = #Initialized
+        ROS_SelectControlMode(#INACTIVE)
+        ROS_SetLastEvent(#CANCELLED)
+    ELSE
+        ROS_SetLastEvent(#ERROR)
+    ENDIF
+END
+
+DEF ResetProgram()
+    CONFIRM 0
+    IF ROS_ResetProgram() THEN
+        current_driver_state = #INACTIVE
+        ROS_SetLastEvent(#RESET_OK)
+    ELSE
+        ROS_SetLastEvent(#ERROR)
+    ENDIF
+END
+
+DEF ChangeControlMode(command_struc: IN)
+    DECL Command command_struc
+    DECL ControlMode control_mode
+
+    control_mode = ROS_IntToControlMode(command_struc.control_mode)
+    IF control_mode == #INACTIVE THEN
+        ROS_SetLastEvent(#ERROR)
+        RETURN
+    ENDIF
+
+    ROS_SelectControlMode(control_mode)
+    current_driver_state = #INACTIVE
+    ROS_SetLastEvent(#SWITCH_OK)
+END
+
+DEF ChangeCycleTime(command_struc: IN)
+    DECL Command command_struc
+
+    IF NOT ROS_SelectCycleTime(command_struc.cycle_time) THEN
+        ROS_SetLastEvent(#ERROR)
+        RETURN
+    ENDIF
+
+    ROS_SetLastEvent(#CYCLE_TIME_CHANGED)
+END
