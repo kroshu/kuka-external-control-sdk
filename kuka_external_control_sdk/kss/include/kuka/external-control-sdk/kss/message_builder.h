@@ -19,7 +19,6 @@
 #include <array>
 #include <cstring>
 #include <limits>
-#include <limits>
 #include <optional>
 #include <string>
 
@@ -43,8 +42,8 @@ public:
     // TODO (Komaromi): Create GPIO config list
     // Add GPIO Configuration list for state interfaces
     std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE),
-        std::make_unique<GPIOConfig>(1, "GPIO_02", GPIOValueType::BOOL_VALUE)};
+        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOLEAN),
+        std::make_unique<GPIOConfig>(1, "GPIO_02", GPIOValueType::BOOLEAN)};
     for (size_t i = 0; i < gpio_size; i++) {
       measured_gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
@@ -52,8 +51,8 @@ public:
     }
   }
 
-  MotionState(const MotionState& other) = default;
-  MotionState& operator=(const MotionState& other);
+  MotionState(const MotionState &other) = default;
+  MotionState &operator=(const MotionState &other);
 
   void CreateFromXML(const char *incoming_xml);
   int GetIpoc() { return ipoc_; }
@@ -95,7 +94,7 @@ public:
     // TODO (Komaromi): Create GPIO config list
     // Add GPIO Configuration list for command interfaces
     std::unique_ptr<GPIOConfig> gpio_config_list[] = {
-        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOL_VALUE)};
+        std::make_unique<GPIOConfig>(0, "GPIO_01", GPIOValueType::BOOLEAN)};
     for (size_t i = 0; i < gpio_size; i++) {
       gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
@@ -112,11 +111,11 @@ public:
   std::optional<std::string_view> CreateXMLString(int last_ipoc,
                                                   bool stop_control = false);
 
-  void SetInitialPositions(const MotionState& initial_positions);
+  void SetInitialPositions(const MotionState &initial_positions);
   bool InitialPositionsSet() const { return initial_positions_set_; }
   void Reset() { initial_positions_set_ = false; }
 
- private:
+private:
   void AppendToXMLString(std::string_view str);
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";

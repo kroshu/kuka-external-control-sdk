@@ -22,56 +22,19 @@ namespace kuka::external::control::kss {
 class GPIOConfig : public BaseGPIOConfig {
 public:
   GPIOConfig() : BaseGPIOConfig(){};
-  GPIOConfig(std::size_t id, std::string name, GPIOValueType value_type)
+  GPIOConfig(std::string name, GPIOValueType value_type,
+             bool enable_limits = false, double min_value = 0.0,
+             double max_value = 0.0)
       : BaseGPIOConfig() {
-    this->gpio_id_ = id;
     this->name_ = name;
     this->value_type_ = value_type;
+    this->min_value_ = min_value;
+    this->max_value_ = max_value;
+    this->enable_limits_ = enable_limits;
   }
-  /* -- Parse XML to get config --*/
-  //   GPIOConfig(
-  //       const kuka::ecs::v1::SignalConfigExternal &protobuf_signal_config) {
-  //     *this = std::move(protobuf_signal_config);
-  //   }
+
   ~GPIOConfig() = default;
-
-  /* -- Parse XML to get config --*/
-  //   GPIOConfig &operator=(const kuka::ecs::v1::SignalConfigExternal &rhs) {
-  //     auto &pb_sc = rhs.signal_config();
-  //     bool has_pb_sc = rhs.has_signal_config();
-
-  //     this->gpio_id_ = rhs.signal_id();
-  //     this->is_gpio_used_ = rhs.has_signal_config();
-  //     if (has_pb_sc) {
-  //       this->name_ = pb_sc.name();
-  //       switch (pb_sc.direction()) {
-  //       case kuka::ecs::v1::SignalConfig::INPUT:
-  //         this->direction_ = GPIODirection::INPUT;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::OUTPUT:
-  //         this->direction_ = GPIODirection::OUTPUT;
-  //         break;
-  //       default:
-  //         this->direction_ = GPIODirection::UNSPECIFIED;
-  //         break;
-  //       }
-  //       switch (pb_sc.data_type()) {
-  //       case kuka::ecs::v1::SignalConfig::BOOL:
-  //         this->value_type_ = GPIOValueType::BOOL_VALUE;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::NUMBER:
-  //         this->value_type_ = GPIOValueType::DOUBLE_VALUE;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::RAW:
-  //         this->value_type_ = GPIOValueType::RAW_VALUE;
-  //         break;
-  //       default:
-  //         this->value_type_ = GPIOValueType::UNSPECIFIED;
-  //         break;
-  //       }
-  //     }
-  //     return *this;
-  //   }
+  // Add RSI specific methods
 };
 
 } // namespace kuka::external::control::kss

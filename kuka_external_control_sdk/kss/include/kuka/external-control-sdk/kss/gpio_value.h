@@ -34,16 +34,13 @@ public:
 
   GPIOValue &operator=(double value) {
     switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOL_VALUE:
+    case GPIOValueType::BOOLEAN:
       this->SetBoolValue(value);
       break;
-    case GPIOValueType::DOUBLE_VALUE:
+    case GPIOValueType::ANALOG:
       this->SetDoubleValue(value);
       break;
-    case GPIOValueType::RAW_VALUE:
-      this->SetRawValue(value);
-      break;
-    case GPIOValueType::LONG_VALUE:
+    case GPIOValueType::DIGITAL:
       this->SetLongValue(value);
       break;
     case GPIOValueType::UNSPECIFIED:
