@@ -39,11 +39,13 @@ public:
 
     first_cartesian_position_index_ += kMessagePrefix.length();
     first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
-
-    for (auto &&gpio_config : gpio_config_list) {
+    
+    for (size_t i = 0; i < gpio_config_list.size(); i++) {
       measured_gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
-              gpio_config));
+              gpio_config_list[i]));
+      GpioAttributePrefix.push_back(
+          " " + std::to_string(i + 1) + "=\"");
     }
   }
 
@@ -66,8 +68,8 @@ private:
 
   const std::string kDelayNodePrefix = "<Delay D=\"";
   const std::string kGpioPrefix = "<GPIO";
-  // Add GPIO names for xml parsing
-  const std::vector<std::string> kGpioAttributePrefix = {" 01=\"", " 02=\""};
+  
+
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Rob>";
@@ -76,7 +78,8 @@ private:
 
   long ipoc_ = 0;
   long delay_ = 0;
-
+  // Add GPIO names for xml parsing
+  std::vector<std::string> GpioAttributePrefix;
   static constexpr int kPrecision = 6;
 };
 
@@ -89,15 +92,12 @@ public:
     joint_position_values_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
-    // TODO (Komaromi): Create GPIO9 config list
-    // Add GPIO Configuration list for command interfaces
-    // std::unique_ptr<GPIOConfiguration> gpio_config_list[] = {
-    //     std::make_unique<GPIOConfiguration>()(0, "GPIO_01",
-    //                                           GPIOValueType::BOOL_VALUE)};
-    for (auto &&gpio_config : gpio_command_config_list) {
+    for (size_t i = 0; i < gpio_command_config_list.size(); i++) {
       gpio_values_.push_back(
           std::make_shared<kuka::external::control::kss::GPIOValue>(
-              gpio_config));
+              gpio_command_config_list[i]));
+      GpioAttributePrefix.push_back(
+          " " + std::to_string(i + 1) + "=\"");
     }
 
     for (int i = 1; i <= dof; ++i) {
@@ -126,8 +126,6 @@ private:
   const std::string kStopNodePrefix = "<Stop>";
   const std::string kStopNodeSuffix = "</Stop>";
   const std::string kGpioPrefix = "<GPIO";
-  // Add GPIO names for xml parsing
-  const std::vector<std::string> kGpioAttributePrefix = {" 01=\""};
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Sen>";
@@ -135,6 +133,8 @@ private:
   bool initial_positions_set_ = false;
   MotionState initial_positions_;
 
+  // Add GPIO names for xml parsing
+  std::vector<std::string> GpioAttributePrefix;
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;
   char xml_string_[kBufferSize];
