@@ -23,14 +23,25 @@ enum class GPIOValueType {
   UNSPECIFIED = 0,
   BOOL_VALUE = 1,
   DOUBLE_VALUE = 2,
-  LONG_VALUE = 3
+  RAW_VALUE = 3,
+  LONG_VALUE = 4
 };
 
-struct GPIOConfiguration {
-  // The name of the GPIO.
-  std::string name;
-  // The type of the GPIO value.
-  GPIOValueType value_type = GPIOValueType::UNSPECIFIED;
+class BaseGPIOConfig {
+public:
+  BaseGPIOConfig() = default;
+  ~BaseGPIOConfig() = default;
+
+  std::size_t const &GetGPIOId() const { return gpio_id_; }
+  std::string const &GetName() const { return name_; }
+  GPIODirection const &GetDirection() const { return direction_; }
+  GPIOValueType const &GetValueType() const { return value_type_; }
+
+protected:
+  std::size_t gpio_id_;
+  std::string name_;
+  GPIODirection direction_ = GPIODirection::UNSPECIFIED;
+  GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
 };
 } // namespace kuka::external::control
 
