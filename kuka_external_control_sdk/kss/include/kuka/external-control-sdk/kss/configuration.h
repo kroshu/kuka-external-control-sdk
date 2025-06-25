@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2023 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include <string>
 
 #include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/gpio_config.h"
 
 namespace kuka::external::control::kss {
 
@@ -35,10 +36,10 @@ struct Configuration {
   std::size_t dof = 6;
 
   // GPIO states
-  std::vector<GPIOConfig> gpio_state_config_list;
+  std::vector<GPIOConfig> gpio_state_configs;
 
   // GPIO commands
-  std::vector<GPIOConfig> gpio_command_config_list;
+  std::vector<GPIOConfig> gpio_command_configs;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:
