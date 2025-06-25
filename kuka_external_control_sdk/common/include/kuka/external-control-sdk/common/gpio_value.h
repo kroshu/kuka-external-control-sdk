@@ -17,6 +17,7 @@
 #include "gpio_config.h"
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace kuka::external::control {
 class BaseGPIOValue {
@@ -33,7 +34,7 @@ public:
   std::unique_ptr<BaseGPIOConfig> const &GetGPIOConfig() const {
     return gpio_config_;
   }
-  std::optional<double> const &GetValue() const {
+  std::optional<double> GetValue() const {
     switch (gpio_config_->GetValueType()) {
     case GPIOValueType::BOOLEAN:
       return static_cast<double>(value_.bool_value_);
@@ -46,26 +47,26 @@ public:
       return std::nullopt;
     }
   }
-  std::optional<bool> const &GetBoolValue() const {
+  std::optional<bool> GetBoolValue() const {
     if (gpio_config_->GetValueType() == GPIOValueType::BOOLEAN) {
       return value_.bool_value_;
     }
     return std::nullopt;
   }
-  std::optional<double> const &GetDoubleValue() const {
+  std::optional<double> GetDoubleValue() const {
     if (gpio_config_->GetValueType() == GPIOValueType::ANALOG) {
       return value_.double_value_;
     }
     return std::nullopt;
   }
-  std::optional<int64_t> const &GetLongValue() const {
+  std::optional<int64_t> GetLongValue() const {
     if (gpio_config_->GetValueType() == GPIOValueType::DIGITAL) {
       return value_.long_value_;
     }
     return std::nullopt;
   }
 
-  bool SetValue(double &value) {
+  bool SetValue(double value) {
     switch (gpio_config_->GetValueType()) {
     case GPIOValueType::BOOLEAN:
       return this->SetBoolValue(value);
@@ -78,7 +79,7 @@ public:
       return false;
     }
   }
-  BaseGPIOValue &operator=(double &value) {
+  BaseGPIOValue &operator=(double value) {
     this->SetValue(value);
     return *this;
   }

@@ -22,9 +22,10 @@
 
 namespace kuka::external::control::kss {
 
-MotionState& MotionState::operator=(const MotionState& other) {
+MotionState &MotionState::operator=(const MotionState &other) {
   if (dof_ != other.dof_) {
-    throw std::invalid_argument("Cannot assign MotionState with different degrees of freedom");
+    throw std::invalid_argument(
+        "Cannot assign MotionState with different degrees of freedom");
   }
 
   if (this != &other) {
@@ -34,17 +35,24 @@ MotionState& MotionState::operator=(const MotionState& other) {
     has_torques_ = other.has_torques_;
     has_velocities_ = other.has_velocities_;
     has_cartesian_positions_ = other.has_cartesian_positions_;
-    std::copy(other.measured_positions_.cbegin(), other.measured_positions_.cend(), measured_positions_.begin());
-    std::copy(other.measured_torques_.cbegin(), other.measured_torques_.cend(), measured_torques_.begin());
-    std::copy(other.measured_velocities_.cbegin(), other.measured_velocities_.cend(), measured_velocities_.begin());
-    std::copy(other.measured_cartesian_positions_.cbegin(), other.measured_cartesian_positions_.cend(), measured_cartesian_positions_.begin());
-    std::copy(other.measured_gpio_values_.cbegin(), other.measured_gpio_values_.cend(), measured_gpio_values_.begin());
+    std::copy(other.measured_positions_.cbegin(),
+              other.measured_positions_.cend(), measured_positions_.begin());
+    std::copy(other.measured_torques_.cbegin(), other.measured_torques_.cend(),
+              measured_torques_.begin());
+    std::copy(other.measured_velocities_.cbegin(),
+              other.measured_velocities_.cend(), measured_velocities_.begin());
+    std::copy(other.measured_cartesian_positions_.cbegin(),
+              other.measured_cartesian_positions_.cend(),
+              measured_cartesian_positions_.begin());
+    // TODO (Komaromi): Add gpio to copy
+    // std::copy(other.measured_gpio_values_.cbegin(),
+    // other.measured_gpio_values_.cend(), measured_gpio_values_.begin());
   }
 
   return *this;
 }
 
-void MotionState::CreateFromXML(const char* incoming_xml) {
+void MotionState::CreateFromXML(const char *incoming_xml) {
   if (incoming_xml == nullptr) {
     throw std::invalid_argument("Received XML can not be null");
   }
@@ -109,10 +117,8 @@ void MotionState::CreateFromXML(const char* incoming_xml) {
     std::size_t dbl_length = 0;
     next_value_idx += gpioAttributePrefix[i].length() + 1;
     if (next_value_idx < len) {
-      // TODO (Komaromi) We could change this to an overridable function so
-      // there is no need for * and static pointer cast
-      *std::static_pointer_cast<GPIOValue>(measured_gpio_values_[i]) =
-          std::stod(&incoming_xml[next_value_idx], &dbl_length);
+      measured_gpio_values_[i]->SetValue(
+          std::stod(&incoming_xml[next_value_idx], &dbl_length));
     } else {
       throw std::invalid_argument(
           "Received XML is not valid for the given degree of freedom");
@@ -174,9 +180,9 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
     AppendToXMLString(gpioAttributePrefix[i]);
     // TODO (Komaromi) Do other value types
-    auto & value = gpio_values_[i]->GetValue();
+    auto value = gpio_values_[i]->GetValue();
     if (value.has_value()) {
-    AppendToXMLString(std::to_string(value.value()));
+      AppendToXMLString(std::to_string(value.value()));
     }
     AppendToXMLString("\"");
   }
@@ -189,7 +195,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   return xml_string_;
 }
 
-void ControlSignal::SetInitialPositions(const MotionState& initial_positions) {
+void ControlSignal::SetInitialPositions(const MotionState &initial_positions) {
   initial_positions_set_ = true;
   initial_positions_ = initial_positions;
 }

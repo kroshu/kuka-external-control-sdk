@@ -26,13 +26,13 @@ public:
   GPIOValue() : BaseGPIOValue(){};
   GPIOValue(std::unique_ptr<GPIOConfig> gpio_config)
       : BaseGPIOValue(std::move(gpio_config)) {}
-  GPIOValue(std::unique_ptr<GPIOConfig> gpio_config, double &value)
+  GPIOValue(std::unique_ptr<GPIOConfig> gpio_config, double value)
       : BaseGPIOValue(std::move(gpio_config)) {
     *this = value;
   }
   ~GPIOValue() = default;
 
-  GPIOValue &operator=(double &value) {
+  GPIOValue &operator=(double value) {
     this->SetValue(value);
     return *this;
   }
