@@ -22,6 +22,12 @@ namespace kuka::external::control::kss {
 class GPIOConfig : public BaseGPIOConfig {
 public:
   GPIOConfig() : BaseGPIOConfig(){};
+  GPIOConfig(const GPIOConfig &other) = default;
+  GPIOConfig(std::string name, GPIOValueType value_type,
+             bool enable_limits = false, double min_value = 0.0,
+             double max_value = 0.0)
+      : BaseGPIOConfig(std::move(name), value_type, enable_limits, min_value,
+                       max_value) {};
   GPIOConfig(std::string name, std::string value_type,
              bool enable_limits = false, double min_value = 0.0,
              double max_value = 0.0)

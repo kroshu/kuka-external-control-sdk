@@ -23,11 +23,7 @@
 namespace kuka::external::control::kss {
 
 // RSI cycle time
-enum class CycleTime : uint8_t {
-  UNSPECIFIED = 0,
-  RSI_4MS = 1,
-  RSI_12MS = 2
-};
+enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
 
 struct Configuration {
   // IP address of the KONI interface on the KRC-5.
@@ -38,12 +34,11 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
-  // GPIO states size
-  std::size_t gpio_state_size = 0;
+  // GPIO states
+  std::vector<GPIOConfig> gpio_state_config_list;
 
-  // GPIO commands size
-  std::size_t gpio_command_size = 0;
-
+  // GPIO commands
+  std::vector<GPIOConfig> gpio_command_config_list;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:

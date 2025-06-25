@@ -104,10 +104,10 @@ void MotionState::CreateFromXML(const char* incoming_xml) {
   next_value_idx += kAttributeSuffix.length();
   next_value_idx += kGpioPrefix.length() - 1;
 
-  for (int i = 0; i < kGpioAttributePrefix.size(); ++i) {
+  for (int i = 0; i < gpioAttributePrefix.size(); ++i) {
 
     std::size_t dbl_length = 0;
-    next_value_idx += kGpioAttributePrefix[i].length() + 1;
+    next_value_idx += gpioAttributePrefix[i].length() + 1;
     if (next_value_idx < len) {
       // TODO (Komaromi) We could change this to an overridable function so
       // there is no need for * and static pointer cast
@@ -171,10 +171,13 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   AppendToXMLString(stop_control ? "1" : "0");
   AppendToXMLString(kStopNodeSuffix);
   AppendToXMLString(kGpioPrefix);
-  for (size_t i = 0; i < kGpioAttributePrefix.size(); i++) {
-    AppendToXMLString(kGpioAttributePrefix[i]);
+  for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
+    AppendToXMLString(gpioAttributePrefix[i]);
     // TODO (Komaromi) Do other value types
-    AppendToXMLString(std::to_string(gpio_values_[i]->GetBoolValue()));
+    auto & value = gpio_values_[i]->GetValue();
+    if (value.has_value()) {
+    AppendToXMLString(std::to_string(value.value()));
+    }
     AppendToXMLString("\"");
   }
   AppendToXMLString(kAttributeSuffix);
