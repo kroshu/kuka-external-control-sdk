@@ -42,8 +42,8 @@ public:
 
     for (size_t i = 0; i < gpio_config_list.size(); i++) {
       measured_gpio_values_.push_back(
-          std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(std::make_unique<GPIOConfig>(gpio_config_list[i]))));
+          std::move(std::make_unique<kuka::external::control::kss::GPIOValue>(
+              std::move(std::make_unique<GPIOConfig>(gpio_config_list[i])))));
       gpioAttributePrefix.push_back(" " + gpio_config_list[i].GetName() +
                                     "=\"");
     }
@@ -92,9 +92,9 @@ public:
     cartesian_position_values_.resize(6, 0.0);
 
     for (size_t i = 0; i < gpio_command_config_list.size(); i++) {
-      gpio_values_.push_back(
-          std::make_shared<kuka::external::control::kss::GPIOValue>(std::move(
-              std::make_unique<GPIOConfig>(gpio_command_config_list[i]))));
+      gpio_values_.push_back(std::move(
+          std::make_unique<kuka::external::control::kss::GPIOValue>(std::move(
+              std::make_unique<GPIOConfig>(gpio_command_config_list[i])))));
       gpioAttributePrefix.push_back(
           " " + gpio_command_config_list[i].GetName() + "=\"");
     }

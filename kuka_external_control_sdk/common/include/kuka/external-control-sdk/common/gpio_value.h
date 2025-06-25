@@ -65,7 +65,7 @@ public:
     return std::nullopt;
   }
 
-  bool SetValue(double value) {
+  bool SetValue(double &value) {
     switch (gpio_config_->GetValueType()) {
     case GPIOValueType::BOOLEAN:
       return this->SetBoolValue(value);
@@ -78,7 +78,7 @@ public:
       return false;
     }
   }
-  BaseGPIOValue &operator=(double value) {
+  BaseGPIOValue &operator=(double &value) {
     this->SetValue(value);
     return *this;
   }

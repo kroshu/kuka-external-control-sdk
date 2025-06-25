@@ -44,7 +44,7 @@ public:
     return measured_cartesian_positions_;
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return measured_gpio_values_;
   }
 
@@ -58,7 +58,7 @@ protected:
   std::vector<double> measured_torques_;
   std::vector<double> measured_velocities_;
   std::vector<double> measured_cartesian_positions_;
-  std::vector<std::shared_ptr<BaseGPIOValue>> measured_gpio_values_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> measured_gpio_values_;
 
   std::size_t dof_;
 };
@@ -116,27 +116,11 @@ public:
 
   template <typename InputIt> void AddGPIOValues(InputIt first, InputIt last) {
     for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first) {
-      auto &gpio = gpio_values_.at(i);
-      switch (gpio->GetGPIOConfig()->GetValueType()) {
-      case GPIOValueType::BOOLEAN:
-        gpio->SetBoolValue(*first);
-        break;
-
-      case GPIOValueType::ANALOG:
-        gpio->SetDoubleValue(*first);
-        break;
-
-      case GPIOValueType::DIGITAL:
-        gpio->SetLongValue(*first);
-        break;
-
-      default:
-        break;
-      }
+      gpio_values_.at(i)->SetValue(*first);
     }
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return gpio_values_;
   }
 
@@ -153,7 +137,7 @@ protected:
   std::vector<double> joint_impedance_stiffness_values_;
   std::vector<double> joint_impedance_damping_values_;
   std::vector<double> cartesian_position_values_;
-  std::vector<std::shared_ptr<BaseGPIOValue>> gpio_values_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> gpio_values_;
 
   std::size_t dof_ = 0;
 
