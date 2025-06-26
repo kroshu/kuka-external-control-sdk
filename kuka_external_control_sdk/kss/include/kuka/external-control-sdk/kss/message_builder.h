@@ -49,9 +49,6 @@ public:
     }
   }
 
-  MotionState(const MotionState &other) = default;
-  MotionState &operator=(const MotionState &other);
-
   void CreateFromXML(const char *incoming_xml);
   int GetIpoc() { return ipoc_; }
   int GetDelay() { return delay_; }
@@ -84,11 +81,11 @@ private:
 
 class ControlSignal : public BaseControlSignal {
 public:
-  ControlSignal(std::size_t dof, std::vector<GPIOConfig> gpio_state_config_list,
+  ControlSignal(std::size_t dof,
                 std::vector<GPIOConfig> gpio_command_config_list)
-      : BaseControlSignal(dof),
-        initial_positions_(dof, gpio_state_config_list) {
+      : BaseControlSignal(dof) {
     joint_position_values_.resize(dof, 0.0);
+    initial_positions_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
     for (size_t i = 0; i < gpio_command_config_list.size(); i++) {
@@ -110,8 +107,8 @@ public:
                                                   bool stop_control = false);
 
   void SetInitialPositions(const MotionState &initial_positions);
-  bool InitialPositionsSet() const { return initial_positions_set_; }
-  void Reset() { initial_positions_set_ = false; }
+  bool InitialPositionsSet() const { return has_initial_positions_; }
+  void Reset() { has_initial_positions_ = false; }
 
 private:
   void AppendToXMLString(std::string_view str);
@@ -131,8 +128,8 @@ private:
 
   std::vector<std::string> gpioAttributePrefix;
 
-  bool initial_positions_set_ = false;
-  MotionState initial_positions_;
+  bool has_initial_positions_ = false;
+  std::vector<double> initial_positions_;
 
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;

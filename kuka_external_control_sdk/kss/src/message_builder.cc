@@ -22,36 +22,6 @@
 
 namespace kuka::external::control::kss {
 
-MotionState &MotionState::operator=(const MotionState &other) {
-  if (dof_ != other.dof_) {
-    throw std::invalid_argument(
-        "Cannot assign MotionState with different degrees of freedom");
-  }
-
-  if (this != &other) {
-    delay_ = other.delay_;
-    ipoc_ = other.ipoc_;
-    has_positions_ = other.has_positions_;
-    has_torques_ = other.has_torques_;
-    has_velocities_ = other.has_velocities_;
-    has_cartesian_positions_ = other.has_cartesian_positions_;
-    std::copy(other.measured_positions_.cbegin(),
-              other.measured_positions_.cend(), measured_positions_.begin());
-    std::copy(other.measured_torques_.cbegin(), other.measured_torques_.cend(),
-              measured_torques_.begin());
-    std::copy(other.measured_velocities_.cbegin(),
-              other.measured_velocities_.cend(), measured_velocities_.begin());
-    std::copy(other.measured_cartesian_positions_.cbegin(),
-              other.measured_cartesian_positions_.cend(),
-              measured_cartesian_positions_.begin());
-    // TODO (Komaromi): Add gpio to copy
-    // std::copy(other.measured_gpio_values_.cbegin(),
-    // other.measured_gpio_values_.cend(), measured_gpio_values_.begin());
-  }
-
-  return *this;
-}
-
 void MotionState::CreateFromXML(const char *incoming_xml) {
   if (incoming_xml == nullptr) {
     throw std::invalid_argument("Received XML can not be null");
@@ -159,11 +129,10 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     char double_buffer[kPrecision + 3 + 1 + 1 +
                        1]; // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(joint_position_attribute_prefixes_[i]);
-    int ret = std::snprintf(double_buffer, sizeof(double_buffer),
-                            kJointPositionAttributeFormat.data(),
-                            (joint_position_values_[i] -
-                             initial_positions_.GetMeasuredPositions()[i]) *
-                                (180 / M_PI));
+    int ret = std::snprintf(
+        double_buffer, sizeof(double_buffer),
+        kJointPositionAttributeFormat.data(),
+        (joint_position_values_[i] - initial_positions_[i]) * (180 / M_PI));
     if (ret <= 0) {
       return std::nullopt;
     }
@@ -196,8 +165,10 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
 }
 
 void ControlSignal::SetInitialPositions(const MotionState &initial_positions) {
-  initial_positions_set_ = true;
-  initial_positions_ = initial_positions;
+  has_initial_positions_ = true;
+  std::copy(initial_positions.GetMeasuredPositions().cbegin(),
+            initial_positions.GetMeasuredPositions().cend(),
+            initial_positions_.begin());
 }
 
 } // namespace kuka::external::control::kss
