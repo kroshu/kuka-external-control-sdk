@@ -38,7 +38,6 @@ MotionState& MotionState::operator=(const MotionState& other) {
     std::copy(other.measured_torques_.cbegin(), other.measured_torques_.cend(), measured_torques_.begin());
     std::copy(other.measured_velocities_.cbegin(), other.measured_velocities_.cend(), measured_velocities_.begin());
     std::copy(other.measured_cartesian_positions_.cbegin(), other.measured_cartesian_positions_.cend(), measured_cartesian_positions_.begin());
-    std::copy(other.measured_gpio_values_.cbegin(), other.measured_gpio_values_.cend(), measured_gpio_values_.begin());
   }
 
   return *this;
