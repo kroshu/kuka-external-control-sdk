@@ -148,7 +148,6 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   AppendToXMLString(kGpioPrefix);
   for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
     AppendToXMLString(gpioAttributePrefix[i]);
-    // TODO (Komaromi) Do other value types
     auto value = gpio_values_[i]->GetValue();
     if (value.has_value()) {
       AppendToXMLString(std::to_string(value.value()));

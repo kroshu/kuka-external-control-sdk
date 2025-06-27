@@ -19,6 +19,7 @@
 #include <array>
 #include <cstring>
 #include <limits>
+#include <limits>
 #include <optional>
 #include <string>
 
