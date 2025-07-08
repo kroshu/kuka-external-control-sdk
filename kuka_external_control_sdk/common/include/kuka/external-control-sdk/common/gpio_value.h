@@ -24,7 +24,11 @@ class BaseGPIOValue {
 public:
   BaseGPIOValue() = default;
   BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
-      : gpio_config_(std::move(gpio_config)) {}
+      : gpio_config_(std::move(gpio_config)) {
+        if (gpio_config_) {
+          SetValue(gpio_config_->GetInitialValue());
+        }
+      }
   ~BaseGPIOValue() = default;
 
   // uint32_t const &GetGPIOId() const { return gpio_id_; }

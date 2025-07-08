@@ -24,10 +24,10 @@ class GPIOConfig : public BaseGPIOConfig {
 public:
   GPIOConfig() : BaseGPIOConfig(){};
   GPIOConfig(const GPIOConfig &other) = default;
-  GPIOConfig(std::string name, GPIOValueType value_type,
+  GPIOConfig(std::string name, GPIOValueType value_type, double initial_value = 0.0,
              bool enable_limits = false, double min_value = 0.0,
              double max_value = 0.0)
-      : BaseGPIOConfig(name, value_type, enable_limits, min_value, max_value){};
+      : BaseGPIOConfig(name, value_type, initial_value, enable_limits, min_value, max_value){};
   GPIOConfig(GPIOConfiguration config) : BaseGPIOConfig() {
     this->name_ = config.name;
     // Convert string to GPIOValueType enum
@@ -45,6 +45,15 @@ public:
       this->value_type_ = GPIOValueType::DIGITAL;
     } else {
       this->value_type_ = GPIOValueType::UNSPECIFIED;
+    }
+    if (!config.initial_value.empty()) {
+      try {
+        this->initial_value_ = std::stod(config.initial_value);
+      } catch (const std::invalid_argument &) {
+        this->initial_value_ = 0.0; // If initial_value is not a valid number, set to 0.0
+      }
+    } else {
+      this->initial_value_ = 0.0; // If initial_value is empty, set to 0.0
     }
     if (config.enable_limits == "true" || config.enable_limits == "TRUE") {
       this->enable_limits_ = true;

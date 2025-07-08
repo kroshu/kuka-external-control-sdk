@@ -30,6 +30,8 @@ struct GPIOConfiguration {
   std::string name;
   //  Type of the GPIO value (bool, double, int) or (BOOLEAN, ANALOG, DIGITAL)
   std::string value_type;
+  // (Optional) Initial value for the GPIO
+  std::string initial_value;
   // (Optional) Enable limits for the GPIO value
   // If true, min_value and max_value must be set
   // If false, min_value and max_value are ignored
