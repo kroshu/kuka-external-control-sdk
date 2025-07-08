@@ -130,8 +130,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
                        1]; // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(joint_position_attribute_prefixes_[i]);
     int ret = std::snprintf(
-        double_buffer, sizeof(double_buffer),
-        kJointPositionAttributeFormat.data(),
+        double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
         (joint_position_values_[i] - initial_positions_[i]) * (180 / M_PI));
     if (ret <= 0) {
       return std::nullopt;
@@ -148,9 +147,53 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   AppendToXMLString(kGpioPrefix);
   for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
     AppendToXMLString(gpioAttributePrefix[i]);
-    auto value = gpio_values_[i]->GetValue();
-    if (value.has_value()) {
-      AppendToXMLString(std::to_string(value.value()));
+    switch (gpio_values_[i]->GetGPIOConfig()->GetValueType()) {
+    case GPIOValueType::BOOLEAN: {
+      // Append bool value
+      auto value = gpio_values_[i]->GetBoolValue();
+      if (value.has_value()) {
+        AppendToXMLString(value.value() ? "1" : "0");
+      } else {
+        return std::nullopt;
+      }
+      break;
+    }
+    case GPIOValueType::ANALOG: {
+      // Append double value
+      char double_buffer[kPrecision + 19 + 1 + 1 +
+                         1]; // Precision + Digits + Comma + Null + Minus sign
+      auto value = gpio_values_[i]->GetDoubleValue();
+      if (value.has_value()) {
+        int ret = std::snprintf(double_buffer, sizeof(double_buffer),
+                                kDoubleAttributeFormat.data(), value.value());
+        if (ret <= 0) {
+          return std::nullopt;
+        }
+        AppendToXMLString(double_buffer);
+      } else {
+        return std::nullopt;
+      }
+      break;
+    }
+    case GPIOValueType::DIGITAL: {
+      // Append double value
+      char long_buffer[19 + 1 + 1]; // Digits + Null + Minus sign
+      auto value = gpio_values_[i]->GetLongValue();
+      if (value.has_value()) {
+        int ret = std::snprintf(long_buffer, sizeof(long_buffer), "%ld",
+                                value.value());
+        if (ret <= 0) {
+          return std::nullopt;
+        }
+        AppendToXMLString(long_buffer);
+      } else {
+        return std::nullopt;
+      }
+      break;
+    }
+    default:
+      return std::nullopt;
+      break;
     }
     AppendToXMLString("\"");
   }

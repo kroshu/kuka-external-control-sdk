@@ -114,10 +114,13 @@ public:
     }
   }
 
-  template <typename InputIt> void AddGPIOValues(InputIt first, InputIt last) {
+  template <typename InputIt> bool AddGPIOValues(InputIt first, InputIt last) {
     for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first) {
-      gpio_values_.at(i)->SetValue(*first);
+      if(!gpio_values_.at(i)->SetValue(*first)) {
+        return false;
+      }
     }
+    return true;
   }
 
   std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {

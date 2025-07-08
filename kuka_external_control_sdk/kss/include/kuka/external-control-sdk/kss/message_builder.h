@@ -19,7 +19,6 @@
 #include <array>
 #include <cstring>
 #include <limits>
-#include <limits>
 #include <optional>
 #include <string>
 
@@ -117,7 +116,7 @@ private:
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
   const std::string kJointPositionsPrefix = "<AK";
   std::vector<std::string> joint_position_attribute_prefixes_;
-  const std::string kJointPositionAttributeFormat =
+  const std::string kDoubleAttributeFormat =
       "%." + std::to_string(kPrecision) + "f";
   const std::string kAttributeSuffix = "/>";
   const std::string kStopNodePrefix = "<Stop>";
