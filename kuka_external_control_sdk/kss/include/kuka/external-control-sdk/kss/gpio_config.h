@@ -16,6 +16,7 @@
 #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_CONFIG_H_
 
 #include "kuka/external-control-sdk/common/gpio_config.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 
 namespace kuka::external::control::kss {
 
@@ -26,31 +27,50 @@ public:
   GPIOConfig(std::string name, GPIOValueType value_type,
              bool enable_limits = false, double min_value = 0.0,
              double max_value = 0.0)
-      : BaseGPIOConfig(std::move(name), value_type, enable_limits, min_value,
-                       max_value) {};
-  GPIOConfig(std::string name, std::string value_type,
-             bool enable_limits = false, double min_value = 0.0,
-             double max_value = 0.0)
-      : BaseGPIOConfig() {
-    this->name_ = std::move(name);
+      : BaseGPIOConfig(name, value_type, enable_limits, min_value, max_value){};
+  GPIOConfig(GPIOConfiguration config) : BaseGPIOConfig() {
+    this->name_ = config.name;
     // Convert string to GPIOValueType enum
-    if (value_type == "bool" || value_type == "BOOL" ||
-        value_type == "boolean" || value_type == "BOOLEAN") {
+    if (config.value_type == "bool" || config.value_type == "BOOL" ||
+        config.value_type == "boolean" || config.value_type == "BOOLEAN") {
       this->value_type_ = GPIOValueType::BOOLEAN;
-    } else if (value_type == "double" || value_type == "DOUBLE" ||
-               value_type == "float" || value_type == "FLOAT" ||
-               value_type == "analog" || value_type == "ANALOG") {
+    } else if (config.value_type == "double" || config.value_type == "DOUBLE" ||
+               config.value_type == "float" || config.value_type == "FLOAT" ||
+               config.value_type == "analog" || config.value_type == "ANALOG") {
       this->value_type_ = GPIOValueType::ANALOG;
-    } else if (value_type == "int" || value_type == "INT" ||
-               value_type == "long" || value_type == "LONG" ||
-               value_type == "digital" || value_type == "DIGITAL") {
+    } else if (config.value_type == "int" || config.value_type == "INT" ||
+               config.value_type == "long" || config.value_type == "LONG" ||
+               config.value_type == "digital" ||
+               config.value_type == "DIGITAL") {
       this->value_type_ = GPIOValueType::DIGITAL;
     } else {
       this->value_type_ = GPIOValueType::UNSPECIFIED;
     }
-    this->min_value_ = min_value;
-    this->max_value_ = max_value;
-    this->enable_limits_ = enable_limits;
+    if (config.enable_limits == "true" || config.enable_limits == "TRUE") {
+      this->enable_limits_ = true;
+    } else {
+      this->enable_limits_ = false;
+    }
+    if (!config.min_value.empty()) {
+      try {
+        this->min_value_ = std::stod(config.min_value);
+      } catch (const std::invalid_argument &) {
+        this->enable_limits_ =
+            false; // If min_value is not a valid number, disable limits
+      }
+    } else {
+      this->enable_limits_ = false; // If min_value is empty, disable limits
+    }
+    if (!config.max_value.empty()) {
+      try {
+        this->max_value_ = std::stod(config.max_value);
+      } catch (const std::invalid_argument &) {
+        this->enable_limits_ =
+            false; // If max_value is not a valid number, disable limits
+      }
+    } else {
+      this->enable_limits_ = false; // If max_value is empty, disable limits
+    }
   }
 
   ~GPIOConfig() = default;

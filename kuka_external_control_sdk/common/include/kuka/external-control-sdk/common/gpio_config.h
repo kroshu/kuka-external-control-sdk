@@ -49,8 +49,8 @@ protected:
   // This might be useful in cases with only gpio command interfaces
   // std::variant<bool, double, int64_t> initial_value_;
 
-  double min_value_;
-  double max_value_;
+  double min_value_ = 0.0;
+  double max_value_ = 0.0;
   bool enable_limits_ = false;
 };
 } // namespace kuka::external::control

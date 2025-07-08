@@ -29,7 +29,7 @@ namespace kuka::external::control::kss {
 
 class MotionState : public BaseMotionState {
 public:
-  MotionState(std::size_t dof, std::vector<GPIOConfig> gpio_config_list)
+  MotionState(std::size_t dof, std::vector<GPIOConfiguration> gpio_config_list)
       : BaseMotionState(dof) {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
@@ -43,9 +43,9 @@ public:
     for (size_t i = 0; i < gpio_config_list.size(); i++) {
       measured_gpio_values_.push_back(
           std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(std::make_unique<GPIOConfig>(gpio_config_list[i])))));
-      gpioAttributePrefix.push_back(" " + gpio_config_list[i].GetName() +
-                                    "=\"");
+              std::move(std::make_unique<GPIOConfig>(
+                  GPIOConfig(gpio_config_list.at(i)))))));
+      gpioAttributePrefix.push_back(" " + gpio_config_list.at(i).name + "=\"");
     }
   }
 
@@ -82,18 +82,18 @@ private:
 class ControlSignal : public BaseControlSignal {
 public:
   ControlSignal(std::size_t dof,
-                std::vector<GPIOConfig> gpio_command_config_list)
+                std::vector<GPIOConfiguration> gpio_config_list)
       : BaseControlSignal(dof) {
     joint_position_values_.resize(dof, 0.0);
     initial_positions_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
-    for (size_t i = 0; i < gpio_command_config_list.size(); i++) {
-      gpio_values_.push_back(std::move(
-          std::make_shared<kuka::external::control::kss::GPIOValue>(std::move(
-              std::make_unique<GPIOConfig>(gpio_command_config_list[i])))));
-      gpioAttributePrefix.push_back(
-          " " + gpio_command_config_list[i].GetName() + "=\"");
+    for (size_t i = 0; i < gpio_config_list.size(); i++) {
+      gpio_values_.push_back(
+          std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
+              std::move(std::make_unique<GPIOConfig>(
+                  GPIOConfig(gpio_config_list.at(i)))))));
+      gpioAttributePrefix.push_back(" " + gpio_config_list.at(i).name + "=\"");
     }
 
     for (int i = 1; i <= dof; ++i) {

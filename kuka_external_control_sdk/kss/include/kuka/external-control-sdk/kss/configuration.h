@@ -19,12 +19,26 @@
 #include <string>
 
 #include "kuka/external-control-sdk/common/irobot.h"
-#include "kuka/external-control-sdk/kss/gpio_config.h"
 
 namespace kuka::external::control::kss {
 
 // RSI cycle time
 enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
+
+struct GPIOConfiguration {
+  // Name of the GPIO
+  std::string name;
+  //  Type of the GPIO value (bool, double, int) or (BOOLEAN, ANALOG, DIGITAL)
+  std::string value_type;
+  // (Optional) Enable limits for the GPIO value
+  // If true, min_value and max_value must be set
+  // If false, min_value and max_value are ignored
+  std::string enable_limits;
+  // (Optional) Minimum value for the GPIO
+  std::string min_value;
+  // (Optional) Maximum value for the GPIO
+  std::string max_value;
+};
 
 struct Configuration {
   // IP address of the KONI interface on the KRC-5.
@@ -36,10 +50,10 @@ struct Configuration {
   std::size_t dof = 6;
 
   // GPIO states
-  std::vector<GPIOConfig> gpio_state_configs;
+  std::vector<GPIOConfiguration> gpio_state_configs;
 
   // GPIO commands
-  std::vector<GPIOConfig> gpio_command_configs;
+  std::vector<GPIOConfiguration> gpio_command_configs;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:
