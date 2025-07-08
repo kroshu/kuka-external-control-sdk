@@ -114,30 +114,13 @@ public:
     }
   }
 
-  template <typename InputIt> void AddGPIOValues(InputIt first, InputIt last) {
+  template <typename InputIt> bool AddGPIOValues(InputIt first, InputIt last) {
     for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first) {
-      auto gpio = gpio_values_.at(i);
-      switch (gpio->GetGPIOConfig()->GetValueType()) {
-      case GPIOValueType::BOOL_VALUE:
-        gpio->SetBoolValue(*first);
-        break;
-
-      case GPIOValueType::DOUBLE_VALUE:
-        gpio->SetDoubleValue(*first);
-        break;
-
-      case GPIOValueType::RAW_VALUE:
-        gpio->SetRawValue(*first);
-        break;
-
-      case GPIOValueType::LONG_VALUE:
-        gpio->SetLongValue(*first);
-        break;
-
-      default:
-        break;
+      if(!gpio_values_.at(i)->SetValue(*first)) {
+        return false;
       }
     }
+    return true;
   }
 
   std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {

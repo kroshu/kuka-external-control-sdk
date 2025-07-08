@@ -16,62 +16,74 @@
 #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_CONFIG_H_
 
 #include "kuka/external-control-sdk/common/gpio_config.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 
 namespace kuka::external::control::kss {
 
 class GPIOConfig : public BaseGPIOConfig {
 public:
   GPIOConfig() : BaseGPIOConfig(){};
-  GPIOConfig(std::size_t id, std::string name, GPIOValueType value_type)
-      : BaseGPIOConfig() {
-    this->gpio_id_ = id;
-    this->name_ = name;
-    this->value_type_ = value_type;
+  GPIOConfig(const GPIOConfig &other) = default;
+  GPIOConfig(std::string name, GPIOValueType value_type, double initial_value = 0.0,
+             bool enable_limits = false, double min_value = 0.0,
+             double max_value = 0.0)
+      : BaseGPIOConfig(name, value_type, initial_value, enable_limits, min_value, max_value){};
+  GPIOConfig(GPIOConfiguration config) : BaseGPIOConfig() {
+    this->name_ = config.name;
+    // Convert string to GPIOValueType enum
+    if (config.value_type == "bool" || config.value_type == "BOOL" ||
+        config.value_type == "boolean" || config.value_type == "BOOLEAN") {
+      this->value_type_ = GPIOValueType::BOOLEAN;
+    } else if (config.value_type == "double" || config.value_type == "DOUBLE" ||
+               config.value_type == "float" || config.value_type == "FLOAT" ||
+               config.value_type == "analog" || config.value_type == "ANALOG") {
+      this->value_type_ = GPIOValueType::ANALOG;
+    } else if (config.value_type == "int" || config.value_type == "INT" ||
+               config.value_type == "long" || config.value_type == "LONG" ||
+               config.value_type == "digital" ||
+               config.value_type == "DIGITAL") {
+      this->value_type_ = GPIOValueType::DIGITAL;
+    } else {
+      this->value_type_ = GPIOValueType::UNSPECIFIED;
+    }
+    if (!config.initial_value.empty()) {
+      try {
+        this->initial_value_ = std::stod(config.initial_value);
+      } catch (const std::invalid_argument &) {
+        this->initial_value_ = 0.0; // If initial_value is not a valid number, set to 0.0
+      }
+    } else {
+      this->initial_value_ = 0.0; // If initial_value is empty, set to 0.0
+    }
+    if (config.enable_limits == "true" || config.enable_limits == "TRUE") {
+      this->enable_limits_ = true;
+    } else {
+      this->enable_limits_ = false;
+    }
+    if (!config.min_value.empty()) {
+      try {
+        this->min_value_ = std::stod(config.min_value);
+      } catch (const std::invalid_argument &) {
+        this->enable_limits_ =
+            false; // If min_value is not a valid number, disable limits
+      }
+    } else {
+      this->enable_limits_ = false; // If min_value is empty, disable limits
+    }
+    if (!config.max_value.empty()) {
+      try {
+        this->max_value_ = std::stod(config.max_value);
+      } catch (const std::invalid_argument &) {
+        this->enable_limits_ =
+            false; // If max_value is not a valid number, disable limits
+      }
+    } else {
+      this->enable_limits_ = false; // If max_value is empty, disable limits
+    }
   }
-  /* -- Parse XML to get config --*/
-  //   GPIOConfig(
-  //       const kuka::ecs::v1::SignalConfigExternal &protobuf_signal_config) {
-  //     *this = std::move(protobuf_signal_config);
-  //   }
+
   ~GPIOConfig() = default;
-
-  /* -- Parse XML to get config --*/
-  //   GPIOConfig &operator=(const kuka::ecs::v1::SignalConfigExternal &rhs) {
-  //     auto &pb_sc = rhs.signal_config();
-  //     bool has_pb_sc = rhs.has_signal_config();
-
-  //     this->gpio_id_ = rhs.signal_id();
-  //     this->is_gpio_used_ = rhs.has_signal_config();
-  //     if (has_pb_sc) {
-  //       this->name_ = pb_sc.name();
-  //       switch (pb_sc.direction()) {
-  //       case kuka::ecs::v1::SignalConfig::INPUT:
-  //         this->direction_ = GPIODirection::INPUT;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::OUTPUT:
-  //         this->direction_ = GPIODirection::OUTPUT;
-  //         break;
-  //       default:
-  //         this->direction_ = GPIODirection::UNSPECIFIED;
-  //         break;
-  //       }
-  //       switch (pb_sc.data_type()) {
-  //       case kuka::ecs::v1::SignalConfig::BOOL:
-  //         this->value_type_ = GPIOValueType::BOOL_VALUE;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::NUMBER:
-  //         this->value_type_ = GPIOValueType::DOUBLE_VALUE;
-  //         break;
-  //       case kuka::ecs::v1::SignalConfig::RAW:
-  //         this->value_type_ = GPIOValueType::RAW_VALUE;
-  //         break;
-  //       default:
-  //         this->value_type_ = GPIOValueType::UNSPECIFIED;
-  //         break;
-  //       }
-  //     }
-  //     return *this;
-  //   }
+  // Add RSI specific methods
 };
 
 } // namespace kuka::external::control::kss

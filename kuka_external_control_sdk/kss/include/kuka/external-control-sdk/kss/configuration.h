@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2023 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,23 @@
 namespace kuka::external::control::kss {
 
 // RSI cycle time
-enum class CycleTime : uint8_t {
-  UNSPECIFIED = 0,
-  RSI_4MS = 1,
-  RSI_12MS = 2
+enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
+
+struct GPIOConfiguration {
+  // Name of the GPIO
+  std::string name;
+  //  Type of the GPIO value (bool, double, int) or (BOOLEAN, ANALOG, DIGITAL)
+  std::string value_type;
+  // (Optional) Initial value for the GPIO
+  std::string initial_value;
+  // (Optional) Enable limits for the GPIO value
+  // If true, min_value and max_value must be set
+  // If false, min_value and max_value are ignored
+  std::string enable_limits;
+  // (Optional) Minimum value for the GPIO
+  std::string min_value;
+  // (Optional) Maximum value for the GPIO
+  std::string max_value;
 };
 
 struct Configuration {
@@ -38,12 +51,11 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
-  // GPIO states size
-  std::size_t gpio_state_size = 0;
+  // GPIO states
+  std::vector<GPIOConfiguration> gpio_state_configs;
 
-  // GPIO commands size
-  std::size_t gpio_command_size = 0;
-
+  // GPIO commands
+  std::vector<GPIOConfiguration> gpio_command_configs;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:
