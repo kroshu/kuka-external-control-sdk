@@ -69,11 +69,11 @@ public:
   bool SetValue(double value) {
     switch (gpio_config_->GetValueType()) {
     case GPIOValueType::BOOLEAN:
-      return this->SetBooleanValue(value);
+      return this->SetBooleanValue(static_cast<bool>(value));
     case GPIOValueType::ANALOG:
       return this->SetAnalogValue(value);
     case GPIOValueType::DIGITAL:
-      return this->SetDigitalValue(value);
+      return this->SetDigitalValue(static_cast<int64_t>(value));
     case GPIOValueType::UNSPECIFIED:
     default:
       return false;
@@ -84,9 +84,6 @@ public:
     return *this;
   }
 
-  bool SetBooleanValue(double value) {
-    return SetBooleanValue(static_cast<bool>(value));
-  }
   bool SetBooleanValue(bool value) {
     if (gpio_config_->GetValueType() != GPIOValueType::BOOLEAN) {
       return false;
@@ -105,9 +102,7 @@ public:
     value_.analog_value_ = value;
     return true;
   }
-  bool SetDigitalValue(double value) {
-    return SetDigitalValue(static_cast<int64_t>(value));
-  }
+  
   bool SetDigitalValue(int64_t value) {
     if (gpio_config_->GetValueType() != GPIOValueType::DIGITAL) {
       return false;
