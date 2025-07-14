@@ -102,7 +102,7 @@ public:
     value_.analog_value_ = value;
     return true;
   }
-  
+
   bool SetDigitalValue(int64_t value) {
     if (gpio_config_->GetValueType() != GPIOValueType::DIGITAL) {
       return false;
@@ -121,7 +121,6 @@ protected:
     double analog_value_;
     int64_t digital_value_;
   } value_;
-  // std::variant<bool,double,uint64_t,int64_t> value_;
 
 private:
   template <typename T> bool check_limits(T value) const {
