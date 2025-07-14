@@ -150,7 +150,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     switch (gpio_values_[i]->GetGPIOConfig()->GetValueType()) {
     case GPIOValueType::BOOLEAN: {
       // Append bool value
-      auto value = gpio_values_[i]->GetBoolValue();
+      auto value = gpio_values_[i]->GetBooleanValue();
       if (value.has_value()) {
         AppendToXMLString(value.value() ? "1" : "0");
       } else {
@@ -162,7 +162,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
       // Append double value
       char double_buffer[kPrecision + 19 + 1 + 1 +
                          1]; // Precision + Digits + Comma + Null + Minus sign
-      auto value = gpio_values_[i]->GetDoubleValue();
+      auto value = gpio_values_[i]->GetAnalogValue();
       if (value.has_value()) {
         int ret = std::snprintf(double_buffer, sizeof(double_buffer),
                                 kDoubleAttributeFormat.data(), value.value());
@@ -178,7 +178,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     case GPIOValueType::DIGITAL: {
       // Append double value
       char long_buffer[19 + 1 + 1]; // Digits + Null + Minus sign
-      auto value = gpio_values_[i]->GetLongValue();
+      auto value = gpio_values_[i]->GetDigitalValue();
       if (value.has_value()) {
         int ret = std::snprintf(long_buffer, sizeof(long_buffer), "%ld",
                                 value.value());
