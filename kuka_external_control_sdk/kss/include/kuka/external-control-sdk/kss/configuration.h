@@ -28,18 +28,19 @@ enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
 struct GPIOConfiguration {
   // Name of the GPIO
   std::string name;
-  //  Type of the GPIO value (bool, double, int) or (BOOLEAN, ANALOG, DIGITAL)
-  std::string value_type;
+  //  Type of the GPIO value (BOOLEAN, ANALOG, DIGITAL)
+  GPIOValueType value_type = GPIOValueType::UNSPECIFIED;
   // (Optional) Initial value for the GPIO
-  std::string initial_value;
+  // TODO (Komaromi): Make it type specific
+  double initial_value = 0;
   // (Optional) Enable limits for the GPIO value
   // If true, min_value and max_value must be set
   // If false, min_value and max_value are ignored
-  std::string enable_limits;
+  bool enable_limits = false;
   // (Optional) Minimum value for the GPIO
-  std::string min_value;
+  double min_value = 0;
   // (Optional) Maximum value for the GPIO
-  std::string max_value;
+  double max_value = 0;
 };
 
 struct Configuration {
