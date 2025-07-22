@@ -40,12 +40,11 @@ public:
     first_cartesian_position_index_ += kMessagePrefix.length();
     first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
 
-    for (size_t i = 0; i < gpio_config_list.size(); i++) {
+    for (const auto &config : gpio_config_list) {
       measured_gpio_values_.push_back(
           std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(std::make_unique<GPIOConfig>(
-                  GPIOConfig(gpio_config_list.at(i)))))));
-      gpioAttributePrefix.push_back(" " + gpio_config_list.at(i).name + "=\"");
+              std::move(std::make_unique<GPIOConfig>(config)))));
+      gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
   }
 
