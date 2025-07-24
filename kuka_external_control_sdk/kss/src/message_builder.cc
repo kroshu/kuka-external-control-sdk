@@ -46,6 +46,7 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
   }
 
   next_value_idx += kAttributeSuffix.length();
+  // this -1 is to account for that there is no " before the fist attribute
   next_value_idx += kJointPositionsPrefix.length() - 1;
 
   for (int i = 0; i < dof_; ++i) {
