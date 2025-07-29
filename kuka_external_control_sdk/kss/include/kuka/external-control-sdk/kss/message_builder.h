@@ -89,12 +89,11 @@ public:
     initial_positions_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
-    for (size_t i = 0; i < gpio_config_list.size(); i++) {
+    for (const auto &config : gpio_config_list) {
       gpio_values_.push_back(
           std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
-              std::move(std::make_unique<GPIOConfig>(
-                  GPIOConfig(gpio_config_list.at(i)))))));
-      gpioAttributePrefix.push_back(" " + gpio_config_list.at(i).name + "=\"");
+              std::move(std::make_unique<GPIOConfig>(config)))));
+      gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
 
     for (int i = 1; i <= dof; ++i) {
