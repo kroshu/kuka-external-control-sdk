@@ -60,6 +60,10 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
 
+Status Robot::CancelRsiProgram() {
+  return tcp_client_.StopRSI();
+}
+
 Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
   return tcp_client_.RegisterEventHandlerExtension(std::move(extension));
 }
