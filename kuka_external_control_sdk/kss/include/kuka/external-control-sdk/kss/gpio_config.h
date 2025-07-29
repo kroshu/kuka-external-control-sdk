@@ -33,7 +33,7 @@ public:
       : BaseGPIOConfig(config.name, config.value_type, config.initial_value,
                        config.enable_limits, config.min_value,
                        config.max_value){};
- 
+
   ~GPIOConfig() = default;
   // Add RSI specific methods
 };
