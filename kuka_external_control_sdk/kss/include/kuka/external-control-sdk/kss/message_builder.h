@@ -47,6 +47,8 @@ public:
       gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
   }
+  MotionState(const MotionState &other) = default;
+  MotionState &operator=(const MotionState &other) = delete;
 
   void CreateFromXML(const char *incoming_xml);
   int GetIpoc() { return ipoc_; }
@@ -100,6 +102,8 @@ public:
                                                    "=\"");
     }
   }
+  ControlSignal(const ControlSignal &other) = default;
+  ControlSignal &operator=(const ControlSignal &other) = delete;
 
   // Create XML containing relative positions in rad
   std::optional<std::string_view> CreateXMLString(int last_ipoc,
