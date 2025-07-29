@@ -42,7 +42,7 @@ public:
 
     for (const auto &config : gpio_config_list) {
       measured_gpio_values_.push_back(
-          std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
+          std::move(std::make_unique<kuka::external::control::kss::GPIOValue>(
               std::move(std::make_unique<GPIOConfig>(config)))));
       gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
@@ -91,7 +91,7 @@ public:
 
     for (const auto &config : gpio_config_list) {
       gpio_values_.push_back(
-          std::move(std::make_shared<kuka::external::control::kss::GPIOValue>(
+          std::move(std::make_unique<kuka::external::control::kss::GPIOValue>(
               std::move(std::make_unique<GPIOConfig>(config)))));
       gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }

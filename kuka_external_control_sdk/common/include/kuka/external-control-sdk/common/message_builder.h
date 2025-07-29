@@ -44,7 +44,7 @@ public:
     return measured_cartesian_positions_;
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return measured_gpio_values_;
   }
 
@@ -58,7 +58,7 @@ protected:
   std::vector<double> measured_torques_;
   std::vector<double> measured_velocities_;
   std::vector<double> measured_cartesian_positions_;
-  std::vector<std::shared_ptr<BaseGPIOValue>> measured_gpio_values_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> measured_gpio_values_;
 
   std::size_t dof_;
 };
@@ -123,7 +123,7 @@ public:
     return true;
   }
 
-  std::vector<std::shared_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
     return gpio_values_;
   }
 
@@ -140,7 +140,7 @@ protected:
   std::vector<double> joint_impedance_stiffness_values_;
   std::vector<double> joint_impedance_damping_values_;
   std::vector<double> cartesian_position_values_;
-  std::vector<std::shared_ptr<BaseGPIOValue>> gpio_values_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> gpio_values_;
 
   std::size_t dof_ = 0;
 
