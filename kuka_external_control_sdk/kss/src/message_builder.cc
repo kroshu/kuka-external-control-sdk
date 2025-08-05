@@ -149,7 +149,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
     AppendToXMLString(gpioAttributePrefix[i]);
     switch (gpio_values_[i]->GetGPIOConfig()->GetValueType()) {
-    case GPIOValueType::BOOLEAN: {
+    case GPIOValueType::BOOL: {
       // Append bool value
       auto value = gpio_values_[i]->GetBooleanValue();
       if (value.has_value()) {
@@ -159,7 +159,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
       }
       break;
     }
-    case GPIOValueType::ANALOG: {
+    case GPIOValueType::DOUBLE: {
       // Append double value
       char double_buffer[kPrecision + 19 + 1 + 1 +
                          1]; // Precision + Digits + Comma + Null + Minus sign
@@ -176,7 +176,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
       }
       break;
     }
-    case GPIOValueType::DIGITAL: {
+    case GPIOValueType::LONG: {
       // Append double value
       char long_buffer[19 + 1 + 1]; // Digits + Null + Minus sign
       auto value = gpio_values_[i]->GetDigitalValue();

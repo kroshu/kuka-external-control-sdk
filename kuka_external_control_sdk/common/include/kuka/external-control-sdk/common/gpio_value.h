@@ -36,11 +36,11 @@ public:
   }
   std::optional<double> GetValue() const {
     switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOLEAN:
+    case GPIOValueType::BOOL:
       return static_cast<double>(value_.boolean_value_);
-    case GPIOValueType::ANALOG:
+    case GPIOValueType::DOUBLE:
       return value_.analog_value_;
-    case GPIOValueType::DIGITAL:
+    case GPIOValueType::LONG:
       return static_cast<double>(value_.digital_value_);
     case GPIOValueType::UNSPECIFIED:
     default:
@@ -48,19 +48,19 @@ public:
     }
   }
   std::optional<bool> GetBooleanValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::BOOLEAN) {
+    if (gpio_config_->GetValueType() == GPIOValueType::BOOL) {
       return value_.boolean_value_;
     }
     return std::nullopt;
   }
   std::optional<double> GetAnalogValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::ANALOG) {
+    if (gpio_config_->GetValueType() == GPIOValueType::DOUBLE) {
       return value_.analog_value_;
     }
     return std::nullopt;
   }
   std::optional<int64_t> GetDigitalValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::DIGITAL) {
+    if (gpio_config_->GetValueType() == GPIOValueType::LONG) {
       return value_.digital_value_;
     }
     return std::nullopt;
@@ -68,11 +68,11 @@ public:
 
   bool SetValue(double value) {
     switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOLEAN:
+    case GPIOValueType::BOOL:
       return this->SetBooleanValue(static_cast<bool>(value));
-    case GPIOValueType::ANALOG:
+    case GPIOValueType::DOUBLE:
       return this->SetAnalogValue(value);
-    case GPIOValueType::DIGITAL:
+    case GPIOValueType::LONG:
       return this->SetDigitalValue(static_cast<int64_t>(value));
     case GPIOValueType::UNSPECIFIED:
     default:
@@ -85,7 +85,7 @@ public:
   }
 
   bool SetBooleanValue(bool value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::BOOLEAN) {
+    if (gpio_config_->GetValueType() != GPIOValueType::BOOL) {
       return false;
     }
     value_.boolean_value_ = value;
@@ -93,7 +93,7 @@ public:
   }
 
   bool SetAnalogValue(double value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::ANALOG) {
+    if (gpio_config_->GetValueType() != GPIOValueType::DOUBLE) {
       return false;
     }
     if (!check_limits<double>(value)) {
@@ -104,7 +104,7 @@ public:
   }
 
   bool SetDigitalValue(int64_t value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::DIGITAL) {
+    if (gpio_config_->GetValueType() != GPIOValueType::LONG) {
       return false;
     }
     if (!check_limits<int64_t>(value)) {

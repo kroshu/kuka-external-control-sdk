@@ -19,22 +19,17 @@
 #include <variant>
 
 namespace kuka::external::control {
-enum class GPIOValueType {
-  UNSPECIFIED = 0,
-  BOOLEAN = 1,
-  ANALOG = 2,
-  DIGITAL = 3
-};
+enum class GPIOValueType { UNSPECIFIED = 0, BOOL = 1, DOUBLE = 2, LONG = 3 };
 
 class BaseGPIOConfig {
 public:
   BaseGPIOConfig() = default;
-  BaseGPIOConfig(std::string name, GPIOValueType value_type, double initial_value = 0.0,
-                 bool enable_limits = false, double min_value = 0.0,
-                 double max_value = 0.0)
-      : name_(std::move(name)), value_type_(value_type), initial_value_(initial_value),
-        enable_limits_(enable_limits), min_value_(min_value),
-        max_value_(max_value) {}
+  BaseGPIOConfig(std::string name, GPIOValueType value_type,
+                 double initial_value = 0.0, bool enable_limits = false,
+                 double min_value = 0.0, double max_value = 0.0)
+      : name_(std::move(name)), value_type_(value_type),
+        initial_value_(initial_value), enable_limits_(enable_limits),
+        min_value_(min_value), max_value_(max_value) {}
   ~BaseGPIOConfig() = default;
 
   std::string const &GetName() const { return name_; }

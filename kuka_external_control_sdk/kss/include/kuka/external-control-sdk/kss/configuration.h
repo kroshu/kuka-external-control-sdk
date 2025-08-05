@@ -28,7 +28,7 @@ enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
 struct GPIOConfiguration {
   // Name of the GPIO
   std::string name;
-  //  Type of the GPIO value (BOOLEAN, ANALOG, DIGITAL)
+  //  Type of the GPIO value (BOOL, DOUBLE, LONG)
   GPIOValueType value_type = GPIOValueType::UNSPECIFIED;
   // (Optional) Initial value for the GPIO
   // TODO (Komaromi): Make it type specific
