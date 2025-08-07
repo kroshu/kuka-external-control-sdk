@@ -64,6 +64,9 @@ IF (ret <> RSIOK) THEN
   HALT
 ENDIF
 
+; Set AxisCorr parameters to allow full range of motion
+ROS_SetAxisCorrLimits("rsi_joint_pos")
+
 ; Activate RSI Context
 ret = RSI_ACTIVATE("rsi_gpio_joint_pos")
 IF (ret <> RSIOK) THEN
