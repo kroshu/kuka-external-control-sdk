@@ -1,0 +1,115 @@
+&ACCESS R
+DEF rsi_helper()
+    ; Software License Agreement (BSD License)
+    ;
+    ; Copyright (c) 2025, KUKA Hungaria Kft.
+    ; All rights reserved.
+    ;
+    ; Redistribution and use in source and binary forms, with or without
+    ; modification, are permitted provided that the following conditions are met:
+    ;
+    ;      * Redistributions of source code must retain the above copyright
+    ;        notice, this list of conditions and the following disclaimer.
+    ;      * Redistributions in binary form must reproduce the above copyright
+    ;        notice, this list of conditions and the following disclaimer in the
+    ;        documentation and/or other materials provided with the distribution.
+    ;      * Neither the name of the copyright holder, nor the names of its
+    ;        contributors may be used to endorse or promote products derived
+    ;        from this software without specific prior written permission.
+    ;
+    ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    ; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+    ; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+    ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+    ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+    ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+    ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+    ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+    ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    ; POSSIBILITY OF SUCH DAMAGE.
+END
+
+GLOBAL DEF ROS_SetAxisCorrLimits(contextName: IN)
+    CHAR contextName[]
+    INT ret
+    REAL val1
+    REAL val2
+
+    ;========================================
+    ; Set AxisCorr parameters
+    ;========================================
+
+    ; A1
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA1", $SOFTN_END[1] - $AXIS_ACT_MEAS.A1)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA1", $SOFTP_END[1] - $AXIS_ACT_MEAS.A1)
+
+    ; A2
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA2", $SOFTN_END[2] - $AXIS_ACT_MEAS.A2)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA2", $SOFTP_END[2] - $AXIS_ACT_MEAS.A2)
+
+    ; A3
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA3", $SOFTN_END[3] - $AXIS_ACT_MEAS.A3)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA3", $SOFTP_END[3] - $AXIS_ACT_MEAS.A3)
+
+    ; A4
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA4", $SOFTN_END[4] - $AXIS_ACT_MEAS.A4)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA4", $SOFTP_END[4] - $AXIS_ACT_MEAS.A4)
+
+    ; A5
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA5", $SOFTN_END[5] - $AXIS_ACT_MEAS.A5)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA5", $SOFTP_END[5] - $AXIS_ACT_MEAS.A5)
+
+    ; A6
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "LowerLimA6", $SOFTN_END[6] - $AXIS_ACT_MEAS.A6)
+    ret = RSI_SetParameter(contextName, AXISCORR_NAME[], "UpperLimA6", $SOFTP_END[6] - $AXIS_ACT_MEAS.A6)
+
+    ;========================================
+    ; Set AxisCorrMon parameters
+    ;========================================
+
+    ; A1
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA1", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA1", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA1", Max(ABS(val1), ABS(val2)))
+
+    ; A2
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA2", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA2", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA2", Max(ABS(val1), ABS(val2)))
+
+    ; A3
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA3", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA3", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA3", Max(ABS(val1), ABS(val2)))
+
+    ; A4
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA4", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA4", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA4", Max(ABS(val1), ABS(val2)))
+
+    ; A5
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA5", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA5", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA5", Max(ABS(val1), ABS(val2)))
+
+    ; A6
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "LowerLimA6", val1)
+    ret = RSI_GetParameter(contextName, AXISCORR_NAME[], "UpperLimA6", val2)
+    ret = RSI_SetParameter(contextName, AXISCORRMON_NAME[], "MaxA6", Max(ABS(val1), ABS(val2)))
+END
+
+DEFFCT REAL Max(r1: IN, r2: IN)
+    REAL r1
+    REAL r2
+
+    IF (VarState("r1") <> #INITIALIZED) OR (VarState("r2") <> #INITIALIZED) THEN
+        RETURN 0.0
+    ENDIF
+
+    IF r1 > r2 THEN
+        RETURN r1
+    ENDIF
+
+    RETURN r2
+ENDFCT

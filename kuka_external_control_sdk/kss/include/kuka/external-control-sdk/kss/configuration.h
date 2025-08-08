@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2023 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,10 +23,24 @@
 namespace kuka::external::control::kss {
 
 // RSI cycle time
-enum class CycleTime : uint8_t {
-  UNSPECIFIED = 0,
-  RSI_4MS = 1,
-  RSI_12MS = 2
+enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
+
+struct GPIOConfiguration {
+  // Name of the GPIO
+  std::string name;
+  //  Type of the GPIO value (BOOL, DOUBLE, LONG)
+  GPIOValueType value_type = GPIOValueType::UNSPECIFIED;
+  // (Optional) Initial value for the GPIO
+  // TODO (Komaromi): Make it type specific
+  double initial_value = 0;
+  // (Optional) Enable limits for the GPIO value
+  // If true, min_value and max_value must be set
+  // If false, min_value and max_value are ignored
+  bool enable_limits = false;
+  // (Optional) Minimum value for the GPIO
+  double min_value = 0;
+  // (Optional) Maximum value for the GPIO
+  double max_value = 0;
 };
 
 struct Configuration {
@@ -38,6 +52,12 @@ struct Configuration {
   // Degree of freedom.
   std::size_t dof = 6;
 
+  // GPIO states
+  std::vector<GPIOConfiguration> gpio_state_configs;
+
+  // GPIO commands
+  std::vector<GPIOConfiguration> gpio_command_configs;
+
   // The control mode to begin external control in.
   // At the present, the following modes are supported:
   // 1 - Joint position control
@@ -47,10 +67,10 @@ struct Configuration {
   CycleTime cycle_time = CycleTime::RSI_12MS;
 
   enum class InstalledInterface {
-      UNSPECIFIED = 0,
-      MXA_RSI = 1,
-      EKI_RSI = 2,
-      RSI_ONLY = 3
+    UNSPECIFIED = 0,
+    MXA_RSI = 1,
+    EKI_RSI = 2,
+    RSI_ONLY = 3
   };
 
   // The interface installed on the KSS robot
@@ -66,6 +86,6 @@ struct Configuration {
   const unsigned short client_port = 59152;
 };
 
-}  // namespace kuka::external::control::kss
+} // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
