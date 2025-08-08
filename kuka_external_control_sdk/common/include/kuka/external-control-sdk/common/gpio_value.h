@@ -47,7 +47,7 @@ public:
       return std::nullopt;
     }
   }
-  std::optional<bool> GetBoolue() const {
+  std::optional<bool> GetBoolValue() const {
     if (gpio_config_->GetValueType() == GPIOValueType::BOOL) {
       return value_.bool_value_;
     }
