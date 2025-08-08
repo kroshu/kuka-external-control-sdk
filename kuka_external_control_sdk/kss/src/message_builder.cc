@@ -68,20 +68,23 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
   next_value_idx += kDelayNodePrefix.length();
 
   if (next_value_idx >= len) {
-    throw std::invalid_argument(
-        "Received XML is not valid for the given degree of freedom");
+    throw std::invalid_argument("Received XML is not valid for the given "
+                                "degree of freedom, Delay node is missing");
   }
 
   char *endptr = nullptr;
   delay_ = std::strtol(&incoming_xml[next_value_idx], &endptr, 0);
   if (errno != 0 && endptr == nullptr) {
     throw std::invalid_argument(
-        "Received XML is not valid for the given degree of freedom");
+        "Received XML is not valid for the given degree of freedom, Delay "
+        "value is not a valid number");
   }
 
   next_value_idx += endptr - &incoming_xml[next_value_idx];
   next_value_idx += kAttributeSuffix.length();
-  next_value_idx += kGpioPrefix.length() - 1;
+  if (!gpioAttributePrefix.empty()) {
+    next_value_idx += kGpioPrefix.length() - 1;
+  }
 
   for (int i = 0; i < gpioAttributePrefix.size(); ++i) {
 
@@ -92,23 +95,25 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
           std::stod(&incoming_xml[next_value_idx], &dbl_length));
     } else {
       throw std::invalid_argument(
-          "Received XML is not valid for the given degree of freedom");
+          "Received XML is not valid for the given GPIO configuration");
     }
     next_value_idx += dbl_length; // length of the parsed double
   }
-
-  next_value_idx += kAttributeSuffix.length();
+  if (!gpioAttributePrefix.empty()) {
+    next_value_idx += kAttributeSuffix.length();
+  }
   next_value_idx += kIpocNodePrefix.length();
 
   if (next_value_idx >= len) {
-    throw std::invalid_argument(
-        "Received XML is not valid for the given degree of freedom");
+    throw std::invalid_argument("Received XML is not valid for the given "
+                                "degree of freedom, IPOC node is missing");
   }
 
   ipoc_ = std::strtol(&incoming_xml[next_value_idx], &endptr, 0);
   if (errno != 0 && endptr == &incoming_xml[next_value_idx]) {
     throw std::invalid_argument(
-        "Received XML is not valid for the given degree of freedom");
+        "Received XML is not valid for the given degree of freedom, IPOC value "
+        "is not a valid number");
   }
 
   has_positions_ = true;
@@ -145,7 +150,9 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   AppendToXMLString(kStopNodePrefix);
   AppendToXMLString(stop_control ? "1" : "0");
   AppendToXMLString(kStopNodeSuffix);
-  AppendToXMLString(kGpioPrefix);
+  if (!gpioAttributePrefix.empty()) {
+    AppendToXMLString(kGpioPrefix);
+  }
   for (size_t i = 0; i < gpioAttributePrefix.size(); i++) {
     AppendToXMLString(gpioAttributePrefix[i]);
     switch (gpio_values_[i]->GetGPIOConfig()->GetValueType()) {
@@ -198,7 +205,9 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     }
     AppendToXMLString("\"");
   }
-  AppendToXMLString(kAttributeSuffix);
+  if (!gpioAttributePrefix.empty()) {
+    AppendToXMLString(kAttributeSuffix);
+  }
   AppendToXMLString(kIpocNodePrefix);
   AppendToXMLString(std::to_string(last_ipoc).data());
   AppendToXMLString(kIpocNodeSuffix);
