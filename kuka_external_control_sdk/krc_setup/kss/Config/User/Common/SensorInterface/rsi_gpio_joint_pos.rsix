@@ -26,18 +26,18 @@
             <Input InIdx="5" OutObjId="Ethernet_1" OutIdx="5" />
          </Inputs>
          <Parameters>
-            <Parameter Name="LowerLimA1" ParamId="0" ParamValue="-180" />
-            <Parameter Name="LowerLimA2" ParamId="1" ParamValue="-180" />
-            <Parameter Name="LowerLimA3" ParamId="2" ParamValue="-180" />
-            <Parameter Name="LowerLimA4" ParamId="3" ParamValue="-180" />
-            <Parameter Name="LowerLimA5" ParamId="4" ParamValue="-180" />
-            <Parameter Name="LowerLimA6" ParamId="5" ParamValue="-180" />
-            <Parameter Name="UpperLimA1" ParamId="6" ParamValue="180" />
-            <Parameter Name="UpperLimA2" ParamId="7" ParamValue="180" />
-            <Parameter Name="UpperLimA3" ParamId="8" ParamValue="180" />
-            <Parameter Name="UpperLimA4" ParamId="9" ParamValue="180" />
-            <Parameter Name="UpperLimA5" ParamId="10" ParamValue="180" />
-            <Parameter Name="UpperLimA6" ParamId="11" ParamValue="180" />
+            <Parameter IsPublic="true" Name="LowerLimA1" ParamId="0" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="LowerLimA2" ParamId="1" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="LowerLimA3" ParamId="2" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="LowerLimA4" ParamId="3" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="LowerLimA5" ParamId="4" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="LowerLimA6" ParamId="5" ParamValue="-180" />
+            <Parameter IsPublic="true" Name="UpperLimA1" ParamId="6" ParamValue="180" />
+            <Parameter IsPublic="true" Name="UpperLimA2" ParamId="7" ParamValue="180" />
+            <Parameter IsPublic="true" Name="UpperLimA3" ParamId="8" ParamValue="180" />
+            <Parameter IsPublic="true" Name="UpperLimA4" ParamId="9" ParamValue="180" />
+            <Parameter IsPublic="true" Name="UpperLimA5" ParamId="10" ParamValue="180" />
+            <Parameter IsPublic="true" Name="UpperLimA6" ParamId="11" ParamValue="180" />
          </Parameters>
       </RsiObject>
       <RsiObject ObjTypeId="18" ObjType="Stop" ObjId="Stop_1">
@@ -51,18 +51,18 @@
       </RsiObject>
       <RsiObject ObjTypeId="82" ObjType="AxisCorrMon" ObjId="AxisCorrMon_1">
          <Parameters>
-            <Parameter Name="MaxA1" ParamId="0" ParamValue="180" />
-            <Parameter Name="MaxA2" ParamId="1" ParamValue="180" />
-            <Parameter Name="MaxA3" ParamId="2" ParamValue="180" />
-            <Parameter Name="MaxA4" ParamId="3" ParamValue="180" />
-            <Parameter Name="MaxA5" ParamId="4" ParamValue="180" />
-            <Parameter Name="MaxA6" ParamId="5" ParamValue="180" />
-            <Parameter Name="MaxE1" ParamId="6" ParamValue="6" />
-            <Parameter Name="MaxE2" ParamId="7" ParamValue="6" />
-            <Parameter Name="MaxE3" ParamId="8" ParamValue="6" />
-            <Parameter Name="MaxE4" ParamId="9" ParamValue="6" />
-            <Parameter Name="MaxE5" ParamId="10" ParamValue="6" />
-            <Parameter Name="MaxE6" ParamId="11" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxA1" ParamId="0" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA2" ParamId="1" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA3" ParamId="2" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA4" ParamId="3" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA5" ParamId="4" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxA6" ParamId="5" ParamValue="180" />
+            <Parameter IsPublic="true" Name="MaxE1" ParamId="6" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxE2" ParamId="7" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxE3" ParamId="8" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxE4" ParamId="9" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxE5" ParamId="10" ParamValue="6" />
+            <Parameter IsPublic="true" Name="MaxE6" ParamId="11" ParamValue="6" />
          </Parameters>
       </RsiObject>
       <RsiObject ObjTypeId="43" ObjType="DigOut" ObjId="DigOut_1">
@@ -2420,18 +2420,18 @@
             <Input Name="CorrA6" SourceObject="Ethernet_1" SourcePort="Out6" Points="578.516666666667,539.5;618.516666666667,539.5;658.516666666667,539.5;658.516666666667,539.5;766,539.5;782,539.5" />
          </Inputs>
          <Parameters>
-            <DoubleParameter Name="LowerLimA1" Value="-180" />
-            <DoubleParameter Name="LowerLimA2" Value="-180" />
-            <DoubleParameter Name="LowerLimA3" Value="-180" />
-            <DoubleParameter Name="LowerLimA4" Value="-180" />
-            <DoubleParameter Name="LowerLimA5" Value="-180" />
-            <DoubleParameter Name="LowerLimA6" Value="-180" />
-            <DoubleParameter Name="UpperLimA1" Value="180" />
-            <DoubleParameter Name="UpperLimA2" Value="180" />
-            <DoubleParameter Name="UpperLimA3" Value="180" />
-            <DoubleParameter Name="UpperLimA4" Value="180" />
-            <DoubleParameter Name="UpperLimA5" Value="180" />
-            <DoubleParameter Name="UpperLimA6" Value="180" />
+            <DoubleParameter Name="LowerLimA1" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="LowerLimA2" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="LowerLimA3" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="LowerLimA4" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="LowerLimA5" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="LowerLimA6" CanBeSetFromKrl="true" Value="-180" />
+            <DoubleParameter Name="UpperLimA1" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA2" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA3" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA4" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA5" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
          </Parameters>
       </Construct>
       <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="800,709.8">
@@ -2441,12 +2441,18 @@
       </Construct>
       <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="408,720">
          <Parameters>
-            <DoubleParameter Name="MaxA1" Value="180" />
-            <DoubleParameter Name="MaxA2" Value="180" />
-            <DoubleParameter Name="MaxA3" Value="180" />
-            <DoubleParameter Name="MaxA4" Value="180" />
-            <DoubleParameter Name="MaxA5" Value="180" />
-            <DoubleParameter Name="MaxA6" Value="180" />
+            <DoubleParameter Name="MaxA1" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA2" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA3" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA4" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA5" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxA6" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="MaxE1" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxE2" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxE3" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxE4" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxE5" CanBeSetFromKrl="true" Value="6" />
+            <DoubleParameter Name="MaxE6" CanBeSetFromKrl="true" Value="6" />
          </Parameters>
       </Construct>
       <Construct Name="DigOut_1" BlueprintName="DigOut" BlueprintCollection="RSI" Location="0,370" />

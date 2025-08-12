@@ -31,15 +31,15 @@ To add a new network interface on the robot controller, follow these steps:
 8. At the bottom, click *Save*.
 9. Restart the robot control controller to ensure configuration changes are applied.
 
-Update the IP address in the [`kss/krl/SensorInterface/rsi_ethernet.xml`](../kss/krl/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
+Update the IP address in the [`krc_setup/kss/Config/User/Common/SensorInterface/rsi_ethernet.xml`](../krc_setup/kss/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
 
 ## Steps within WorkVisual
 
-There are several KUKA-specific files located in the [`kss/krl/`](../kss/krl/) directory that need to be copied into the WorkVisual project:
+There are several KUKA-specific files located in the [`krc_setup/kss`](../krc_setup/kss) directory that need to be copied into the WorkVisual project:
 
-1. Copy all files from the [`kss/krl/Program/EKIServer/`](../kss/krl/Program/EKIserver/) and [`kss/krl/Program/RSI/`](../kss/krl/Program/RSI/) directories into `KRC/R1/Program/`.
-2. Copy the [`kss/krl/EthernetKRL/EkiKSSinterface.xml`](../kss/krl/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
-3. Copy all files from the [`kss/krl/SensorInterface/`](../kss/krl/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
+1. Copy all files from the [`krc_setup/kss/KRC/R1/Program/EKIServer/`](../krc_setup/kss/KRC/R1/Program/EKIserver/) and [`krc_setup/kss/KRC/R1/Program/RSI/`](../krc_setup/kss/KRC/R1/Program/RSI/) directories into `KRC/R1/Program/`.
+2. Copy the [`krc_setup/kss/Config/User/Common/EthernetKRL/EkiKSSinterface.xml`](../krc_setup/kss/Config/User/Common/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
+3. Copy all files from the [`krc_setup/kss/Config/User/Common/SensorInterface/`](../krc_setup/kss/Config/User/Common/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
 
 After moving all the files to the correct locations, modify the `KRC/STEU/Mada/$option.dat` file. Change the `$CHCK_MOVENA` flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
 
