@@ -1,5 +1,6 @@
 &ACCESS R
 DEF rsi_helper()
+    ; =============================================
     ; Copyright 2025 KUKA Hungaria Kft.
     ;
     ; Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +14,7 @@ DEF rsi_helper()
     ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     ; See the License for the specific language governing permissions and
     ; limitations under the License.
+    ; =============================================
 END
 
 GLOBAL DEF ROS_SetAxisCorrLimits(context_name: IN)
