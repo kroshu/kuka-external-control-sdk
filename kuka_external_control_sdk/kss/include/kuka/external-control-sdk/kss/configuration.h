@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2023 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -30,10 +30,17 @@ enum class CycleTime : uint8_t {
 };
 
 struct Configuration {
+  void Validate() const {
+    if (client_port < Configuration::kMinClientPort || client_port > Configuration::kMaxClientPort) {
+      throw std::invalid_argument("Port number must be in the dynamic range (49152-65535).");
+    }
+  }
+
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
-  // IP address of the client machine.
-  std::string client_ip_address;
+
+  // Port number of the client application.
+  unsigned short client_port = 59152;
 
   // Degree of freedom.
   std::size_t dof = 6;
@@ -47,10 +54,10 @@ struct Configuration {
   CycleTime cycle_time = CycleTime::RSI_12MS;
 
   enum class InstalledInterface {
-      UNSPECIFIED = 0,
-      MXA_RSI = 1,
-      EKI_RSI = 2,
-      RSI_ONLY = 3
+    UNSPECIFIED = 0,
+    MXA_RSI = 1,
+    EKI_RSI = 2,
+    RSI_ONLY = 3
   };
 
   // The interface installed on the KSS robot
@@ -63,7 +70,11 @@ struct Configuration {
 
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
-  const unsigned short client_port = 59152;
+
+private:
+  // Port range for dynamic ports
+  static constexpr int kMinClientPort = 49152;
+  static constexpr int kMaxClientPort = 65535;
 };
 
 }  // namespace kuka::external::control::kss
