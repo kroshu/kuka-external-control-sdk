@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Do not change! The content of this file is generated. -->
-<!-- Generated with RSIVisual iiQWorks.Sim plugin. -->
-<!-- iiQKA.RobotSensorInterface 6.0.0.507 -->
+<!-- Generated with RSIVisual iiQWorks.AppBuilder plugin. -->
+<!-- iiQKA.RobotSensorInterface 6.1.2.4 -->
 <RsiContext xsi:schemaLocation="RsiContext RsiContext.xsd" SchemaVersion="2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="RsiContext">
    <RsiObjects xmlns="RsiDriver">
       <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="ETHERNET1">
@@ -47,12 +47,12 @@
       </RsiObject>
       <RsiObject ObjTypeId="82" ObjType="AxisCorrMon" ObjId="AxisCorrMon_1">
          <Parameters>
-            <Parameter IsRuntime="false" Name="MaxA1" ParamId="0" ParamValue="180" />
-            <Parameter IsRuntime="false" Name="MaxA2" ParamId="1" ParamValue="180" />
-            <Parameter IsRuntime="false" Name="MaxA3" ParamId="2" ParamValue="180" />
-            <Parameter IsRuntime="false" Name="MaxA4" ParamId="3" ParamValue="180" />
-            <Parameter IsRuntime="false" Name="MaxA5" ParamId="4" ParamValue="180" />
-            <Parameter IsRuntime="false" Name="MaxA6" ParamId="5" ParamValue="180" />
+            <Parameter IsRuntime="false" Name="MaxA1" ParamId="0" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA2" ParamId="1" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA3" ParamId="2" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA4" ParamId="3" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA5" ParamId="4" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA6" ParamId="5" ParamValue="1000" />
             <Parameter IsRuntime="false" Name="MaxE1" ParamId="6" ParamValue="6" />
             <Parameter IsRuntime="false" Name="MaxE2" ParamId="7" ParamValue="6" />
             <Parameter IsRuntime="false" Name="MaxE3" ParamId="8" ParamValue="6" />
@@ -63,7 +63,7 @@
       </RsiObject>
    </RsiObjects>
    <BlueprintCollections SchemaVersion="2.0.0" xmlns="RsiBlueprint">
-      <BlueprintCollection Name="RSI" Version="3.0.0">
+      <BlueprintCollection Name="RSI" Version="3.1.0">
          <Subset Name="Editor">
             <Element Name="Comment" DisplayCategory="Comment">
                <Description>Tooltip_COMMENT</Description>
@@ -582,6 +582,24 @@
                      </Description>
                   </Output>
                </Outputs>
+            </Element>
+            <Element Name="SignalSelector" Id="106">
+               <Description>Tooltip_SIGNALSELECTOR</Description>
+               <Inputs>
+                  <Input Name="Ctrl" Index="0">
+                     <Description>Tooltip_SIGNALSELECTOR_Ctrl</Description>
+                  </Input>
+                  <Input Name="In1" Index="1" />
+                  <Input Name="In2" Index="2" IsMandatory="false" IsDynamic="true" DynamicCopiesCount="19" />
+               </Inputs>
+               <Outputs>
+                  <Output Name="Out1" Index="0" />
+               </Outputs>
+               <Parameters>
+                  <DoubleParameter Name="Default" Index="0" Default="0">
+                     <Description>Tooltip_SIGNALSELECTOR_Default</Description>
+                  </DoubleParameter>
+               </Parameters>
             </Element>
          </Subset>
          <Subset Name="Math">
@@ -2497,14 +2515,14 @@
             <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
          </Parameters>
       </Construct>
-      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="6,252">
+      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="12,252">
          <Parameters>
-            <DoubleParameter Name="MaxA1" Value="180" />
-            <DoubleParameter Name="MaxA2" Value="180" />
-            <DoubleParameter Name="MaxA3" Value="180" />
-            <DoubleParameter Name="MaxA4" Value="180" />
-            <DoubleParameter Name="MaxA5" Value="180" />
-            <DoubleParameter Name="MaxA6" Value="180" />
+            <DoubleParameter Name="MaxA1" Value="1000" />
+            <DoubleParameter Name="MaxA2" Value="1000" />
+            <DoubleParameter Name="MaxA3" Value="1000" />
+            <DoubleParameter Name="MaxA4" Value="1000" />
+            <DoubleParameter Name="MaxA5" Value="1000" />
+            <DoubleParameter Name="MaxA6" Value="1000" />
          </Parameters>
       </Construct>
    </Constructs>
