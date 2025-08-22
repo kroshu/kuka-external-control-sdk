@@ -17,6 +17,33 @@ using kuka::external::control::kss::Configuration;
 using kuka::external::control::kss::CycleTime;
 using kuka::external::control::kss::eki::Robot;
 
+void ControlRobot(Robot & robot, std::size_t robot_index);
+
+int main() {
+  std::cout << "Starting control of 2 robots..." << std::endl;
+
+  // Create two robot interface instances with different configurations
+  std::array<Robot, 2> robots{
+    Robot(Configuration{.kli_ip_address = "172.31.1.147", .client_port = 59152}),
+    Robot(Configuration{.kli_ip_address = "172.33.1.147", .client_port = 59153})
+  };
+
+  // Create threads for each robot
+  std::cout << "Creating control threads..." << std::endl;
+  std::array<std::thread, 2> robot_threads {
+    std::thread(ControlRobot, std::ref(robots[0]), 0),
+    std::thread(ControlRobot, std::ref(robots[1]), 1)
+  };
+
+  // Wait for all threads to complete
+  std::cout << "Threads created, waiting for completion..." << std::endl;
+  for (auto& thread : robot_threads) {
+    thread.join();
+  }
+
+  std::cout << "All robot control threads completed successfully!" << std::endl;
+}
+
 void ControlRobot(Robot& robot, std::size_t robot_index) {
   using namespace std::chrono_literals;
 
@@ -51,29 +78,4 @@ void ControlRobot(Robot& robot, std::size_t robot_index) {
 
   robot.StopControlling();
   robot.TurnOffDrives();
-}
-
-int main() {
-  std::cout << "Starting control of 2 robots..." << std::endl;
-
-  // Create two robot interface instances with different configurations
-  std::array<Robot, 2> robots{
-    Robot(Configuration{.kli_ip_address = "172.31.1.147", .client_port = 59152}),
-    Robot(Configuration{.kli_ip_address = "172.31.1.148", .client_port = 59153})
-  };
-
-  // Create threads for each robot
-  std::cout << "Creating control threads..." << std::endl;
-  std::array<std::thread, 2> robot_threads {
-    std::thread(ControlRobot, std::ref(robots[0]), 0),
-    std::thread(ControlRobot, std::ref(robots[1]), 1)
-  };
-
-  // Wait for all threads to complete
-  std::cout << "Threads created, waiting for completion..." << std::endl;
-  for (auto& thread : robot_threads) {
-    thread.join();
-  }
-
-  std::cout << "All robot control threads completed successfully!" << std::endl;
 }

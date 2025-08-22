@@ -18,6 +18,7 @@ namespace kuka::external::control::kss::eki {
 
 Robot::Robot(Configuration config)
     : kuka::external::control::kss::rsi::Robot(config)
+    , config_(config)
     , tcp_client_(config.kli_ip_address, config.eki_port)
 {}
 
