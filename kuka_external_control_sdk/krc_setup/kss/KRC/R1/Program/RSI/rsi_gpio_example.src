@@ -1,0 +1,73 @@
+&ACCESS RVP
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF rsi_gpio_example()
+    ; =============================================
+    ; Copyright 2025 KUKA Hungaria Kft.
+    ;
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+    ; you may not use this file except in compliance with the License.
+    ; You may obtain a copy of the License at
+    ;
+    ;     http://www.apache.org/licenses/LICENSE-2.0
+    ;
+    ; Unless required by applicable law or agreed to in writing, software
+    ; distributed under the License is distributed on an "AS IS" BASIS,
+    ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ; See the License for the specific language governing permissions and
+    ; limitations under the License.
+    ; =============================================
+
+    ; Declaration of KRL variables
+    DECL INT ret ; Return value for RSI commands
+    DECL INT cont_id ; ContainerID
+
+    ;FOLD INI
+        ;FOLD BASISTECH INI
+            GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ()
+            INTERRUPT ON 3
+            BAS (#INITMOV, 0)
+        ;ENDFOLD (BASISTECH INI)
+        ;FOLD USER INI
+            ;Make your modifications here
+
+        ;ENDFOLD (USER INI)
+    ;ENDFOLD (INI)
+
+    WAIT SEC 1.0
+
+    ; Move to start position
+    PTP $AXIS_ACT_MEAS
+
+    ; Create RSI Context
+    ret = RSI_CREATE("rsi_gpio_joint_pos", cont_id, TRUE)
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+
+    ; Set AxisCorr parameters to allow full range of motion
+    ROS_SetAxisCorrLimits(cont_id)
+
+    ; Start RSI execution
+    ret = RSI_ON(#ABSOLUTE, #IPO_FAST)
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+
+    ; Sensor guided movement
+    RSI_MOVECORR()
+
+    ; Turn off RSI
+    ret = RSI_OFF()
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+
+    PTP $AXIS_ACT_MEAS
+
+    ret = RSI_DELETE(cont_id)
+    IF (ret <> RSIOK) THEN
+        HALT
+    ENDIF
+END

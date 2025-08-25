@@ -1,0 +1,64 @@
+&ACCESS R
+DEF logging()
+    ; =============================================
+    ; Copyright 2025 KUKA Hungaria Kft.
+    ;
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+    ; you may not use this file except in compliance with the License.
+    ; You may obtain a copy of the License at
+    ;
+    ;     http://www.apache.org/licenses/LICENSE-2.0
+    ;
+    ; Unless required by applicable law or agreed to in writing, software
+    ; distributed under the License is distributed on an "AS IS" BASIS,
+    ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ; See the License for the specific language governing permissions and
+    ; limitations under the License.
+    ; =============================================
+END
+
+GLOBAL DEF ROS_Info(msg[]: IN)
+    CHAR msg[]
+    MsgNotify(msg[], "INFO")
+END
+
+GLOBAL DEF ROS_Debug(msg[]: IN)
+    CHAR msg[]
+    IF DEBUG_ON THEN
+        MsgNotify(msg[], "DEBUG")
+    ENDIF
+END
+
+GLOBAL DEF ROS_Error(msg[]: IN)
+    CHAR msg[]
+    MsgNotify(msg[], "ERROR")
+END
+
+GLOBAL DEF ROS_Info1String(msg[]: IN, str[]: IN)
+    CHAR msg[]
+    CHAR str[]
+    MsgNotify(msg[], "INFO",, str[])
+END
+
+GLOBAL DEF ROS_Debug1String(msg[]: IN, str[]: IN)
+    CHAR msg[]
+    CHAR str[]
+    IF DEBUG_ON THEN
+        MsgNotify(msg[], "DEBUG",, str[])
+    ENDIF
+END
+
+GLOBAL DEF ROS_Error1String(msg[]: IN, str[]: IN)
+    CHAR msg[]
+    CHAR str[]
+    MsgNotify(msg[], "ERROR",, str[])
+END
+
+GLOBAL DEF ROS_Debug2Strings(msg[]: IN, str1[]: IN, str2[]: IN)
+    CHAR msg[]
+    CHAR str1[]
+    CHAR str2[]
+    IF DEBUG_ON THEN
+        MsgNotifyTextPar(msg[], "DEBUG", 0, str1[], str2[])
+    ENDIF
+END

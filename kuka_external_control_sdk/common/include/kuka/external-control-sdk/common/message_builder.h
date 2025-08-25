@@ -15,6 +15,8 @@
 #ifndef KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 #define KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
 
+#include "gpio_value.h"
+
 #include <iterator>
 #include <map>
 #include <optional>
@@ -23,18 +25,30 @@
 namespace kuka::external::control {
 
 class BaseMotionState {
- public:
+public:
   BaseMotionState(std::size_t dof) : dof_(dof) {}
 
-  std::vector<double> const& GetMeasuredPositions() const { return measured_positions_; }
+  std::vector<double> const &GetMeasuredPositions() const {
+    return measured_positions_;
+  }
 
-  std::vector<double> const& GetMeasuredTorques() const { return measured_torques_; }
+  std::vector<double> const &GetMeasuredTorques() const {
+    return measured_torques_;
+  }
 
-  std::vector<double> const& GetMeasuredVelocities() const { return measured_velocities_; }
+  std::vector<double> const &GetMeasuredVelocities() const {
+    return measured_velocities_;
+  }
 
-  std::vector<double> const& GetMeasuredCartesianPositions() const { return measured_cartesian_positions_; }
+  std::vector<double> const &GetMeasuredCartesianPositions() const {
+    return measured_cartesian_positions_;
+  }
 
- protected:
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+    return measured_gpio_values_;
+  }
+
+protected:
   bool has_positions_ = false;
   bool has_torques_ = false;
   bool has_velocities_ = false;
@@ -44,12 +58,13 @@ class BaseMotionState {
   std::vector<double> measured_torques_;
   std::vector<double> measured_velocities_;
   std::vector<double> measured_cartesian_positions_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> measured_gpio_values_;
 
   std::size_t dof_;
 };
 
 class BaseControlSignal {
- public:
+public:
   BaseControlSignal(std::size_t dof) : dof_(dof) {}
 
   template <typename InputIt>
@@ -77,11 +92,13 @@ class BaseControlSignal {
   }
 
   template <typename InputIt>
-  void AddStiffnessAndDampingValues(InputIt first_stiffness, InputIt last_stiffness,
-                                    InputIt first_damping, InputIt last_damping) {
+  void
+  AddStiffnessAndDampingValues(InputIt first_stiffness, InputIt last_stiffness,
+                               InputIt first_damping, InputIt last_damping) {
     if (first_damping != last_damping) {
       has_stiffness_and_damping_ = true;
-      AddValues(joint_impedance_stiffness_values_, first_stiffness, last_stiffness);
+      AddValues(joint_impedance_stiffness_values_, first_stiffness,
+                last_stiffness);
     }
     if (first_stiffness != last_stiffness) {
       has_stiffness_and_damping_ = true;
@@ -97,7 +114,20 @@ class BaseControlSignal {
     }
   }
 
- protected:
+  template <typename InputIt> bool AddGPIOValues(InputIt first, InputIt last) {
+    for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first) {
+      if(!gpio_values_.at(i)->SetValue(*first)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+    return gpio_values_;
+  }
+
+protected:
   bool has_positions_ = false;
   bool has_torques_ = false;
   bool has_velocities_ = false;
@@ -110,24 +140,26 @@ class BaseControlSignal {
   std::vector<double> joint_impedance_stiffness_values_;
   std::vector<double> joint_impedance_damping_values_;
   std::vector<double> cartesian_position_values_;
+  std::vector<std::unique_ptr<BaseGPIOValue>> gpio_values_;
 
   std::size_t dof_ = 0;
 
- private:
+private:
   template <typename InputIt>
-  void AddValues(std::vector<double>& output, InputIt first, InputIt last) {
+  void AddValues(std::vector<double> &output, InputIt first, InputIt last) {
     for (size_t i = 0; i < dof_ && first != last; ++i, ++first) {
       AddToVector(output[i], *first);
     }
   }
 
-  void AddToVector(double& vector_pos, double value) { vector_pos = value; }
+  void AddToVector(double &vector_pos, double value) { vector_pos = value; }
 
   template <typename KeyType>
-  void AddToVector(double& vector_pos, const std::pair<const KeyType, double>& pair) {
+  void AddToVector(double &vector_pos,
+                   const std::pair<const KeyType, double> &pair) {
     vector_pos = pair.second;
   }
 };
-}  // namespace kuka::external::control
+} // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
+#endif // KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
