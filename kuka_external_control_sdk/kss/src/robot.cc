@@ -36,7 +36,7 @@ Status Robot::Setup() {
 }
 
 Status Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
-    return installed_interface_->StartControlling(control_mode);
+  return installed_interface_->StartControlling(control_mode);
 }
 
 Status Robot::StartMonitoring() {
