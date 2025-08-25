@@ -19,17 +19,16 @@
 namespace kuka::external::control::kss {
 
 Robot::Robot(Configuration config) {
-    switch (config.installed_interface) {
-    case Configuration::InstalledInterface::EKI_RSI:
-        installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
-        break;
-    case Configuration::InstalledInterface::RSI_ONLY:
-        installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
-        break;
-    default:
-        throw std::runtime_error("Configuration contains invalid interface, please choose between EKI or plain RSI.");
-
-    };
+  switch (config.installed_interface) {
+  case Configuration::InstalledInterface::EKI_RSI:
+    installed_interface_ = std::make_unique<kuka::external::control::kss::eki::Robot>(config);
+    break;
+  case Configuration::InstalledInterface::RSI_ONLY:
+    installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
+    break;
+  default:
+    throw std::runtime_error("Configuration contains invalid interface, please choose between EKI or plain RSI.");
+  };
 }
 
 Status Robot::Setup() {
@@ -37,7 +36,7 @@ Status Robot::Setup() {
 }
 
 Status Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
-    return installed_interface_->StartControlling(control_mode);
+  return installed_interface_->StartControlling(control_mode);
 }
 
 Status Robot::StartMonitoring() {

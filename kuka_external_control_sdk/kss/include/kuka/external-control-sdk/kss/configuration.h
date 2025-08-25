@@ -46,8 +46,9 @@ struct GPIOConfiguration {
 struct Configuration {
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
-  // IP address of the client machine.
-  std::string client_ip_address;
+
+  // Port number of the client application.
+  unsigned short client_port = 59152;
 
   // Degree of freedom.
   std::size_t dof = 6;
@@ -83,7 +84,6 @@ struct Configuration {
 
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
-  const unsigned short client_port = 59152;
 };
 
 } // namespace kuka::external::control::kss
