@@ -30,12 +30,6 @@ enum class CycleTime : uint8_t {
 };
 
 struct Configuration {
-  void Validate() const {
-    if (client_port < Configuration::kMinClientPort || client_port > Configuration::kMaxClientPort) {
-      throw std::invalid_argument("Port number must be in the dynamic range (49152-65535).");
-    }
-  }
-
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
 
@@ -70,11 +64,6 @@ struct Configuration {
 
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
-
-private:
-  // Port range for dynamic ports
-  static constexpr int kMinClientPort = 49152;
-  static constexpr int kMaxClientPort = 65535;
 };
 
 }  // namespace kuka::external::control::kss
