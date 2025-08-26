@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>kuka_external_control_sdk_examples</name>
-  <version>1.3.1</version>
+  <version>1.4.0</version>
   <description>Examples for using KUKA external control SDK</description>
   <maintainer email="kovacsge.work@gmail.com">Gergely Kovacs</maintainer>
   <maintainer email="sanyi.komaromi@gmail.com">Sandor Komaromi</maintainer>

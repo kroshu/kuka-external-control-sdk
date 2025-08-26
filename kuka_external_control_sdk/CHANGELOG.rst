@@ -2,8 +2,8 @@
 Changelog for package kuka_external_control_sdk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.4.0 (2025-08-26)
+------------------
 * KSS IO handling
 * Add KSS (RSI) Support
 
