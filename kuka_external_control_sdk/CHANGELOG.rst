@@ -2,6 +2,11 @@
 Changelog for package kuka_external_control_sdk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* KSS IO handling
+* Add KSS (RSI) Support
+
 1.3.1 (2024-05-21)
 ------------------
 * fix gtest dependency
