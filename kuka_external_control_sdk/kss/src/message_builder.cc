@@ -49,15 +49,21 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
   // this -1 is to account for that there is no " before the fist attribute
   next_value_idx += kJointPositionsPrefix.length() - 1;
 
-  for (int i = 0; i < dof_; ++i) {
+  // Non-external axes
+  for (int i = 0; i < kFixSixAxes; ++i) {
     std::size_t dbl_length = 0;
     next_value_idx += std::floor(std::log10(
         i + 1.0));       // length of extra digits, e.g. for more than 10 dofs
     next_value_idx += 6; // length of prefix + 1, e.g. " A1=\""
 
     if (next_value_idx < len) {
-      measured_positions_[i] =
-          std::stod(&incoming_xml[next_value_idx], &dbl_length) * (M_PI / 180);
+      // Only set values for configured axes
+      if (i < num_of_non_ext_axes_){
+        measured_positions_[i + (dof_ - num_of_non_ext_axes_)] =
+            std::stod(&incoming_xml[next_value_idx], &dbl_length) * (M_PI / 180);
+      } else {
+        std::stod(&incoming_xml[next_value_idx], &dbl_length);
+      }
     } else {
       throw std::invalid_argument(
           "Received XML is not valid for the given degree of freedom");
@@ -65,6 +71,8 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
     next_value_idx += dbl_length; // length of the parsed double
   }
   next_value_idx += kAttributeSuffix.length();
+
+  // Delay
   next_value_idx += kDelayNodePrefix.length();
 
   if (next_value_idx >= len) {
@@ -82,6 +90,33 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
 
   next_value_idx += endptr - &incoming_xml[next_value_idx];
   next_value_idx += kAttributeSuffix.length();
+
+  // External axes
+  // this -1 is to account for that there is no " before the fist attribute
+  next_value_idx += kExtJointPositionsPrefix.length() - 1;
+
+  for (int i = 0; i < kFixSixAxes; ++i) {
+    std::size_t dbl_length = 0;
+    next_value_idx += std::floor(std::log10(
+        i + 1.0));       // length of extra digits, e.g. for more than 10 dofs
+    next_value_idx += 6; // length of prefix + 1, e.g. " E1=\""
+
+    if (next_value_idx < len) {
+      if(i < (dof_-num_of_non_ext_axes_)) {
+         measured_positions_[i] =
+            std::stod(&incoming_xml[next_value_idx], &dbl_length) / 1000.0;
+      } else {
+         std::stod(&incoming_xml[next_value_idx], &dbl_length);
+      }
+    } else {
+      throw std::invalid_argument(
+          "Received XML is not valid for the given degree of freedom");
+    }
+    next_value_idx += dbl_length; // length of the parsed double
+  }
+  next_value_idx += kAttributeSuffix.length();
+
+  // GPIO
   if (!gpioAttributePrefix.empty()) {
     next_value_idx += kGpioPrefix.length() - 1;
   }
@@ -130,14 +165,19 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
   std::memset(xml_string_, 0, sizeof(xml_string_));
 
   AppendToXMLString(kMessagePrefix);
+  // Non-external axes
   AppendToXMLString(kJointPositionsPrefix);
-  for (int i = 0; i < dof_; ++i) {
+  for (int i = 0; i < kFixSixAxes; ++i) {
     char double_buffer[kPrecision + 3 + 1 + 1 +
                        1]; // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(joint_position_attribute_prefixes_[i]);
+    // Index of Ax in all joint position values
+    short a_index = (dof_ - num_of_non_ext_axes_) + i;
+    // Only update values for configured axes
+    double a_value = (i < num_of_non_ext_axes_) ? (joint_position_values_[a_index] - initial_positions_[a_index]) : initial_positions_[a_index];
     int ret = std::snprintf(
         double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
-        (joint_position_values_[i] - initial_positions_[i]) * (180 / M_PI));
+        a_value * (180 / M_PI));
     if (ret <= 0) {
       return std::nullopt;
     }
@@ -145,11 +185,34 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     AppendToXMLString(double_buffer);
     AppendToXMLString("\"");
   }
-
   AppendToXMLString(kAttributeSuffix);
+
+  // Stop
   AppendToXMLString(kStopNodePrefix);
   AppendToXMLString(stop_control ? "1" : "0");
   AppendToXMLString(kStopNodeSuffix);
+
+  // External axes
+  AppendToXMLString(kExtJointPositionsPrefix);
+  for (int i = 0; i < kFixSixAxes; ++i) {
+    char double_buffer[kPrecision + 3 + 1 + 1 +
+                       1]; // Precision + Digits + Comma + Null + Minus sign
+    AppendToXMLString(ext_joint_position_attribute_prefixes_[i]);
+    // Only update values for configured axes
+    double e_value = i < (dof_ - num_of_non_ext_axes_) ? (joint_position_values_[i] - initial_positions_[i]) : initial_positions_[i];
+    int ret = std::snprintf(
+        double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
+        e_value * 1000.0);
+    if (ret <= 0) {
+      return std::nullopt;
+    }
+
+    AppendToXMLString(double_buffer);
+    AppendToXMLString("\"");
+  }
+  AppendToXMLString(kAttributeSuffix);
+
+  // GPIO
   if (!gpioAttributePrefix.empty()) {
     AppendToXMLString(kGpioPrefix);
   }

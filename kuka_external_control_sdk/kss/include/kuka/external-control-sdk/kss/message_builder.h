@@ -63,6 +63,7 @@ private:
   const std::string kAttributeSuffix = "\"/>";
 
   const std::string kJointPositionsPrefix = "<AIPos";
+  const std::string kExtJointPositionsPrefix = "<EIPos";
 
   const std::string kDelayNodePrefix = "<Delay D=\"";
   const std::string kGpioPrefix = "<GPIO";
@@ -76,6 +77,10 @@ private:
 
   long ipoc_ = 0;
   long delay_ = 0;
+
+  static constexpr short kFixSixAxes = 6;
+  // TODO (kovacsge11) make configurable when SCARA support added
+  std::size_t num_of_non_ext_axes_ = 6;
 
   static constexpr int kPrecision = 6;
 };
@@ -96,9 +101,14 @@ public:
       gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
 
-    for (int i = 1; i <= dof; ++i) {
+    // Fixed all 6 non-ext and 6 ext positions sent, initial values for those not configured
+    for (int i = 1; i <= kFixSixAxes; ++i) {
       joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) +
                                                    "=\"");
+    }
+    for (int i = 1; i <= kFixSixAxes; ++i) {
+      ext_joint_position_attribute_prefixes_.push_back(" E" + std::to_string(i) +
+                                                      "=\"");
     }
   }
   ControlSignal(const ControlSignal &other) = default;
@@ -116,6 +126,7 @@ private:
   void AppendToXMLString(std::string_view str);
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
+  
   const std::string kJointPositionsPrefix = "<AK";
   std::vector<std::string> joint_position_attribute_prefixes_;
   const std::string kDoubleAttributeFormat =
@@ -123,6 +134,8 @@ private:
   const std::string kAttributeSuffix = "/>";
   const std::string kStopNodePrefix = "<Stop>";
   const std::string kStopNodeSuffix = "</Stop>";
+  const std::string kExtJointPositionsPrefix = "<EK";
+  std::vector<std::string> ext_joint_position_attribute_prefixes_;
   const std::string kGpioPrefix = "<GPIO";
   const std::string kIpocNodePrefix = "<IPOC>";
   const std::string kIpocNodeSuffix = "</IPOC>";
@@ -136,6 +149,10 @@ private:
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;
   char xml_string_[kBufferSize];
+
+  static constexpr short kFixSixAxes = 6;
+  // TODO (kovacsge11) make configurable when SCARA support added
+  std::size_t num_of_non_ext_axes_ = 6;
 };
 } // namespace kuka::external::control::kss
 
