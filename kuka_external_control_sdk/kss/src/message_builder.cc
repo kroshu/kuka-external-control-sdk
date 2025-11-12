@@ -104,7 +104,7 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
     if (next_value_idx < len) {
       if(i < (dof_-num_of_non_ext_axes_)) {
          measured_positions_[i] =
-            std::stod(&incoming_xml[next_value_idx], &dbl_length) / 1000.0;
+            std::stod(&incoming_xml[next_value_idx], &dbl_length);
       } else {
          std::stod(&incoming_xml[next_value_idx], &dbl_length);
       }
@@ -202,7 +202,7 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     double e_value = i < (dof_ - num_of_non_ext_axes_) ? (joint_position_values_[i] - initial_positions_[i]) : initial_positions_[i];
     int ret = std::snprintf(
         double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
-        e_value * 1000.0);
+        e_value);
     if (ret <= 0) {
       return std::nullopt;
     }

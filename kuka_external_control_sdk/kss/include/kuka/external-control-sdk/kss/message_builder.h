@@ -63,7 +63,7 @@ private:
   const std::string kAttributeSuffix = "\"/>";
 
   const std::string kJointPositionsPrefix = "<AIPos";
-  const std::string kExtJointPositionsPrefix = "<EIPos";
+  const std::string kExtJointPositionsPrefix = "<EXT";
 
   const std::string kDelayNodePrefix = "<Delay D=\"";
   const std::string kGpioPrefix = "<GPIO";
