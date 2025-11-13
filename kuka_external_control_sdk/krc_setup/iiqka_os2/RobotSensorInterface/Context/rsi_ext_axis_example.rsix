@@ -6,7 +6,7 @@
    <RsiObjects xmlns="RsiDriver">
       <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="ETHERNET1">
          <Inputs>
-            <Input InIdx="0" OutObjId="AxisActExt_1" OutIdx="0" SignalName="AxisActExt_1|E1" />
+            <Input InIdx="0" OutObjId="E1OutFactor" OutIdx="0" SignalName="E1OutFactor|Quotient" />
             <Input InIdx="1" OutObjId="AxisActExt_1" OutIdx="1" SignalName="AxisActExt_1|E2" />
             <Input InIdx="2" OutObjId="AxisActExt_1" OutIdx="2" SignalName="AxisActExt_1|E3" />
             <Input InIdx="3" OutObjId="AxisActExt_1" OutIdx="3" SignalName="AxisActExt_1|E4" />
@@ -70,6 +70,9 @@
          </Parameters>
       </RsiObject>
       <RsiObject ObjTypeId="87" ObjType="AxisCorrExt" ObjId="AxisCorrExt_1">
+         <Inputs>
+            <Input InIdx="0" OutObjId="E1InFactor" OutIdx="0" SignalName="E1InFactor|Out1" />
+         </Inputs>
          <Parameters>
             <Parameter Name="LowerLimE1" ParamId="0" ParamValue="-1000" />
             <Parameter Name="LowerLimE2" ParamId="1" ParamValue="-5" />
@@ -85,9 +88,31 @@
             <Parameter Name="UpperLimE6" ParamId="11" ParamValue="5" />
          </Parameters>
       </RsiObject>
+      <RsiObject ObjTypeId="42" ObjType="MULTI" ObjId="E1InFactor">
+         <Inputs>
+            <Input InIdx="0" OutObjId="ETHERNET1" OutIdx="7" SignalName="ETHERNET1|Out8" />
+            <Input InIdx="1" OutObjId="E1Multiplicator" OutIdx="0" SignalName="E1Multiplicator|Out1" />
+         </Inputs>
+      </RsiObject>
+      <RsiObject ObjTypeId="94" ObjType="Constant" ObjId="E1Multiplicator">
+         <Parameters>
+            <Parameter Name="Value" ParamId="0" ParamValue="1000" />
+         </Parameters>
+      </RsiObject>
+      <RsiObject ObjTypeId="100" ObjType="Division" ObjId="E1OutFactor">
+         <Inputs>
+            <Input InIdx="0" OutObjId="AxisActExt_1" OutIdx="0" SignalName="AxisActExt_1|E1" />
+            <Input InIdx="1" OutObjId="E1Divisor" OutIdx="0" SignalName="E1Divisor|Out1" />
+         </Inputs>
+      </RsiObject>
       <RsiObject ObjTypeId="90" ObjType="AxisActExt" ObjId="AxisActExt_1">
          <Parameters>
             <Parameter Name="Type" ParamId="0" ParamValue="0" />
+         </Parameters>
+      </RsiObject>
+      <RsiObject ObjTypeId="94" ObjType="Constant" ObjId="E1Divisor">
+         <Parameters>
+            <Parameter Name="Value" ParamId="0" ParamValue="1000" />
          </Parameters>
       </RsiObject>
    </RsiObjects>
@@ -2509,12 +2534,12 @@
    <Constructs xmlns="RsiConstruct">
       <Construct Name="ETHERNET1" BlueprintName="Ethernet" BlueprintCollection="RSI" Location="0,0">
          <Inputs>
-            <Input Name="In1" SourceObject="AxisActExt_1" SourcePort="E1" Points="-244.63333333333333,23.96;-196.63333333333333,23.96;-148.63333333333333,23.96;-148.63333333333333,23.96;-34,23.96;-18,23.96" />
-            <Input Name="In2" SourceObject="AxisActExt_1" SourcePort="E2" Points="-244.63333333333333,53.96;-204.63333333333333,53.96;-164.63333333333333,53.96;-164.63333333333333,53.96;-34,53.96;-18,53.96" />
-            <Input Name="In3" SourceObject="AxisActExt_1" SourcePort="E3" Points="-244.63333333333333,83.960000000000008;-212.63333333333333,83.960000000000008;-180.63333333333333,83.960000000000008;-180.63333333333333,83.960000000000008;-34,83.960000000000008;-18,83.960000000000008" />
-            <Input Name="In4" SourceObject="AxisActExt_1" SourcePort="E4" Points="-244.63333333333333,113.96000000000001;-220.63333333333333,113.96000000000001;-196.63333333333333,113.96000000000001;-196.63333333333333,113.96000000000001;-34,113.96000000000001;-18,113.96000000000001" />
-            <Input Name="In5" SourceObject="AxisActExt_1" SourcePort="E5" Points="-244.63333333333333,143.96;-228.63333333333333,143.96;-212.63333333333333,143.96;-212.63333333333333,143.96;-34,143.96;-18,143.96" />
-            <Input Name="In6" SourceObject="AxisActExt_1" SourcePort="E6" Points="-244.63333333333333,173.96;-236.63333333333333,173.96;-228.63333333333333,173.96;-228.63333333333333,173.96;-34,173.96;-18,173.96" />
+            <Input Name="In1" SourceObject="E1OutFactor" SourcePort="Quotient" Points="-88.676666666666677,23.96;-80.676666666666677,23.96;-72.676666666666677,23.96;-72.676666666666677,23.96;-34,23.96;-18,23.96" />
+            <Input Name="In2" SourceObject="AxisActExt_1" SourcePort="E2" Points="-496.63333333333333,143.96;-476.63333333333333,143.96;-456.63333333333333,143.96;-456.63333333333333,149.96;-13.703333333333376,149.96;-13.703333333333376,53.96;-34,53.96;-18,53.96" />
+            <Input Name="In3" SourceObject="AxisActExt_1" SourcePort="E3" Points="-496.63333333333333,173.96;-468.63333333333333,173.96;-440.63333333333333,173.96;-440.63333333333333,165.96;-198.62666666666667,165.96;-198.62666666666667,83.960000000000008;-34,83.960000000000008;-18,83.960000000000008" />
+            <Input Name="In4" SourceObject="AxisActExt_1" SourcePort="E4" Points="-496.63333333333333,203.96;-460.63333333333333,203.96;-424.63333333333333,203.96;-424.63333333333333,181.96;-182.62666666666667,181.96;-182.62666666666667,113.96000000000001;-34,113.96000000000001;-18,113.96000000000001" />
+            <Input Name="In5" SourceObject="AxisActExt_1" SourcePort="E5" Points="-496.63333333333333,233.96;-452.63333333333333,233.96;-408.63333333333333,233.96;-408.63333333333333,143.96;-34,143.96;-18,143.96" />
+            <Input Name="In6" SourceObject="AxisActExt_1" SourcePort="E6" Points="-496.63333333333333,263.96000000000004;-444.63333333333333,263.96000000000004;-392.63333333333333,263.96000000000004;-392.63333333333333,173.96;-34,173.96;-18,173.96" />
          </Inputs>
          <Parameters>
             <StringParameter Name="ConfigFile" Value="rsi_ethernet.xml" />
@@ -2564,11 +2589,41 @@
          </Parameters>
       </Construct>
       <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="678,546">
+         <Inputs>
+            <Input Name="CorrE1" SourceObject="E1InFactor" SourcePort="Out1" Points="581,569.96;589,569.96;597,569.96;597,569.96;644,569.96;660,569.96" />
+         </Inputs>
          <Parameters>
             <DoubleParameter Name="LowerLimE1" Value="-1000" />
             <DoubleParameter Name="UpperLimE1" Value="1000" />
          </Parameters>
       </Construct>
-      <Construct Name="AxisActExt_1" BlueprintName="AxisActExt" BlueprintCollection="RSI" Location="-426,0" />
+      <Construct Name="E1InFactor" BlueprintName="MULTI" BlueprintCollection="RSI" Location="486,546">
+         <Inputs>
+            <Input Name="In1" SourceObject="ETHERNET1" SourcePort="Out8" Points="181.93,233.96;189.93,233.96;197.93,233.96;197.93,569.96;452,569.96;468,569.96" />
+            <Input Name="In2" SourceObject="E1Multiplicator" SourcePort="Out1" Points="421,641.96;433,641.96;445,641.96;445,599.96;452,599.96;468,599.96" />
+         </Inputs>
+      </Construct>
+      <Construct Name="E1Multiplicator" BlueprintName="Constant" BlueprintCollection="RSI" Location="252,618">
+         <Parameters>
+            <DoubleParameter Name="Value" Value="1000" />
+         </Parameters>
+      </Construct>
+      <Construct Name="E1OutFactor" BlueprintName="Division" BlueprintCollection="RSI" Location="-198,0">
+         <Inputs>
+            <Input Name="Dividend" SourceObject="AxisActExt_1" SourcePort="E1" Points="-496.63333333333333,113.96000000000001;-484.63333333333333,113.96000000000001;-472.63333333333333,113.96000000000001;-472.63333333333333,23.96;-232,23.96;-216,23.96" />
+            <Input Name="Divisor" SourceObject="E1Divisor" SourcePort="Out1" Points="-269,53.96;-261,53.96;-253,53.96;-253,53.96;-232,53.96;-216,53.96" />
+         </Inputs>
+      </Construct>
+      <Construct Name="AxisActExt_1" BlueprintName="AxisActExt" BlueprintCollection="RSI" Location="-678,90" />
+      <Construct Name="E1Divisor" BlueprintName="Constant" BlueprintCollection="RSI" Location="-438,30">
+         <Parameters>
+            <DoubleParameter Name="Value" Value="1000" />
+         </Parameters>
+      </Construct>
+      <Construct Name="Comment_1" BlueprintName="Comment" BlueprintCollection="RSI" Location="-678,-54">
+         <Parameters>
+            <StringParameter Name="CommentText" Value="Add a division/multiplication specific to the given external axis e.g. in this case we have a prismatic joint for E1, where the unit in ROS is meters, but millimeters on the controller" />
+         </Parameters>
+      </Construct>
    </Constructs>
 </RsiContext>
