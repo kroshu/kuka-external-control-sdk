@@ -1,48 +1,16 @@
-/******************************************************************************
-;// This material is the exclusive property of KUKA Roboter GmbH.
-;// Except as expressly permitted by separate agreement, this material may only
-;// be used by members of the development department of KUKA Roboter GmbH for
-;// internal development purposes of KUKA Roboter GmbH.
-;//
-;// Copyright (C) 2013
-;// KUKA Roboter GmbH, Germany. All Rights Reserved.
-;//
-;//*****************************************************************************
-;// Datum       Programmierer        Reviewer
-;//             Beschreibung
-;//-----------------------------------------------------------------------------
-;// 01.09.2015  AFr
-;//             mxAutmation2.1
-;// 22.01.2016  AFr
-;//             mxAutmation2.1 multiple improvements and fixes
-;// 15.02.2016  AFr
-;//             mxAutmation2.1 multiple fixes
-;// 11.11.2016  RRolke
-;//             Windows support
-;// 09.05.2018  Jump Wu
-;//				 Update to V3.0.2
-;// 09.15.2019  Jump Wu
-;//				 Update to V3.1.0
-;// 20.07.2020  Jump Wu
-;//				 Update to V3.2.0
-;// 10.03.2022  TBreitenauer
-;//             Update to V3.3.1
-;// 14.03.2022  SJ
-;//             add active signal for KRC_Abort
-;//             add Function block KRC_AbortAdvanced, KRC_ForwardAdvanced, KRC_InverseAdvanced,
-KRC_JogAdvanced, KRC_TechFunctionAdvanced
-;//             add capability to read the positionally accurate robot model in KRC_Initialize
-;// 02.06.2022 CCW
-;//             added KRC_LDDCONFIG, KRC_LDDSTART, KRC_LDDTEST & KRC_LDDWRITELOAD
-;// 22.06.2022 CCW
-;//             added KRC_ACTIVATEPOSCONVERSION & KRC_CONVDELWPS
-;// 07.07.2022 CCW
-;//             improvements and fixes
-;// 11.04.2023 SJ
-;//            Bugfixing 977033， 987045
-;// 28.06.2023 SJ
-;//            Bugfixing 1007278
- ******************************************************************************/
+// Copyright 2025 KUKA Hungaria Kft.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 // TODO check licensing
 
