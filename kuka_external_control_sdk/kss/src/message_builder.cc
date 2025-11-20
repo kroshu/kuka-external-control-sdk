@@ -199,7 +199,8 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
                        1]; // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(ext_joint_position_attribute_prefixes_[i]);
     // Only update values for configured axes
-    double e_value = i < (dof_ - num_of_non_ext_axes_) ? (joint_position_values_[i] - initial_positions_[i]) : initial_positions_[i];
+    double e_value = i < (dof_ - num_of_non_ext_axes_) ? (joint_position_values_[i] - initial_positions_[i]) : 0.0;
+
     int ret = std::snprintf(
         double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
         e_value);
