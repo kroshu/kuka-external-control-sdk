@@ -52,8 +52,6 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
   // Non-external axes
   for (int i = 0; i < kFixSixAxes; ++i) {
     std::size_t dbl_length = 0;
-    next_value_idx += std::floor(std::log10(
-        i + 1.0));       // length of extra digits, e.g. for more than 10 dofs
     next_value_idx += 6; // length of prefix + 1, e.g. " A1=\""
 
     if (next_value_idx < len) {
@@ -97,8 +95,6 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
 
   for (int i = 0; i < kFixSixAxes; ++i) {
     std::size_t dbl_length = 0;
-    next_value_idx += std::floor(std::log10(
-        i + 1.0));       // length of extra digits, e.g. for more than 10 dofs
     next_value_idx += 6; // length of prefix + 1, e.g. " E1=\""
 
     if (next_value_idx < len) {
@@ -171,10 +167,12 @@ ControlSignal::CreateXMLString(int last_ipoc, bool stop_control) {
     char double_buffer[kPrecision + 3 + 1 + 1 +
                        1]; // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(joint_position_attribute_prefixes_[i]);
-    // Index of Ax in all joint position values
+    // Index of Ax in all joint position values,
+    // WARNING - this whole parsing only works if all configured external axes
+    // are before the non-external axes in the link chain
     short a_index = (dof_ - num_of_non_ext_axes_) + i;
     // Only update values for configured axes
-    double a_value = (i < num_of_non_ext_axes_) ? (joint_position_values_[a_index] - initial_positions_[a_index]) : initial_positions_[a_index];
+    double a_value = (i < num_of_non_ext_axes_) ? (joint_position_values_[a_index] - initial_positions_[a_index]) : 0.0;
     int ret = std::snprintf(
         double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(),
         a_value * (180 / M_PI));
