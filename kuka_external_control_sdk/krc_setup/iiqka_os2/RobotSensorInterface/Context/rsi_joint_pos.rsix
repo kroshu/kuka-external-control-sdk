@@ -61,7 +61,7 @@
             <Parameter IsRuntime="false" Name="MaxA4" ParamId="3" ParamValue="1000" />
             <Parameter IsRuntime="false" Name="MaxA5" ParamId="4" ParamValue="1000" />
             <Parameter IsRuntime="false" Name="MaxA6" ParamId="5" ParamValue="1000" />
-            <Parameter IsRuntime="false" Name="MaxE1" ParamId="6" ParamValue="2000" />
+            <Parameter IsRuntime="false" Name="MaxE1" ParamId="6" ParamValue="6" />
             <Parameter IsRuntime="false" Name="MaxE2" ParamId="7" ParamValue="6" />
             <Parameter IsRuntime="false" Name="MaxE3" ParamId="8" ParamValue="6" />
             <Parameter IsRuntime="false" Name="MaxE4" ParamId="9" ParamValue="6" />
@@ -71,13 +71,13 @@
       </RsiObject>
       <RsiObject ObjTypeId="87" ObjType="AxisCorrExt" ObjId="AxisCorrExt_1">
          <Parameters>
-            <Parameter Name="LowerLimE1" ParamId="0" ParamValue="-1000" />
+            <Parameter Name="LowerLimE1" ParamId="0" ParamValue="-5" />
             <Parameter Name="LowerLimE2" ParamId="1" ParamValue="-5" />
             <Parameter Name="LowerLimE3" ParamId="2" ParamValue="-5" />
             <Parameter Name="LowerLimE4" ParamId="3" ParamValue="-5" />
             <Parameter Name="LowerLimE5" ParamId="4" ParamValue="-5" />
             <Parameter Name="LowerLimE6" ParamId="5" ParamValue="-5" />
-            <Parameter Name="UpperLimE1" ParamId="6" ParamValue="1000" />
+            <Parameter Name="UpperLimE1" ParamId="6" ParamValue="5" />
             <Parameter Name="UpperLimE2" ParamId="7" ParamValue="5" />
             <Parameter Name="UpperLimE3" ParamId="8" ParamValue="5" />
             <Parameter Name="UpperLimE4" ParamId="9" ParamValue="5" />
@@ -2560,15 +2560,9 @@
             <DoubleParameter Name="MaxA4" Value="1000" />
             <DoubleParameter Name="MaxA5" Value="1000" />
             <DoubleParameter Name="MaxA6" Value="1000" />
-            <DoubleParameter Name="MaxE1" Value="2000" />
          </Parameters>
       </Construct>
-      <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="678,546">
-         <Parameters>
-            <DoubleParameter Name="LowerLimE1" Value="-1000" />
-            <DoubleParameter Name="UpperLimE1" Value="1000" />
-         </Parameters>
-      </Construct>
+      <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="678,546" />
       <Construct Name="AxisActExt_1" BlueprintName="AxisActExt" BlueprintCollection="RSI" Location="-426,0" />
    </Constructs>
 </RsiContext>
