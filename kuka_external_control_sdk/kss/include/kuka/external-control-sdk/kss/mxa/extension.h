@@ -1,0 +1,60 @@
+#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_EXTENSION_H_
+#define KUKA_EXTERNAL_CONTROL__KSS_MXA_EXTENSION_H_
+
+#include <string>
+
+#include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
+
+namespace kuka::external::control::kss::mxa {
+
+struct InitializationData {
+
+  // TODO: fill init data from mxA telegram
+
+  uint8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
+
+  std::string semantic_version;
+  uint8_t num_axes;
+  uint8_t num_external_axes;
+  std::string model_name;
+  std::string hw_version;
+  std::string sw_version;
+};
+
+struct StatusUpdate {
+  void Reset() {
+    control_mode_ = ControlMode::UNSPECIFIED;
+    cycle_time_ = CycleTime::UNSPECIFIED;
+    drives_powered_ = false;
+    emergency_stop_ = false;
+    guard_stop_ = false;
+    in_motion_ = false;
+    motion_possible_ = false;
+    operation_mode_ = OperationMode::UNSPECIFIED;
+    robot_stopped_ = false;
+  }
+
+  ControlMode control_mode_;
+  CycleTime cycle_time_;
+  bool drives_powered_;
+  bool emergency_stop_;
+  bool guard_stop_;
+  bool in_motion_;
+  bool motion_possible_;
+  OperationMode operation_mode_;
+  bool robot_stopped_;
+};
+
+class IEventHandlerExtension {
+public:
+  virtual void OnConnected(const InitializationData &init_data) = 0;
+};
+
+class IStatusUpdateHandler {
+public:
+  virtual void OnStatusUpdateReceived(const StatusUpdate &response) = 0;
+};
+
+} // namespace kuka::external::control::kss::mxa
+#endif // KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_

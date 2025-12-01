@@ -22,8 +22,9 @@
 #include <thread>
 
 #include "kuka/external-control-sdk/common/irobot.h"
-#include "kuka/external-control-sdk/kss/extension.h"
+#include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/mxa/MxAutomationV3_3.h"
+#include "kuka/external-control-sdk/kss/mxa/extension.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 
@@ -31,8 +32,8 @@ namespace kuka::external::control::kss::mxa {
 
 // Class for communicating with the KRC via MXA
 class Client {
- public:
-  Client(const std::string& controller_ip, bool error_reset_allowed);
+public:
+  Client(const std::string &controller_ip, bool error_reset_allowed);
 
   ~Client();
 
@@ -49,16 +50,19 @@ class Client {
   void ResetRSI();
 
   // Registers an event handler
-  Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler);
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler);
 
-  // Check whether there are errors present which should cause the RSI communication to stop
+  // Check whether there are errors present which should cause the RSI
+  // communication to stop
   bool ShouldRSIStop();
 
-  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
+  Status RegisterEventHandlerExtension(
+      std::unique_ptr<IEventHandlerExtension> &&extension);
 
-  Status RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
+  Status
+  RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler> &&handler);
 
- private:
+private:
   // Start keep-alive thread
   void StartKeepAliveThread();
 
@@ -103,7 +107,7 @@ class Client {
   KRC_TECHFUNCTION mxa_tech_function_m_;
   KRC_TECHFUNCTION mxa_tech_function_s_;
 
-  void HandleBlockError(const std::string& fb_name, int error_id);
+  void HandleBlockError(const std::string &fb_name, int error_id);
   bool block_error_active_ = false;
 
   std::atomic<bool> should_rsi_stop_{false};
@@ -129,6 +133,6 @@ class Client {
   static constexpr std::size_t kMxaTechFunctionParamSize = 41;
 };
 
-}  // namespace kuka::external::control::kss::mxa
+} // namespace kuka::external::control::kss::mxa
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
