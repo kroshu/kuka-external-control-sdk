@@ -42,16 +42,16 @@ DEF rsi_joint_pos()
   PTP $AXIS_ACT_MEAS
 
   ; Create RSI Context
-  ret = RSI_LOAD("rsi_joint_pos")
+  ret = RSI_LOAD(CONTEXT_NAME)
   IF (ret <> RSIOK) THEN
     HALT
   ENDIF
 
   ; Set AxisCorr parameters to allow full range of motion
-  ROS_SetAxisCorrLimits("rsi_joint_pos")
+  ROS_SetAxisCorrLimits(CONTEXT_NAME)
 
   ; Activate RSI Context
-  ret = RSI_ACTIVATE("rsi_joint_pos")
+  ret = RSI_ACTIVATE(CONTEXT_NAME)
   IF (ret <> RSIOK) THEN
     HALT
   ENDIF
