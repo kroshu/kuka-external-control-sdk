@@ -76,5 +76,5 @@ To stop monitoring on the client side, call `CancelMonitoringSubscription`. To s
 
 To learn more about the SDK implementation for specific robot controller systems, refer to one of the following:
 
-- [iiQKA Implementation](kuka_external_control_sdk/doc/iiqka_implementation.md)
+- [iiQKA.OS1 Implementation](kuka_external_control_sdk/doc/iiqka_implementation.md)
 - [KSS Implementation](kuka_external_control_sdk/doc/kss_implementation.md)

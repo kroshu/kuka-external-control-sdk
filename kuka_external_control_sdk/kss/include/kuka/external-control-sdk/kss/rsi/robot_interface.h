@@ -15,14 +15,14 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
 
+#include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/kss/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss::rsi {
 
-class Robot : public kuka::external::control::kss::IRobot {
+class Robot : public IRobot {
   // Special methods
  public:
   Robot(Configuration);
@@ -53,17 +53,6 @@ class Robot : public kuka::external::control::kss::IRobot {
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
-  // KSS-specific methods
-  virtual Status TurnOnDrives() override;
-
-  virtual Status TurnOffDrives() override;
-
-  virtual Status SetCycleTime(CycleTime cycle_time) override;
-
-  virtual Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) override;
-
-  virtual Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) override;
-
  protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
@@ -80,9 +69,9 @@ class Robot : public kuka::external::control::kss::IRobot {
   Status UpdateMotionState(std::string_view xml_str);
 
  private:
-  static constexpr char error_text[] = "Not supported by plain RSI";
+  static constexpr char error_text[] =  "Not supported by plain RSI";
 };
 
-}  // namespace kuka::external::control::kss::rsi
+}  // namespace kuka::external::control::kss
 
 #endif  // KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_

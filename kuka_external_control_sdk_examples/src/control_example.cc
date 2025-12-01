@@ -57,7 +57,6 @@ int main(int argc, char const *argv[]) {
   int counter = 0;
   // Degree of freedom
   size_t dof = 6;
-  kuka::external::control::BaseMotionState actual_state(dof);
   std::vector<double> start_pos(dof, 0);
   std::vector<double> reply_pos(dof, 0);
   double sin_ipoc = 0;
@@ -75,7 +74,7 @@ int main(int argc, char const *argv[]) {
     }
 
     // Create sine control signal
-    actual_state = rob_if->GetLastMotionState();
+    const auto & actual_state = rob_if->GetLastMotionState();
 
     // Add sine to goal positions
     for (int i = 0; i < dof; ++i) {

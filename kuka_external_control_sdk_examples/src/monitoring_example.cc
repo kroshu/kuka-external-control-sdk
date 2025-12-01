@@ -23,7 +23,7 @@ int main(int argc, char const *argv[]) {
   }
 
   setup_ret = rob_if->CreateMonitoringSubscription(
-      [](kuka::external::control::BaseMotionState motion_state) {
+      [](const kuka::external::control::BaseMotionState& motion_state) {
         printf("Received motion state - A1: %f A2: %f A3: %f A4: %f A5: %f A6: %f\n",
                motion_state.GetMeasuredPositions()[0], motion_state.GetMeasuredPositions()[1],
                motion_state.GetMeasuredPositions()[2], motion_state.GetMeasuredPositions()[3],

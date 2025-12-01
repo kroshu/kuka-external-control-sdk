@@ -18,6 +18,7 @@ namespace kuka::external::control::kss::eki {
 
 Robot::Robot(Configuration config)
     : kuka::external::control::kss::rsi::Robot(config)
+    , config_(config)
     , tcp_client_(config.kli_ip_address, config.eki_port)
 {}
 
@@ -58,6 +59,10 @@ Status Robot::SwitchControlMode(ControlMode control_mode) {
 
 Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
+}
+
+Status Robot::CancelRsiProgram() {
+  return tcp_client_.StopRSI();
 }
 
 Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {

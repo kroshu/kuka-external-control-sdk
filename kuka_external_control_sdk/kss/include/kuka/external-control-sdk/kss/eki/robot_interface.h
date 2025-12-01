@@ -32,29 +32,31 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
 
   // Interface implementation
  public:
-  Status Setup() override;
+  virtual Status Setup() override;
 
   // Call EKI service
-  Status StartControlling(kuka::external::control::ControlMode) override;
+  virtual Status StartControlling(kuka::external::control::ControlMode) override;
 
   // Set stop flag + send
-  Status StopControlling() override;
+  virtual Status StopControlling() override;
 
   // Call EKI service, only in inactive
-  Status SwitchControlMode(ControlMode control_mode) override;
+  virtual Status SwitchControlMode(ControlMode control_mode) override;
 
   // EKI response / new EKI client-server with external the service
-  Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
-  Status TurnOnDrives() override;
+  Status CancelRsiProgram();
 
-  Status TurnOffDrives() override;
+  Status TurnOnDrives();
 
-  Status SetCycleTime(CycleTime cycle_time) override;
+  Status TurnOffDrives();
 
-  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) override;
+  Status SetCycleTime(CycleTime cycle_time);
 
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) override;
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
+
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
 
   // Members and methods necessary for network configuration and error handling.
  private:

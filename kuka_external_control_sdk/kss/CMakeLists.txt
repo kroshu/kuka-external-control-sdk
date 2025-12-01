@@ -36,8 +36,6 @@ set(sources
   ${utils_directory}/src/os-core-udp-communication/tcp_client.cc
   ${kss_directory}/src/eki/client.cc
   ${kss_directory}/src/eki/robot_interface.cc
-  ${kss_directory}/src/mxa/client.cc
-  ${kss_directory}/src/mxa/robot_interface.cc
   ${kss_directory}/src/rsi/endpoint.cc
   ${kss_directory}/src/rsi/robot_interface.cc
   ${kss_directory}/src/message_builder.cc

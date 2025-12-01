@@ -21,15 +21,14 @@
 #include <mutex>
 #include <variant>
 
+#include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/kss/extension.h"
-#include "kuka/external-control-sdk/kss/irobot.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 namespace kuka::external::control::kss {
 
-class Robot : public kuka::external::control::kss::IRobot {
+class Robot : public IRobot {
   // Special methods
  public:
   Robot(Configuration);
@@ -39,41 +38,26 @@ class Robot : public kuka::external::control::kss::IRobot {
   virtual Status Setup() override;
 
   virtual Status StartControlling(kuka::external::control::ControlMode) override;
-
   virtual Status StartMonitoring() override;
 
   virtual Status StopControlling() override;
-
   virtual Status StopMonitoring() override;
 
   virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
-
   virtual Status CancelMonitoringSubscription() override;
 
   virtual bool HasMonitoringSubscription() override;
 
   virtual Status SendControlSignal() override;
-
   virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
   BaseControlSignal& GetControlSignal() override;
-
   BaseMotionState& GetLastMotionState() override;
 
+  // TODO add to documentation that other commands could come in between the Stop and Start call
+  // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
-
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
-
-  // KSS-specific methods
-  Status TurnOnDrives() override;
-
-  Status TurnOffDrives() override;
-
-  Status SetCycleTime(CycleTime cycle_time) override;
-
-  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) override;
-
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) override;
 
  private:
   std::unique_ptr<IRobot> installed_interface_ = nullptr;
