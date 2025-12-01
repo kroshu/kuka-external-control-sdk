@@ -105,7 +105,7 @@ private:
   KRC_SETOVERRIDE mxa_set_override_;
   KRC_WRITEAXISGROUP mxa_write_;
   KRC_TECHFUNCTION mxa_tech_function_m_;
-  KRC_TECHFUNCTION mxa_tech_function_s_;
+  KRC_TECHFUNCTION mxa_tech_function_s_; // TODO: replace cancel with abort
 
   void HandleBlockError(const std::string &fb_name, int error_id);
   bool block_error_active_ = false;
