@@ -23,7 +23,7 @@
 namespace kuka::external::control::kss::mxa {
 
 class Robot : public kuka::external::control::kss::rsi::Robot {
- public:
+public:
   Robot(Configuration);
 
   Status Setup() override;
@@ -36,19 +36,22 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
 
   Status SwitchControlMode(ControlMode control_mode) override;
 
-  Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  Status
+  RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) override;
 
-  Status TurnOnDrives() override;
+  Status TurnOnDrives();
 
-  Status TurnOffDrives() override;
+  Status TurnOffDrives();
 
-  Status SetCycleTime(CycleTime cycle_time) override;
+  Status SetCycleTime(CycleTime cycle_time);
 
-  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) override;
+  Status RegisterEventHandlerExtension(
+      std::unique_ptr<IEventHandlerExtension> &&extension);
 
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) override;
+  Status RegisterStatusResponseHandler(
+      std::unique_ptr<IStatusUpdateHandler> &&handler);
 
- private:
+private:
   Status CancelRSI();
 
   bool stop_flag_;
@@ -58,6 +61,6 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
   CycleTime cycle_time_;
 };
 
-}  // namespace kuka::external::control::kss::mxa
+} // namespace kuka::external::control::kss::mxa
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
