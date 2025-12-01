@@ -16,19 +16,17 @@
 
 #include <cstring>
 
-#include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"
-#include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
-
 AXIS_GROUP_REF KRC_AXISGROUPREFARR[6];
 
 using kuka::external::control::ControlMode;
 
 namespace kuka::external::control::kss::mxa {
 
-Client::Client(const std::string& controller_ip, bool error_reset_allowed)
+Client::Client(const std::string &controller_ip, bool error_reset_allowed)
     : error_reset_allowed_(error_reset_allowed) {
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
-      os::core::udp::communication::SocketAddress(controller_ip, kMXAControllerPort),
+      os::core::udp::communication::SocketAddress(controller_ip,
+                                                  kMXAControllerPort),
       os::core::udp::communication::SocketAddress(), false);
 
   udp_subscriber_ = std::make_unique<os::core::udp::communication::Subscriber>(
@@ -52,15 +50,17 @@ Client::~Client() {
 
 Status Client::Setup() {
   auto pub_setup_ret = udp_publisher_->Setup();
-  if (pub_setup_ret != os::core::udp::communication::Publisher::ErrorCode::kSuccess) {
-    return {ReturnCode::ERROR,
-            "UDP publisher setup failed with code " + static_cast<int>(pub_setup_ret)};
+  if (pub_setup_ret !=
+      os::core::udp::communication::Publisher::ErrorCode::kSuccess) {
+    return {ReturnCode::ERROR, "UDP publisher setup failed with code " +
+                                   static_cast<int>(pub_setup_ret)};
   }
 
   auto sub_setup_ret = udp_subscriber_->Setup();
-  if (sub_setup_ret != os::core::udp::communication::Publisher::ErrorCode::kSuccess) {
-    return {ReturnCode::ERROR,
-            "UDP subscriber setup failed with code " + static_cast<int>(sub_setup_ret)};
+  if (sub_setup_ret !=
+      os::core::udp::communication::Publisher::ErrorCode::kSuccess) {
+    return {ReturnCode::ERROR, "UDP subscriber setup failed with code " +
+                                   static_cast<int>(sub_setup_ret)};
   }
 
   StartKeepAliveThread();
@@ -68,7 +68,8 @@ Status Client::Setup() {
   return {ReturnCode::OK, "MXA client setup succeeded"};
 }
 
-Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status
+Client::RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) {
   if (event_handler == nullptr) {
     return {ReturnCode::ERROR, "Event handler cannot be null"};
   }
@@ -93,12 +94,13 @@ Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
   // TODO maybe add a wait here for the program start?
   return event_handler_set_
              ? Status{ReturnCode::OK, "RSI program start requested"}
-             : Status{ReturnCode::WARN, "RSI program start requested, but no event handler set"};
+             : Status{ReturnCode::WARN,
+                      "RSI program start requested, but no event handler set"};
 }
 
 Status Client::CancelRSI() {
-  // In some cases e.g. after a receive timeout, an immediate cancel wouldn't succeed,
-  // So wait a bit here - TODO check why this is the case
+  // In some cases e.g. after a receive timeout, an immediate cancel wouldn't
+  // succeed, So wait a bit here - TODO check why this is the case
   std::this_thread::sleep_for(std::chrono::milliseconds(kWaitBeforeCancelMs));
   cancelled_ = false;
   cancel_requested_ = true;
@@ -116,10 +118,11 @@ void Client::SetToCancelled() {
   cancel_finished_cv_.notify_one();
 }
 
-void Client::HandleBlockError(const std::string& fb_name, int error_id) {
-  // If a function block error already occured, don't handle the same again / a new one
-  // This way thread is still able to loop and finish cancellation if requested
-  // User can still terminate immediately on MXA function block error if desired
+void Client::HandleBlockError(const std::string &fb_name, int error_id) {
+  // If a function block error already occured, don't handle the same again / a
+  // new one This way thread is still able to loop and finish cancellation if
+  // requested User can still terminate immediately on MXA function block error
+  // if desired
   // TODO if other function block failed, don't return
   if (block_error_active_) {
     return;
@@ -139,7 +142,8 @@ void Client::ResetRSI() {
 
 bool Client::ShouldRSIStop() { return should_rsi_stop_; }
 
-Status Client::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
+Status Client::RegisterEventHandlerExtension(
+    std::unique_ptr<IEventHandlerExtension> &&extension) {
   if (extension == nullptr) {
     return {ReturnCode::ERROR, "Event handler extension cannot be null"};
   }
@@ -148,7 +152,8 @@ Status Client::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtens
   return {ReturnCode::OK, "Registered event handler extension"};
 }
 
-Status Client::RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
+Status Client::RegisterStatusUpdateHandler(
+    std::unique_ptr<IStatusUpdateHandler> &&handler) {
   if (handler == nullptr) {
     return {ReturnCode::ERROR, "Status update handler cannot be null"};
   }
@@ -211,7 +216,7 @@ void Client::StartKeepAliveThread() {
     DINT tech_function_s_int_data[kMxaTechFunctionParamSize] = {0};
     REAL tech_function_s_real_data[kMxaTechFunctionParamSize] = {0.0};
     mxa_tech_function_s_.TECHFUNCTIONID = 3;
-    mxa_tech_function_s_.PARAMETERCOUNT = 1;  // must be >= 1, though not used
+    mxa_tech_function_s_.PARAMETERCOUNT = 1; // must be >= 1, though not used
     mxa_tech_function_s_.BUFFERMODE = 0;
     mxa_tech_function_s_.BOOL_DATA = tech_function_s_bool_data;
     mxa_tech_function_s_.INT_DATA = tech_function_s_int_data;
@@ -228,9 +233,11 @@ void Client::StartKeepAliveThread() {
           event_handler_extension_->OnConnected(InitializationData());
         }
       } else if (tick > kInitTimeoutTicks) {
-        // Mark MXA UDP timeout as an error except in the first tick, since that always occurs
+        // Mark MXA UDP timeout as an error except in the first tick, since that
+        // always occurs
         connected = false;
-        event_handler_->OnError("Keep-alive thread: UDP subcriber receive timed out");
+        event_handler_->OnError(
+            "Keep-alive thread: UDP subcriber receive timed out");
       }
 
       // ----------------------------------------------------------------------------
@@ -255,17 +262,18 @@ void Client::StartKeepAliveThread() {
 
       // ----------------------------------------------------------------------------
       // Automatic external block
-      // needed to turn MOVE_ENABLE, DRIVES_OFF and ENABLE_EXT on - cannot be done with any other
-      // block
+      // needed to turn MOVE_ENABLE, DRIVES_OFF and ENABLE_EXT on - cannot be
+      // done with any other block
       mxa_aut_ext_.OnCycle();
       // Stop RSI if RSI started and ESTOP active
-      if (!should_rsi_stop_ && mxa_tech_function_m_.BUSY && !mxa_aut_ext_.ALARM_STOP) {
+      if (!should_rsi_stop_ && mxa_tech_function_m_.BUSY &&
+          !mxa_aut_ext_.ALARM_STOP) {
         event_handler_->OnError("ESTOP active");
         should_rsi_stop_ = true;
       }
 
-      // AutoStart - sets existing signals of AutomaticExternal in the correct sequence -
-      // used to activate AutExt block easier...
+      // AutoStart - sets existing signals of AutomaticExternal in the correct
+      // sequence - used to activate AutExt block easier...
       mxa_auto_start_.EXECUTERESET = auto_start_reset;
       mxa_auto_start_.OnCycle();
       if (mxa_auto_start_.ERROR) {
@@ -274,13 +282,15 @@ void Client::StartKeepAliveThread() {
 
       // Initiate resetting command dispatcher if requested
       if (auto_start_reset) {
-        // Prepare reset - set signal to zero to be able to execute a rising edge
+        // Prepare reset - set signal to zero to be able to execute a rising
+        // edge
         if (!start_cmd_dispatcher_) {
           auto_start_reset = false;
         }
       } else {
         // Rising edge - reset dispatcher
-        if (start_cmd_dispatcher_ && mxa_auto_start_.RESETVALID && !mxa_auto_start_.BUSY) {
+        if (start_cmd_dispatcher_ && mxa_auto_start_.RESETVALID &&
+            !mxa_auto_start_.BUSY) {
           auto_start_reset = true;
         }
       }
@@ -288,32 +298,38 @@ void Client::StartKeepAliveThread() {
       // ----------------------------------------------------------------------------
       // Check for errors
       // Reset errors at start if requested (after kInitTimeoutTicks+1 ticks)
-      // Errors during execution stay present to be able to check them but can be eliminated after a
-      // restart
+      // Errors during execution stay present to be able to check them but can
+      // be eliminated after a restart
       mxa_error_.MESSAGERESET =
-          error_reset_allowed_ && tick <= kInitTimeoutTicks + 1 ? error_msg_present : false;
+          error_reset_allowed_ && tick <= kInitTimeoutTicks + 1
+              ? error_msg_present
+              : false;
       mxa_error_.OnCycle();
 
       // Check whether mxa error present
       mxa_read_mxa_error_.OnCycle();
 
-      if (mxa_error_.ERROR && !error_msg_present && present_error_id != mxa_error_.ERRORID) {
+      if (mxa_error_.ERROR && !error_msg_present &&
+          present_error_id != mxa_error_.ERRORID) {
         if (mxa_error_.NOOPMODEEXT) {
           error_msg = "Robot not in Ext operation mode";
         } else if (mxa_read_mxa_error_.ERROR) {
           error_msg = "MXA error active with ID: ";
-          // TODO probably a bug - if MXA UDP timeout is present at the start, we get error with ID
-          // 83, but there isn't an error with that id, only 783, which is actually the UDP timeout
-          // error. So it is assumed that error code 83 corresponds to error 783.
+          // TODO probably a bug - if MXA UDP timeout is present at the start,
+          // we get error with ID 83, but there isn't an error with that id,
+          // only 783, which is actually the UDP timeout error. So it is assumed
+          // that error code 83 corresponds to error 783.
           error_msg += (mxa_read_mxa_error_.ERRORID == 83)
                            ? "783"
                            : std::to_string(mxa_read_mxa_error_.ERRORID);
         } else if (mxa_error_.ERRORID == 801) {
           error_msg = "STOPMESS active";
         } else if (mxa_error_.KRCERRORACTIVE) {
-          error_msg = "KRC error active with ID: " + std::to_string(mxa_error_.ERRORID);
+          error_msg =
+              "KRC error active with ID: " + std::to_string(mxa_error_.ERRORID);
         } else {
-          error_msg = "Error occured with ID: " + std::to_string(mxa_error_.ERRORID);
+          error_msg =
+              "Error occured with ID: " + std::to_string(mxa_error_.ERRORID);
         }
 
         if (mxa_error_.ERRORID == 801 && first_stopmess_) {
@@ -326,17 +342,20 @@ void Client::StartKeepAliveThread() {
         present_error_id = mxa_error_.ERRORID;
       } else if (!mxa_error_.ERROR) {
         error_msg_present = false;
-      }  // TODO maybe mark that error is still present
+      } // TODO maybe mark that error is still present
 
       // ----------------------------------------------------------------------------
-      // Set program override - by default it is set to 0 and the robot will never move
+      // Set program override - by default it is set to 0 and the robot will
+      // never move
       mxa_set_override_.OnCycle();
       if (mxa_set_override_.ERROR) {
         HandleBlockError("KRC_SETOVERRIDE", mxa_set_override_.ERRORID);
       }
 
-      // Start program if MXA managed to switch to standby status and start requested
-      mxa_tech_function_m_.EXECUTECMD = mxa_read_status_.STATUS >= 3 && rsi_started_;
+      // Start program if MXA managed to switch to standby status and start
+      // requested
+      mxa_tech_function_m_.EXECUTECMD =
+          mxa_read_status_.STATUS >= 3 && rsi_started_;
       mxa_tech_function_m_.OnCycle();
       if (mxa_tech_function_m_.ERROR) {
         HandleBlockError("KRC_TECHFUNCTION2", mxa_tech_function_m_.ERRORID);
@@ -358,8 +377,10 @@ void Client::StartKeepAliveThread() {
 
       // Before writing the output buffer, send status update
       if (status_update_handler_ != nullptr) {
-        status_update.control_mode_ = static_cast<ControlMode>(mxa_tech_function_m_.INT_DATA[1]);
-        status_update.cycle_time_ = static_cast<CycleTime>(mxa_tech_function_m_.INT_DATA[2]);
+        status_update.control_mode_ =
+            static_cast<ControlMode>(mxa_tech_function_m_.INT_DATA[1]);
+        status_update.cycle_time_ =
+            static_cast<CycleTime>(mxa_tech_function_m_.INT_DATA[2]);
         status_update.drives_powered_ = mxa_aut_ext_.PERI_RDY;
         status_update.emergency_stop_ = !mxa_aut_ext_.ALARM_STOP;
         status_update.guard_stop_ = !mxa_aut_ext_.USER_SAFE;
@@ -399,4 +420,4 @@ void Client::StartKeepAliveThread() {
   });
 }
 
-}  // namespace kuka::external::control::kss::mxa
+} // namespace kuka::external::control::kss::mxa
