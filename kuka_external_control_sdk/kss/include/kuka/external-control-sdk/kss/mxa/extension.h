@@ -22,30 +22,6 @@ struct InitializationData {
   std::string sw_version;
 };
 
-struct StatusUpdate {
-  void Reset() {
-    control_mode_ = ControlMode::UNSPECIFIED;
-    cycle_time_ = CycleTime::UNSPECIFIED;
-    drives_powered_ = false;
-    emergency_stop_ = false;
-    guard_stop_ = false;
-    in_motion_ = false;
-    motion_possible_ = false;
-    operation_mode_ = OperationMode::UNSPECIFIED;
-    robot_stopped_ = false;
-  }
-
-  ControlMode control_mode_;
-  CycleTime cycle_time_;
-  bool drives_powered_;
-  bool emergency_stop_;
-  bool guard_stop_;
-  bool in_motion_;
-  bool motion_possible_;
-  OperationMode operation_mode_;
-  bool robot_stopped_;
-};
-
 class IEventHandlerExtension {
 public:
   virtual void OnConnected(const InitializationData &init_data) = 0;

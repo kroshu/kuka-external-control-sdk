@@ -14,6 +14,7 @@
 
 #include "kuka/external-control-sdk/kss/mxa/client.h"
 
+
 #include <cstring>
 
 AXIS_GROUP_REF KRC_AXISGROUPREFARR[6];
@@ -86,12 +87,11 @@ Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
   // Start CMD dispatcher on first start
   start_cmd_dispatcher_ = true;
 
-  mxa_tech_function_m_.INT_DATA[1] = static_cast<int>(control_mode);
-  mxa_tech_function_m_.INT_DATA[2] = static_cast<int>(cycle_time);
+  control_mode_ = control_mode;
+  cycle_time_ = cycle_time;
   rsi_started_notification_sent_ = false;
   rsi_started_ = true;
 
-  // TODO maybe add a wait here for the program start?
   return event_handler_set_
              ? Status{ReturnCode::OK, "RSI program start requested"}
              : Status{ReturnCode::WARN,
@@ -116,21 +116,6 @@ void Client::SetToCancelled() {
   cancelled_ = true;
   cancel_lock.unlock();
   cancel_finished_cv_.notify_one();
-}
-
-void Client::HandleBlockError(const std::string &fb_name, int error_id) {
-  // If a function block error already occured, don't handle the same again / a
-  // new one This way thread is still able to loop and finish cancellation if
-  // requested User can still terminate immediately on MXA function block error
-  // if desired
-  // TODO if other function block failed, don't return
-  if (block_error_active_) {
-    return;
-  }
-
-  event_handler_->OnError("Keep-alive thread: error by " + fb_name +
-                          " with id: " + std::to_string(error_id));
-  block_error_active_ = true;
 }
 
 void Client::ResetRSI() {
@@ -166,61 +151,9 @@ void Client::StartKeepAliveThread() {
   keep_alive_thread_ = std::thread([this] {
     int tick = 1;
     bool auto_start_reset = false;
-    bool error_msg_present = false;
     bool connected = false;
-    int present_error_id = 0;
     std::string error_msg;
     StatusUpdate status_update;
-
-    // Set axis group id for every block
-    mxa_read_.AXISGROUPIDX = axis_group_id_;
-    mxa_init_.AXISGROUPIDX = axis_group_id_;
-    mxa_read_status_.AXISGROUPIDX = axis_group_id_;
-    mxa_aut_ext_.AXISGROUPIDX = axis_group_id_;
-    mxa_auto_start_.AXISGROUPIDX = axis_group_id_;
-    mxa_error_.AXISGROUPIDX = axis_group_id_;
-    mxa_read_mxa_error_.AXISGROUPIDX = axis_group_id_;
-    mxa_set_override_.AXISGROUPIDX = axis_group_id_;
-    mxa_write_.AXISGROUPIDX = axis_group_id_;
-    mxa_tech_function_m_.AXISGROUPIDX = axis_group_id_;
-    mxa_tech_function_s_.AXISGROUPIDX = axis_group_id_;
-
-    // Set AutExt block values
-    mxa_aut_ext_.CONF_MESS = false;
-    mxa_aut_ext_.DRIVES_ON = false;
-    mxa_aut_ext_.DRIVES_OFF = true;
-    mxa_aut_ext_.MOVE_ENABLE = true;
-    mxa_aut_ext_.EXT_START = false;
-    mxa_aut_ext_.RESET = false;
-    mxa_aut_ext_.ENABLE_T1 = false;
-    mxa_aut_ext_.ENABLE_T2 = false;
-    mxa_aut_ext_.ENABLE_AUT = false;
-    mxa_aut_ext_.ENABLE_EXT = true;
-
-    // Set constant override
-    mxa_set_override_.OVERRIDE = 100;
-
-    // robot interpreter tech function
-    BOOL tech_function_m_bool_data[kMxaTechFunctionParamSize] = {0};
-    DINT tech_function_m_int_data[kMxaTechFunctionParamSize] = {0};
-    REAL tech_function_m_real_data[kMxaTechFunctionParamSize] = {0.0};
-    mxa_tech_function_m_.TECHFUNCTIONID = 2;
-    mxa_tech_function_m_.PARAMETERCOUNT = 2;
-    mxa_tech_function_m_.BUFFERMODE = 2;
-    mxa_tech_function_m_.BOOL_DATA = tech_function_m_bool_data;
-    mxa_tech_function_m_.INT_DATA = tech_function_m_int_data;
-    mxa_tech_function_m_.REAL_DATA = tech_function_m_real_data;
-
-    // submit interpreter tech function
-    BOOL tech_function_s_bool_data[kMxaTechFunctionParamSize] = {0};
-    DINT tech_function_s_int_data[kMxaTechFunctionParamSize] = {0};
-    REAL tech_function_s_real_data[kMxaTechFunctionParamSize] = {0.0};
-    mxa_tech_function_s_.TECHFUNCTIONID = 3;
-    mxa_tech_function_s_.PARAMETERCOUNT = 1; // must be >= 1, though not used
-    mxa_tech_function_s_.BUFFERMODE = 0;
-    mxa_tech_function_s_.BOOL_DATA = tech_function_s_bool_data;
-    mxa_tech_function_s_.INT_DATA = tech_function_s_int_data;
-    mxa_tech_function_s_.REAL_DATA = tech_function_s_real_data;
 
     while (!stop_requested_) {
       if (udp_subscriber_->WaitForAndReceive(kUDPTimeoutMs) ==
@@ -233,7 +166,7 @@ void Client::StartKeepAliveThread() {
           event_handler_extension_->OnConnected(InitializationData());
         }
       } else if (tick > kInitTimeoutTicks) {
-        // Mark MXA UDP timeout as an error except in the first tick, since that
+        // Mark MXA UDP timeout as an error except in the first ticks, since that
         // always occurs
         connected = false;
         event_handler_->OnError(
@@ -242,172 +175,77 @@ void Client::StartKeepAliveThread() {
 
       // ----------------------------------------------------------------------------
       // Read
-      mxa_read_.KRC4_INPUT = read_buffer_;
-      mxa_read_.OnCycle();
-      if (mxa_read_.ERROR) {
-        HandleBlockError("KRC_READAXISGROUP", mxa_read_.ERRORID);
+      mxa_wrapper_.getmxAOutput(read_buffer_);
+
+      // Initialize & handle errors
+      int error_code = mxa_wrapper_.mxACycle();
+      switch (error_code)
+      {
+      case 0:
+          break;
+      case 801:
+        // Only trigger errors for STOPMESS after server has been started
+        if (first_stopmess_) 
+          error_code = 0;
+        else
+          error_msg = "STOPMESS active";
+        break;
+      case 523:
+        error_msg = "Robot not in Ext operation mode";
+        break;
+      case 525:
+        error_msg = "ESTOP is active";
+        break;
+      default:
+        error_msg = "Keep-alive thread error occured with ID: " + std::to_string(error_code);
+        break;
       }
 
-      // Initialize
-      mxa_init_.OnCycle();
-      if (mxa_init_.ERROR) {
-        HandleBlockError("KRC_INITIALIZE", mxa_init_.ERRORID);
-      }
+      if (error_code != 0 && active_error_code_ != error_code;)
+        event_handler_->OnError(error_msg);
 
-      // Read status
-      mxa_read_status_.OnCycle();
-      if (mxa_read_status_.ERROR) {
-        HandleBlockError("KRC_READMXASTATUS", mxa_read_status_.ERRORID);
-      }
+      active_error_code_ = error_code;
 
       // ----------------------------------------------------------------------------
-      // Automatic external block
-      // needed to turn MOVE_ENABLE, DRIVES_OFF and ENABLE_EXT on - cannot be
-      // done with any other block
-      mxa_aut_ext_.OnCycle();
-      // Stop RSI if RSI started and ESTOP active
-      if (!should_rsi_stop_ && mxa_tech_function_m_.BUSY &&
-          !mxa_aut_ext_.ALARM_STOP) {
-        event_handler_->OnError("ESTOP active");
-        should_rsi_stop_ = true;
-      }
-
       // AutoStart - sets existing signals of AutomaticExternal in the correct
       // sequence - used to activate AutExt block easier...
-      mxa_auto_start_.EXECUTERESET = auto_start_reset;
-      mxa_auto_start_.OnCycle();
-      if (mxa_auto_start_.ERROR) {
-        HandleBlockError("KRC_AUTOSTART", mxa_auto_start_.ERRORID);
-      }
-
-      // Initiate resetting command dispatcher if requested
-      if (auto_start_reset) {
-        // Prepare reset - set signal to zero to be able to execute a rising
-        // edge
-        if (!start_cmd_dispatcher_) {
-          auto_start_reset = false;
-        }
-      } else {
-        // Rising edge - reset dispatcher
-        if (start_cmd_dispatcher_ && mxa_auto_start_.RESETVALID &&
-            !mxa_auto_start_.BUSY) {
-          auto_start_reset = true;
-        }
-      }
-
-      // ----------------------------------------------------------------------------
-      // Check for errors
-      // Reset errors at start if requested (after kInitTimeoutTicks+1 ticks)
-      // Errors during execution stay present to be able to check them but can
-      // be eliminated after a restart
-      mxa_error_.MESSAGERESET =
-          error_reset_allowed_ && tick <= kInitTimeoutTicks + 1
-              ? error_msg_present
-              : false;
-      mxa_error_.OnCycle();
-
-      // Check whether mxa error present
-      mxa_read_mxa_error_.OnCycle();
-
-      if (mxa_error_.ERROR && !error_msg_present &&
-          present_error_id != mxa_error_.ERRORID) {
-        if (mxa_error_.NOOPMODEEXT) {
-          error_msg = "Robot not in Ext operation mode";
-        } else if (mxa_read_mxa_error_.ERROR) {
-          error_msg = "MXA error active with ID: ";
-          // TODO probably a bug - if MXA UDP timeout is present at the start,
-          // we get error with ID 83, but there isn't an error with that id,
-          // only 783, which is actually the UDP timeout error. So it is assumed
-          // that error code 83 corresponds to error 783.
-          error_msg += (mxa_read_mxa_error_.ERRORID == 83)
-                           ? "783"
-                           : std::to_string(mxa_read_mxa_error_.ERRORID);
-        } else if (mxa_error_.ERRORID == 801) {
-          error_msg = "STOPMESS active";
-        } else if (mxa_error_.KRCERRORACTIVE) {
-          error_msg =
-              "KRC error active with ID: " + std::to_string(mxa_error_.ERRORID);
-        } else {
-          error_msg =
-              "Error occured with ID: " + std::to_string(mxa_error_.ERRORID);
-        }
-
-        if (mxa_error_.ERRORID == 801 && first_stopmess_) {
+      if (start_cmd_dispatcher_)
+      {
+        auto result = mxa_wrapper_.startMxAServer();
+        if (result.block_state == BLOCKSTATE::DONE)
           first_stopmess_ = false;
-        } else {
-          event_handler_->OnError(error_msg);
+      }
+
+      // Call program starting RSI
+      if (mxa_wrapper_.isServerActive())
+      {
+        auto process_rsi_res = mxa_wrapper_.processRSI(control_mode_, cycle_time_);
+        if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE && !rsi_started_notification_sent_)
+        {
+          rsi_started_notification_sent_ = true;
+          event_handler_->OnSampling();
         }
-
-        error_msg_present = true;
-        present_error_id = mxa_error_.ERRORID;
-      } else if (!mxa_error_.ERROR) {
-        error_msg_present = false;
-      } // TODO maybe mark that error is still present
-
+      }
       // ----------------------------------------------------------------------------
-      // Set program override - by default it is set to 0 and the robot will
-      // never move
-      mxa_set_override_.OnCycle();
-      if (mxa_set_override_.ERROR) {
-        HandleBlockError("KRC_SETOVERRIDE", mxa_set_override_.ERRORID);
-      }
+      if (cancel_requested_)
+      {
+        auto cancel_result = mxa_wrapper_.cancelProgram();
 
-      // Start program if MXA managed to switch to standby status and start
-      // requested
-      mxa_tech_function_m_.EXECUTECMD =
-          mxa_read_status_.STATUS >= 3 && rsi_started_;
-      mxa_tech_function_m_.OnCycle();
-      if (mxa_tech_function_m_.ERROR) {
-        HandleBlockError("KRC_TECHFUNCTION2", mxa_tech_function_m_.ERRORID);
+        if (cancel_result.block_state == BLOCKSTATE::DONE) {
+          SetToCancelled();
+        }
       }
-      if (rsi_started_ && !rsi_started_notification_sent_) {
-        event_handler_->OnSampling();
-        rsi_started_notification_sent_ = true;
-      }
-
-      // cancel command dispatcher with tech function
-      mxa_tech_function_s_.EXECUTECMD = cancel_requested_;
-      mxa_tech_function_s_.OnCycle();
-      if (mxa_tech_function_s_.ERROR) {
-        HandleBlockError("KRC_TECHFUNCTION3", mxa_tech_function_s_.ERRORID);
-      }
-      if (mxa_tech_function_s_.DONE) {
-        SetToCancelled();
-      }
-
+      
       // Before writing the output buffer, send status update
       if (status_update_handler_ != nullptr) {
-        status_update.control_mode_ =
-            static_cast<ControlMode>(mxa_tech_function_m_.INT_DATA[1]);
-        status_update.cycle_time_ =
-            static_cast<CycleTime>(mxa_tech_function_m_.INT_DATA[2]);
-        status_update.drives_powered_ = mxa_aut_ext_.PERI_RDY;
-        status_update.emergency_stop_ = !mxa_aut_ext_.ALARM_STOP;
-        status_update.guard_stop_ = !mxa_aut_ext_.USER_SAFE;
-        status_update.in_motion_ = mxa_aut_ext_.PRO_MOVE;
-        status_update.motion_possible_ = mxa_aut_ext_.PRO_ACT;
-        if (mxa_aut_ext_.T1) {
-          status_update.operation_mode_ = OperationMode::T1;
-        } else if (mxa_aut_ext_.T2) {
-          status_update.operation_mode_ = OperationMode::T2;
-        } else if (mxa_aut_ext_.AUT) {
-          status_update.operation_mode_ = OperationMode::AUT;
-        } else if (mxa_aut_ext_.EXT) {
-          status_update.operation_mode_ = OperationMode::EXT;
-        } else {
-          status_update.operation_mode_ = OperationMode::UNSPECIFIED;
-        }
-        status_update.robot_stopped_ = mxa_aut_ext_.ROB_STOPPED;
+        auto status_update = mxa_wrapper_.getRobotState();
+        // TODO: convert between robot states
         status_update_handler_->OnStatusUpdateReceived(status_update);
       }
 
       // ----------------------------------------------------------------------------
       // Write
-      mxa_write_.KRC4_OUTPUT = write_buffer_;
-      mxa_write_.OnCycle();
-      if (mxa_write_.ERROR) {
-        HandleBlockError("KRC_WRITEAXISGROUP", mxa_write_.ERRORID);
-      }
+      mxa_wrapper_.setmxAInput(write_buffer_);
 
       // Send command
       udp_publisher_->Send(write_buffer_, kMXABufferSize);

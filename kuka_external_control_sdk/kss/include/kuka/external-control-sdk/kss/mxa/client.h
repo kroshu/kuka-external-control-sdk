@@ -25,6 +25,7 @@
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/mxa/MxAutomationV3_3.h"
 #include "kuka/external-control-sdk/kss/mxa/extension.h"
+#include "kuka/external-control-sdk/kss/mxa/mxa_wrapper.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 
@@ -87,28 +88,12 @@ private:
   // MXA communication
   //------------------------------
 
-  const short axis_group_id_ = 1;
-
   // Byte arrays for the communication
   static constexpr int kMXABufferSize = 256;
   BYTE read_buffer_[kMXABufferSize];
   BYTE write_buffer_[kMXABufferSize];
 
-  // Function blocks
-  KRC_READAXISGROUP mxa_read_;
-  KRC_INITIALIZE mxa_init_;
-  KRC_READMXASTATUS mxa_read_status_;
-  KRC_AUTOMATICEXTERNAL mxa_aut_ext_;
-  KRC_AUTOSTART mxa_auto_start_;
-  KRC_ERROR mxa_error_;
-  KRC_READMXAERROR mxa_read_mxa_error_;
-  KRC_SETOVERRIDE mxa_set_override_;
-  KRC_WRITEAXISGROUP mxa_write_;
-  KRC_TECHFUNCTION mxa_tech_function_m_;
-  KRC_TECHFUNCTION mxa_tech_function_s_;
-
-  void HandleBlockError(const std::string &fb_name, int error_id);
-  bool block_error_active_ = false;
+  mxAWrapper mxa_wrapper_;
 
   std::atomic<bool> should_rsi_stop_{false};
   const bool error_reset_allowed_;
@@ -129,6 +114,9 @@ private:
   std::unique_ptr<IStatusUpdateHandler> status_update_handler_;
 
   CycleTime cycle_time_ = CycleTime::UNSPECIFIED;
+  ControlMode control_mode_ = ControlMode::UNSPECIFIED;
+
+  int active_error_code_ = 0;
 
   static constexpr std::size_t kMxaTechFunctionParamSize = 41;
 };
