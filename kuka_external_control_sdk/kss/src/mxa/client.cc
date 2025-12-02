@@ -14,7 +14,6 @@
 
 #include "kuka/external-control-sdk/kss/mxa/client.h"
 
-
 #include <cstring>
 
 AXIS_GROUP_REF KRC_AXISGROUPREFARR[6];
@@ -166,8 +165,8 @@ void Client::StartKeepAliveThread() {
           event_handler_extension_->OnConnected(InitializationData());
         }
       } else if (tick > kInitTimeoutTicks) {
-        // Mark MXA UDP timeout as an error except in the first ticks, since that
-        // always occurs
+        // Mark MXA UDP timeout as an error except in the first ticks, since
+        // that always occurs
         connected = false;
         event_handler_->OnError(
             "Keep-alive thread: UDP subcriber receive timed out");
@@ -179,13 +178,12 @@ void Client::StartKeepAliveThread() {
 
       // Initialize & handle errors
       int error_code = mxa_wrapper_.mxACycle();
-      switch (error_code)
-      {
+      switch (error_code) {
       case 0:
-          break;
+        break;
       case 801:
         // Only trigger errors for STOPMESS after server has been started
-        if (first_stopmess_) 
+        if (first_stopmess_)
           error_code = 0;
         else
           error_msg = "STOPMESS active";
@@ -197,11 +195,12 @@ void Client::StartKeepAliveThread() {
         error_msg = "ESTOP is active";
         break;
       default:
-        error_msg = "Keep-alive thread error occured with ID: " + std::to_string(error_code);
+        error_msg = "Keep-alive thread error occured with ID: " +
+                    std::to_string(error_code);
         break;
       }
 
-      if (error_code != 0 && active_error_code_ != error_code;)
+      if (error_code != 0 && active_error_code_ != error_code)
         event_handler_->OnError(error_msg);
 
       active_error_code_ = error_code;
@@ -209,36 +208,42 @@ void Client::StartKeepAliveThread() {
       // ----------------------------------------------------------------------------
       // AutoStart - sets existing signals of AutomaticExternal in the correct
       // sequence - used to activate AutExt block easier...
-      if (start_cmd_dispatcher_)
-      {
+      if (start_cmd_dispatcher_) {
         auto result = mxa_wrapper_.startMxAServer();
         if (result.block_state == BLOCKSTATE::DONE)
           first_stopmess_ = false;
       }
 
       // Call program starting RSI
-      if (mxa_wrapper_.isServerActive())
-      {
-        auto process_rsi_res = mxa_wrapper_.processRSI(control_mode_, cycle_time_);
-        if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE && !rsi_started_notification_sent_)
-        {
+      if (mxa_wrapper_.isServerActive()) {
+        auto process_rsi_res = mxa_wrapper_.processRSI(
+            static_cast<int>(control_mode_), static_cast<int>(cycle_time_));
+        if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE &&
+            !rsi_started_notification_sent_) {
           rsi_started_notification_sent_ = true;
           event_handler_->OnSampling();
         }
       }
       // ----------------------------------------------------------------------------
-      if (cancel_requested_)
-      {
+      if (cancel_requested_) {
         auto cancel_result = mxa_wrapper_.cancelProgram();
 
         if (cancel_result.block_state == BLOCKSTATE::DONE) {
           SetToCancelled();
         }
       }
-      
+
       // Before writing the output buffer, send status update
       if (status_update_handler_ != nullptr) {
-        auto status_update = mxa_wrapper_.getRobotState();
+        status_update.control_mode_ = control_mode_;
+        status_update.drives_powered_ = mxa_wrapper_.drivesPowered();
+        status_update.emergency_stop_ = mxa_wrapper_.emergencyStop();
+        status_update.guard_stop_ = mxa_wrapper_.guardStop();
+        status_update.in_motion_ = mxa_wrapper_.inMotion();
+        status_update.motion_possible_ = mxa_wrapper_.motionPossible();
+        status_update.operation_mode_ =
+            static_cast<OperationMode>(mxa_wrapper_.getOpMode());
+        status_update.robot_stopped_ = mxa_wrapper_.robotStopped();
         // TODO: convert between robot states
         status_update_handler_->OnStatusUpdateReceived(status_update);
       }
