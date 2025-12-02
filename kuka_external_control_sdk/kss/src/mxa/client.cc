@@ -15,6 +15,7 @@
 #include "kuka/external-control-sdk/kss/mxa/client.h"
 
 #include <cstring>
+#include <iostream> // only for dbg
 
 AXIS_GROUP_REF KRC_AXISGROUPREFARR[6];
 
@@ -149,7 +150,6 @@ Status Client::RegisterStatusUpdateHandler(
 void Client::StartKeepAliveThread() {
   keep_alive_thread_ = std::thread([this] {
     int tick = 1;
-    bool auto_start_reset = false;
     bool connected = false;
     std::string error_msg;
     StatusUpdate status_update;
@@ -160,10 +160,7 @@ void Client::StartKeepAliveThread() {
         std::memcpy(read_buffer_, udp_subscriber_->GetMessage().first,
                     udp_subscriber_->GetMessage().second);
 
-        if (!connected && event_handler_extension_) {
-          connected = true;
-          event_handler_extension_->OnConnected(InitializationData());
-        }
+        connected = true;
       } else if (tick > kInitTimeoutTicks) {
         // Mark MXA UDP timeout as an error except in the first ticks, since
         // that always occurs
@@ -171,87 +168,97 @@ void Client::StartKeepAliveThread() {
         event_handler_->OnError(
             "Keep-alive thread: UDP subcriber receive timed out");
       }
+      if (connected) {
+        // ----------------------------------------------------------------------------
+        // Read
+        mxa_wrapper_.getmxAOutput(read_buffer_);
 
-      // ----------------------------------------------------------------------------
-      // Read
-      mxa_wrapper_.getmxAOutput(read_buffer_);
-
-      // Initialize & handle errors
-      int error_code = mxa_wrapper_.mxACycle();
-      switch (error_code) {
-      case 0:
-        break;
-      case 801:
-        // Only trigger errors for STOPMESS after server has been started
-        if (first_stopmess_)
-          error_code = 0;
-        else
+        // Initialize & handle errors
+        int error_code = mxa_wrapper_.mxACycle();
+        if (mxa_wrapper_.isInitialized() && event_handler_extension_) {
+          // TODO: get initialization data
+          event_handler_extension_->OnConnected(InitializationData());
+        }
+        switch (error_code) {
+        case 0:
+          break;
+        case 801:
           error_msg = "STOPMESS active";
-        break;
-      case 523:
-        error_msg = "Robot not in Ext operation mode";
-        break;
-      case 525:
-        error_msg = "ESTOP is active";
-        break;
-      default:
-        error_msg = "Keep-alive thread error occured with ID: " +
-                    std::to_string(error_code);
-        break;
-      }
-
-      if (error_code != 0 && active_error_code_ != error_code)
-        event_handler_->OnError(error_msg);
-
-      active_error_code_ = error_code;
-
-      // ----------------------------------------------------------------------------
-      // AutoStart - sets existing signals of AutomaticExternal in the correct
-      // sequence - used to activate AutExt block easier...
-      if (start_cmd_dispatcher_) {
-        auto result = mxa_wrapper_.startMxAServer();
-        if (result.block_state == BLOCKSTATE::DONE)
-          first_stopmess_ = false;
-      }
-
-      // Call program starting RSI
-      if (mxa_wrapper_.isServerActive()) {
-        auto process_rsi_res = mxa_wrapper_.processRSI(
-            static_cast<int>(control_mode_), static_cast<int>(cycle_time_));
-        if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE &&
-            !rsi_started_notification_sent_) {
-          rsi_started_notification_sent_ = true;
-          event_handler_->OnSampling();
+          break;
+        case 523:
+          error_msg = "Robot not in Ext operation mode";
+          break;
+        case 525:
+          error_msg = "ESTOP is active";
+          break;
+        default:
+          error_msg = "Keep-alive thread error occured with ID: " +
+                      std::to_string(error_code);
+          break;
         }
-      }
-      // ----------------------------------------------------------------------------
-      if (cancel_requested_) {
-        auto cancel_result = mxa_wrapper_.cancelProgram();
 
-        if (cancel_result.block_state == BLOCKSTATE::DONE) {
-          SetToCancelled();
+        // Only trigger errors if server has started
+        if (!first_stopmess_ && error_code != 0 &&
+            active_error_code_ != error_code)
+          event_handler_->OnError(error_msg);
+
+        active_error_code_ = error_code;
+
+        // Reset initial error messages
+        if (tick <= kInitTimeoutTicks + 1) {
+          mxa_wrapper_.resetErrors();
         }
+
+        // ----------------------------------------------------------------------------
+        // AutoStart - sets existing signals of AutomaticExternal in the correct
+        // sequence - used to activate AutExt block easier...
+        if (start_cmd_dispatcher_) {
+          auto result = mxa_wrapper_.startMxAServer();
+          std::cout << static_cast<int>(result.block_state) << std::endl;
+          if (result.block_state == BLOCKSTATE::DONE) {
+            first_stopmess_ = false;
+            start_cmd_dispatcher_ = false;
+          }
+        }
+
+        // Call program starting RSI
+        if (mxa_wrapper_.isServerActive()) {
+          auto process_rsi_res = mxa_wrapper_.processRSI(
+              static_cast<int>(control_mode_), static_cast<int>(cycle_time_));
+          if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE &&
+              !rsi_started_notification_sent_) {
+            rsi_started_notification_sent_ = true;
+            event_handler_->OnSampling();
+          }
+        }
+        // ----------------------------------------------------------------------------
+        if (cancel_requested_) {
+          auto cancel_result = mxa_wrapper_.cancelProgram();
+
+          if (cancel_result.block_state == BLOCKSTATE::DONE) {
+            SetToCancelled();
+          }
+        }
+
+        // Before writing the output buffer, send status update
+        if (status_update_handler_ != nullptr) {
+          status_update.control_mode_ = control_mode_;
+          status_update.drives_powered_ = mxa_wrapper_.drivesPowered();
+          status_update.emergency_stop_ = mxa_wrapper_.emergencyStop();
+          status_update.guard_stop_ = mxa_wrapper_.guardStop();
+          status_update.in_motion_ = mxa_wrapper_.inMotion();
+          status_update.motion_possible_ = mxa_wrapper_.motionPossible();
+          status_update.operation_mode_ =
+              static_cast<OperationMode>(mxa_wrapper_.getOpMode());
+          status_update.robot_stopped_ = mxa_wrapper_.robotStopped();
+          // TODO: convert between robot states
+          status_update_handler_->OnStatusUpdateReceived(status_update);
+        }
+
+        // ----------------------------------------------------------------------------
+        // Write
+        mxa_wrapper_.setmxAInput(write_buffer_);
       }
-
-      // Before writing the output buffer, send status update
-      if (status_update_handler_ != nullptr) {
-        status_update.control_mode_ = control_mode_;
-        status_update.drives_powered_ = mxa_wrapper_.drivesPowered();
-        status_update.emergency_stop_ = mxa_wrapper_.emergencyStop();
-        status_update.guard_stop_ = mxa_wrapper_.guardStop();
-        status_update.in_motion_ = mxa_wrapper_.inMotion();
-        status_update.motion_possible_ = mxa_wrapper_.motionPossible();
-        status_update.operation_mode_ =
-            static_cast<OperationMode>(mxa_wrapper_.getOpMode());
-        status_update.robot_stopped_ = mxa_wrapper_.robotStopped();
-        // TODO: convert between robot states
-        status_update_handler_->OnStatusUpdateReceived(status_update);
-      }
-
-      // ----------------------------------------------------------------------------
-      // Write
-      mxa_wrapper_.setmxAInput(write_buffer_);
-
       // Send command
       udp_publisher_->Send(write_buffer_, kMXABufferSize);
 

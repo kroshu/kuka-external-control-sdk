@@ -116,8 +116,6 @@ private:
   CycleTime cycle_time_ = CycleTime::UNSPECIFIED;
   ControlMode control_mode_ = ControlMode::UNSPECIFIED;
 
-  StatusUpdate status_update;
-
   int active_error_code_ = 0;
 
   static constexpr std::size_t kMxaTechFunctionParamSize = 41;

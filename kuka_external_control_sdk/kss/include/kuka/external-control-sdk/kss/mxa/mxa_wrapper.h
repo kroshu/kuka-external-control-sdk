@@ -86,9 +86,6 @@ public:
     mxa_set_override_.OVERRIDE = 100;
     mxa_set_override_.OnCycle();
 
-    // Reset flag if no errors active
-    if (!KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].AUTEXTSTATE.STOPMESS)
-      krc_error_.MESSAGERESET = false;
     krc_error_.OnCycle();
     return krc_error_.ERRORID;
   }
@@ -98,7 +95,16 @@ public:
     mxa_auto_start_.EXECUTERESET = true;
     mxa_auto_start_.OnCycle();
 
-    // TODO: reset based on output
+    if (mxa_auto_start_.ERROR) {
+      mxa_auto_start_.EXECUTERESET = false;
+      mxa_auto_start_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(mxa_auto_start_.ERRORID));
+    } else if (mxa_auto_start_.DISPACTIVE) {
+      mxa_auto_start_.EXECUTERESET = false;
+      mxa_auto_start_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
   }
 
   // Only works with Techfunction extension
@@ -109,7 +115,21 @@ public:
     mxa_tech_function_s_.EXECUTECMD = true;
     mxa_tech_function_s_.OnCycle();
 
-    // TODO: reset based on output
+    if (mxa_tech_function_s_.ERROR) {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
+    } else if (mxa_tech_function_s_.DONE) {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+  }
+
+  void resetErrors() {
+    krc_error_.MESSAGERESET = true;
+    krc_error_.OnCycle();
   }
 
   // Only works with Techfunction extension
@@ -119,7 +139,16 @@ public:
     mxa_tech_function_m_.EXECUTECMD = true;
     mxa_tech_function_m_.OnCycle();
 
-    // TODO: reset based on output
+    if (mxa_tech_function_m_.ERROR) {
+      mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_tech_function_m_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_m_.ERRORID));
+    } else if (mxa_tech_function_m_.DONE) {
+      mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_tech_function_m_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
   }
 
   bool isServerActive() { return mxa_aut_ext_.PRO_ACT; }
@@ -149,6 +178,8 @@ public:
       return 0;
     }
   }
+
+  bool isInitialized() { return mxa_init_.DONE; }
 
 private:
   KRC_READAXISGROUP krc_read_;
