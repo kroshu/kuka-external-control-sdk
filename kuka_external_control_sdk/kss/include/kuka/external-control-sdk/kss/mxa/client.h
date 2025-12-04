@@ -98,9 +98,9 @@ private:
   std::atomic<bool> should_rsi_stop_{false};
   const bool error_reset_allowed_;
   std::atomic<bool> start_cmd_dispatcher_{false};
+  std::atomic<bool> start_rsi_{false};
   std::atomic<bool> rsi_started_{false};
   std::atomic<bool> rsi_started_notification_sent_{false};
-  std::atomic<bool> first_stopmess_{true};
 
   std::atomic<bool> cancel_requested_{false};
   bool cancelled_{false};

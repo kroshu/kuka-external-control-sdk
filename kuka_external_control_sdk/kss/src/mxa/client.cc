@@ -85,6 +85,7 @@ Client::RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) {
 Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
   // Start CMD dispatcher on first start
   start_cmd_dispatcher_ = true;
+  start_rsi_ = true;
 
   control_mode_ = control_mode;
   cycle_time_ = cycle_time;
@@ -121,7 +122,7 @@ void Client::ResetRSI() {
   cancel_requested_ = false;
   rsi_started_ = false;
   start_cmd_dispatcher_ = false;
-  first_stopmess_ = true;
+  start_rsi_ = false;
 }
 
 bool Client::ShouldRSIStop() { return should_rsi_stop_; }
@@ -181,6 +182,10 @@ void Client::StartKeepAliveThread() {
         switch (error_code) {
         case 0:
           break;
+        // do not trigger error for a previous UDP timeout
+        case 83:
+          error_code = 0;
+          break;
         case 801:
           error_msg = "STOPMESS active";
           break;
@@ -197,8 +202,7 @@ void Client::StartKeepAliveThread() {
         }
 
         // Only trigger errors if server has started
-        if (!first_stopmess_ && error_code != 0 &&
-            active_error_code_ != error_code)
+        if (error_code != 0 && active_error_code_ != error_code)
           event_handler_->OnError(error_msg);
 
         active_error_code_ = error_code;
@@ -214,19 +218,21 @@ void Client::StartKeepAliveThread() {
         if (start_cmd_dispatcher_) {
           auto result = mxa_wrapper_.startMxAServer();
           if (result.block_state == BLOCKSTATE::DONE) {
-            first_stopmess_ = false;
             start_cmd_dispatcher_ = false;
           }
         }
 
         // Call program starting RSI
-        if (mxa_wrapper_.isServerActive()) {
+        if (mxa_wrapper_.isServerActive() && start_rsi_) {
           auto process_rsi_res = mxa_wrapper_.processRSI(
               static_cast<int>(control_mode_), static_cast<int>(cycle_time_));
           if (process_rsi_res.block_state == BLOCKSTATE::ACTIVE &&
               !rsi_started_notification_sent_) {
             rsi_started_notification_sent_ = true;
             event_handler_->OnSampling();
+          }
+          if (process_rsi_res.block_state == BLOCKSTATE::DONE) {
+              start_rsi_ = false;
           }
         }
         // ----------------------------------------------------------------------------

@@ -125,7 +125,7 @@ int main() {
   }
 
   // Wait for a while to ensure all messages arrive
-  std::this_thread::sleep_for(1s);
+  std::this_thread::sleep_for(10s);
 
   return 0;
 }
