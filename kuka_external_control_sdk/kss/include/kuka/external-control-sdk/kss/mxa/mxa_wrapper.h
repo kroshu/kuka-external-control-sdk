@@ -35,6 +35,13 @@ struct BLOCKRESULT {
 class mxAWrapper {
 public:
   mxAWrapper() {
+    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++)
+    {
+      int_array_[i] = 0;
+      real_array_[i] = 0.0;
+      bool_array_[i] = false;
+    }
+
     krc_read_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     krc_write_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_init_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
@@ -45,6 +52,7 @@ public:
     mxa_tech_function_m_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_tech_function_s_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     krc_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
+    read_mxa_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
 
     mxa_tech_function_m_.BOOL_DATA = bool_array_.data();
     mxa_tech_function_m_.INT_DATA = int_array_.data();
@@ -86,20 +94,23 @@ public:
     mxa_set_override_.OVERRIDE = 100;
     mxa_set_override_.OnCycle();
 
+    read_mxa_error_.OnCycle();
+
     krc_error_.OnCycle();
-    return krc_error_.ERRORID;
+    return read_mxa_error_.ERRORID;
   }
 
   // Start robot interpreter of mxA
   BLOCKRESULT startMxAServer() {
-    mxa_auto_start_.EXECUTERESET = true;
+    if (mxa_auto_start_.RESETVALID)
+      mxa_auto_start_.EXECUTERESET = true;
     mxa_auto_start_.OnCycle();
 
     if (mxa_auto_start_.ERROR) {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(mxa_auto_start_.ERRORID));
-    } else if (mxa_auto_start_.DISPACTIVE) {
+    } else if (mxa_auto_start_.DONE) {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
@@ -110,6 +121,8 @@ public:
   // Only works with Techfunction extension
   BLOCKRESULT cancelProgram() {
     mxa_tech_function_s_.TECHFUNCTIONID = 3;
+    mxa_tech_function_s_.INT_DATA[1] = 0;
+    mxa_tech_function_s_.INT_DATA[2] = 0;
     mxa_tech_function_s_.PARAMETERCOUNT = 1; // must be >= 1, though not used
     mxa_tech_function_s_.BUFFERMODE = 0;
     mxa_tech_function_s_.EXECUTECMD = true;
@@ -136,6 +149,9 @@ public:
   BLOCKRESULT processRSI(int control_mode, int cycle_time) {
     mxa_tech_function_m_.INT_DATA[1] = control_mode;
     mxa_tech_function_m_.INT_DATA[2] = cycle_time;
+    mxa_tech_function_m_.BUFFERMODE = 2;
+    mxa_tech_function_m_.PARAMETERCOUNT = 2;
+    mxa_tech_function_m_.TECHFUNCTIONID = 2;
     mxa_tech_function_m_.EXECUTECMD = true;
     mxa_tech_function_m_.OnCycle();
 
@@ -190,6 +206,7 @@ private:
   KRC_AUTOMATICEXTERNAL mxa_aut_ext_;
   KRC_AUTOSTART mxa_auto_start_;
   KRC_ERROR krc_error_;
+  KRC_READMXAERROR read_mxa_error_;
   KRC_SETOVERRIDE mxa_set_override_;
   KRC_TECHFUNCTION mxa_tech_function_m_;
   KRC_TECHFUNCTION mxa_tech_function_s_;

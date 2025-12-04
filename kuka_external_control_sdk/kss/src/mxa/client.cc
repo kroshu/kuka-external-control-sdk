@@ -15,7 +15,6 @@
 #include "kuka/external-control-sdk/kss/mxa/client.h"
 
 #include <cstring>
-#include <iostream> // only for dbg
 
 AXIS_GROUP_REF KRC_AXISGROUPREFARR[6];
 
@@ -214,7 +213,6 @@ void Client::StartKeepAliveThread() {
         // sequence - used to activate AutExt block easier...
         if (start_cmd_dispatcher_) {
           auto result = mxa_wrapper_.startMxAServer();
-          std::cout << static_cast<int>(result.block_state) << std::endl;
           if (result.block_state == BLOCKSTATE::DONE) {
             first_stopmess_ = false;
             start_cmd_dispatcher_ = false;
