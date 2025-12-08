@@ -1,49 +1,56 @@
-// Copyright 2025 KUKA Hungaria Kft.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/******************************************************************************
+;// This material is the exclusive property of KUKA Roboter GmbH.
+;// Except as expressly permitted by separate agreement, this material may only
+;// be used by members of the development department of KUKA Roboter GmbH for
+;// internal development purposes of KUKA Roboter GmbH.
+;//
+;// Copyright (C) 2025
+;// KUKA Roboter GmbH, Germany. All Rights Reserved.
+;//
+;// Native cpp extensions for the MxA library.
+;// Function-Blocks and Functions, that are basic PLC IEC
+;// are reimplemented here as direct cpp code
+******************************************************************************/
 
-// TODO check licensing
+// This is part of the official client library provided by KUKA for mxAutomation
 
-#ifndef PLCIEC_H
-#define PLCIEC_H
+#pragma once
 
 #include <math.h>
-#include <time.h>
+#include <chrono>
 
 #include <climits>
 #include <string>
-
 
 #define _IN     // NOOP
 #define _OUT    // NOOP
 #define _INOUT  // NOOP
 
-// 12.10.2016  HMz added
-#ifdef _MSC_VER
-#undef IN     // used as a varibale name below
-#undef ERROR  // used as a varibale name in mxAutomationVxx.h
-#else
+// on windows in minwindef.h these identifiers are definied as macros thus sometimes causing problems
+#undef IN
+#undef OUT
+#undef ERROR
+
+#ifndef TRUE
+#define TRUE true
+#endif
+
+#ifndef FALSE
+#define FALSE false
+#endif
+
+namespace PLCIEC
+{
+
 // 1 BOOL boolesche 1 h
 typedef bool BOOL;
-#define TRUE true
-#define FALSE false
 // 3 INT ganze Zahl(integer) 16 c
 typedef short INT;
 // 7 UINT vorzeichenlose ganze Zahl 16 d
 typedef unsigned short UINT;
 // 19 DWORD Bit - Folge 32 32 J, g
 typedef unsigned int DWORD;
-#endif
+
 // 2 SINT kurze ganze Zahl(short integer) 8 c
 typedef signed char SINT;
 // 4 DINT doppelte ganze Zahl(double integer) 32 c
@@ -92,20 +99,13 @@ typedef std::wstring WSTRING;
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#ifdef _MSC_VER
-#pragma comment(lib, "winmm.lib")
-extern "C" __declspec(dllimport) DWORD __stdcall timeGetTime(void);  // Link to winmm.lib
-//__declspec(dllimport) DWORD __stdcall timeGetTime(void);
-#define CURTIME() timeGetTime()
-#elif defined(__linux__)
-#include <sys/time.h>
-#define CURTIME() getTimeInMilliseconds()
-inline long long getTimeInMilliseconds() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec * 1000LL + tv.tv_usec / 1000;  // convert tv_sec & tv_usec to millisecond
+
+inline int64_t getTimeInMilliseconds()
+{
+  auto now = std::chrono::system_clock::now();
+  auto duration = now.time_since_epoch();
+  return std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 }
-#endif
 
 static inline TIME MKTIME(DINT sign, DINT mseconds, DINT seconds = 0, DINT minutes = 0,
                           DINT hours = 0, DINT days = 0) {
@@ -133,7 +133,7 @@ class TON {
   // FB private variables - TEMP, private and located variables
  private:
   BOOL m_PrevIn;     // previous state of IN for rising/falling edge recognigition
-  DWORD m_PrevTime;  // previous time value
+  int64_t m_PrevTime;  // previous time value
   BOOL m_Active;     // indicates active timer
 
  public:
@@ -151,7 +151,7 @@ class TON {
   void OnCycle() {
     // test if rising edge
     if (true == IN && false == m_PrevIn) {
-      m_PrevTime = CURTIME();  // init previous time
+      m_PrevTime = getTimeInMilliseconds();  // init previous time
       m_Active = true;
       m_PrevIn = IN;  // set previous state to current state
     }
@@ -161,8 +161,8 @@ class TON {
       _ET = 0;
       m_PrevIn = IN;  // set previous state to current state
     } else if (m_Active) {
-      DWORD currentTime = CURTIME();
-      _ET += currentTime - m_PrevTime;  // count up elapsed time
+      int64_t currentTime = getTimeInMilliseconds();
+      _ET += static_cast<TIME>(currentTime - m_PrevTime);  // count up elapsed time
       m_PrevTime = currentTime;
       if (ET > PT) _Q = true;
     }
@@ -219,7 +219,7 @@ class F_TRIG {
   }
 };
 
-static inline INT DINT_TO_INT(DINT arg) { return (DINT)arg; }
+static inline INT DINT_TO_INT(DINT arg) { return (INT)arg; }
 static inline DWORD DINT_TO_DWORD(DINT arg) { return *(DWORD *)&arg; }
 static inline TIME DINT_TO_TIME(DINT arg) { return (DINT)arg; }
 static inline DINT DWORD_TO_DINT(DWORD arg) { return *(DINT *)&arg; }
@@ -232,6 +232,4 @@ static inline DWORD REAL_TO_DWORD(REAL arg) { return DINT_TO_DWORD((DINT)(floor(
 static inline BOOL REAL_TO_BOOL(REAL arg) { return arg ? TRUE : FALSE; }
 static inline INT BYTE_TO_INT(BYTE arg) { return (INT)arg; }
 static inline SINT BYTE_TO_SINT(BYTE arg) { return (SINT)arg; }
-// HMzstatic inline REAL LIMIT(REAL Min, REAL IN, REAL Max) { return MIN(MAX(IN, Min), Max); }
-
-#endif  // PLCIEC_H
+}

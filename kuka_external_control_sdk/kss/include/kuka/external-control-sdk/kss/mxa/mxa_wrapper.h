@@ -15,7 +15,7 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
 
-#include "MxAutomationV3_3.h"
+#include "mxAutomation.h"
 #include <array>
 
 namespace kuka::external::control::kss::mxa {
