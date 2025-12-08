@@ -88,8 +88,8 @@ private:
 
   // Byte arrays for the communication
   static constexpr int kMXABufferSize = 256;
-  BYTE read_buffer_[kMXABufferSize];
-  BYTE write_buffer_[kMXABufferSize];
+  PLCIEC::BYTE read_buffer_[kMXABufferSize];
+  PLCIEC::BYTE write_buffer_[kMXABufferSize];
 
   mxAWrapper mxa_wrapper_;
 
