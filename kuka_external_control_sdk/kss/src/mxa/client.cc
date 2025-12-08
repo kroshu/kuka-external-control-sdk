@@ -99,9 +99,11 @@ Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
 }
 
 Status Client::CancelRSI() {
-  // In some cases e.g. after a receive timeout, an immediate cancel wouldn't
-  // succeed, So wait a bit here - TODO check why this is the case
-  std::this_thread::sleep_for(std::chrono::milliseconds(kWaitBeforeCancelMs));
+  // Cancel only works, if program is not active, stop program by MOVE_DISABLE = false
+  // Add short sleep to make sure RSI program is stopped gracefully
+  // TODO(Svastits): consider using state variable instead of hard-coded sleep
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  mxa_wrapper_.moveDisable();
   cancelled_ = false;
   cancel_requested_ = true;
 

@@ -74,7 +74,6 @@ private:
   static constexpr int kMXAClientPort = 1337;
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
-  static constexpr std::chrono::milliseconds kWaitBeforeCancelMs{1000};
 
   // Event handling
   std::mutex event_handler_mutex_;

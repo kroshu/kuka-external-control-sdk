@@ -102,6 +102,7 @@ public:
 
   // Start robot interpreter of mxA
   BLOCKRESULT startMxAServer() {
+    mxa_aut_ext_.MOVE_ENABLE = true;
     if (mxa_auto_start_.RESETVALID)
       mxa_auto_start_.EXECUTERESET = true;
     mxa_auto_start_.OnCycle();
@@ -196,6 +197,8 @@ public:
   }
 
   bool isInitialized() { return mxa_init_.DONE; }
+
+  void moveDisable() {mxa_aut_ext_.MOVE_ENABLE = false;}
 
 private:
   KRC_READAXISGROUP krc_read_;
