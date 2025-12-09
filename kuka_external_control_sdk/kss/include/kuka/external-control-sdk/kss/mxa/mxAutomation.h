@@ -1826,7 +1826,7 @@ public:
    void OnCycle()
    {
       _ORDERID = (PLCIEC::DINT)0;
-      _PLC_MAJOR = (PLCIEC::DINT)6;
+      _PLC_MAJOR = (PLCIEC::DINT)3;
       _PLC_MINOR = (PLCIEC::DINT)0;
       _PLC_REVISION = (PLCIEC::DINT)0;
       if (((AXISGROUPIDX < 1) || (AXISGROUPIDX > 5)))

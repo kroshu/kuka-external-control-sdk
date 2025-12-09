@@ -102,7 +102,11 @@ public:
 
   // Start robot interpreter of mxA
   BLOCKRESULT startMxAServer() {
+    mxa_aut_ext_.DRIVES_ON = false;
+    // Reset drive signals and execute flag for every new sever start
+    mxa_aut_ext_.DRIVES_OFF = true;
     mxa_aut_ext_.MOVE_ENABLE = true;
+    mxa_tech_function_m_.EXECUTECMD = false;
     if (mxa_auto_start_.RESETVALID)
       mxa_auto_start_.EXECUTERESET = true;
     mxa_auto_start_.OnCycle();
@@ -203,6 +207,18 @@ public:
   uint8_t getNumExtAxes() { return mxa_init_.KRC_NUM_EX_AXIS;}
 
   void moveDisable() {mxa_aut_ext_.MOVE_ENABLE = false;}
+
+  void drivesOff() 
+  {
+    mxa_aut_ext_.DRIVES_ON = false;
+    mxa_aut_ext_.DRIVES_OFF = false;
+  }
+
+  void drivesOn() 
+  {
+    mxa_aut_ext_.DRIVES_ON = true;
+    mxa_aut_ext_.DRIVES_OFF = true;
+  }
 
 private:
   KRC_READAXISGROUP krc_read_;

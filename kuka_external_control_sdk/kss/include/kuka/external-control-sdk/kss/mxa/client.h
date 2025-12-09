@@ -49,12 +49,14 @@ public:
   // Reset class to be able to start RSI again
   void ResetRSI();
 
+  // Turn on drives
+  void TurnOnDrives();
+
+  // Turn off driver
+  void TurnOffDrives();
+
   // Registers an event handler
   Status RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler);
-
-  // Check whether there are errors present which should cause the RSI
-  // communication to stop
-  bool ShouldRSIStop();
 
   Status RegisterEventHandlerExtension(
       std::unique_ptr<IEventHandlerExtension> &&extension);

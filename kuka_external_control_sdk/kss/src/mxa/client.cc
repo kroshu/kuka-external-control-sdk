@@ -126,6 +126,10 @@ void Client::ResetRSI() {
   start_rsi_ = false;
 }
 
+void Client::TurnOnDrives() { mxa_wrapper_.drivesOn(); }
+
+void Client::TurnOffDrives() { mxa_wrapper_.drivesOff(); }
+
 Status Client::RegisterEventHandlerExtension(
     std::unique_ptr<IEventHandlerExtension> &&extension) {
   if (extension == nullptr) {
@@ -178,7 +182,7 @@ void Client::StartKeepAliveThread() {
           event_handler_extension_->OnConnected(InitializationData(mxa_wrapper_.getNumAxes(), mxa_wrapper_.getNumExtAxes()));
           connected_notification_sent_ = true;
         }
-        else if (mxa_wrapper_.isInitialized())
+        else if (!mxa_wrapper_.isInitialized())
         {
           connected_notification_sent_ = false;
         }

@@ -61,13 +61,6 @@ Status Robot::CancelRsiProgram() {
 }
 
 Status Robot::SendControlSignal() {
-  if (client_.ShouldRSIStop()) {
-    CancelRsiProgram();
-    endpoint_.Reset();
-    rsi_running_ = false;
-    return {ReturnCode::ERROR, "RSI communication stop triggered"};
-  }
-
   return kuka::external::control::kss::rsi::Robot::SendControlSignal();
 }
 
@@ -85,11 +78,13 @@ Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler
 }
 
 Status Robot::TurnOnDrives() {
-  return {ReturnCode::OK, "TurnOnDrives is a no-op (short-circuited)"};
+  client_.TurnOnDrives();
+  return {ReturnCode::OK};
 }
 
 Status Robot::TurnOffDrives() {
-  return {ReturnCode::OK, "TurnOffDrives is a no-op (short-circuited)"};
+  client_.TurnOffDrives();
+  return {ReturnCode::OK};
 }
 
 Status Robot::SetCycleTime(CycleTime cycle_time) {
