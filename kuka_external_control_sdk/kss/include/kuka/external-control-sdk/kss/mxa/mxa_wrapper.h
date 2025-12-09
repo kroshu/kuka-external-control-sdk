@@ -88,6 +88,10 @@ public:
   int mxACycle() {
     mxa_init_.OnCycle();
 
+    if (!mxa_aut_ext_.PERI_RDY)
+    {
+      mxa_aut_ext_.DRIVES_OFF = true;
+    }
     mxa_aut_ext_.OnCycle();
 
     // Set constant override
@@ -102,13 +106,14 @@ public:
 
   // Start robot interpreter of mxA
   BLOCKRESULT startMxAServer() {
-    mxa_aut_ext_.DRIVES_ON = false;
-    // Reset drive signals and execute flag for every new sever start
-    mxa_aut_ext_.DRIVES_OFF = true;
-    mxa_aut_ext_.MOVE_ENABLE = true;
-    mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_aut_ext_.MOVE_ENABLE = true;
+
+      // Reset execute flag for every new sever start, as after cancel it might not get reset
+      mxa_tech_function_m_.EXECUTECMD = false;
     if (mxa_auto_start_.RESETVALID)
+    {
       mxa_auto_start_.EXECUTERESET = true;
+    }
     mxa_auto_start_.OnCycle();
 
     if (mxa_auto_start_.ERROR) {
@@ -118,6 +123,9 @@ public:
     } else if (mxa_auto_start_.DONE) {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
+      // Reset message reset flag after successful server start to avoid getting it stuck
+      krc_error_.MESSAGERESET = false;
+      mxa_aut_ext_.CONF_MESS = false;
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
     }
     return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
