@@ -77,11 +77,6 @@ struct Configuration {
   // The interface installed on the KSS robot
   InstalledInterface installed_interface = InstalledInterface::RSI_ONLY;
 
-  // Action to do after MXA/KRC error signaled to event handler
-  // If true -> reset error messages
-  // If false -> error messages remain
-  bool reset_errors = true;
-
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
 };

@@ -22,8 +22,7 @@ using kuka::external::control::ControlMode;
 
 namespace kuka::external::control::kss::mxa {
 
-Client::Client(const std::string &controller_ip, bool error_reset_allowed)
-    : error_reset_allowed_(error_reset_allowed) {
+Client::Client(const std::string &controller_ip){
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
       os::core::udp::communication::SocketAddress(controller_ip,
                                                   kMXAControllerPort),
@@ -127,8 +126,6 @@ void Client::ResetRSI() {
   start_rsi_ = false;
 }
 
-bool Client::ShouldRSIStop() { return should_rsi_stop_; }
-
 Status Client::RegisterEventHandlerExtension(
     std::unique_ptr<IEventHandlerExtension> &&extension) {
   if (extension == nullptr) {
@@ -177,8 +174,13 @@ void Client::StartKeepAliveThread() {
 
         // Initialize & handle errors
         int error_code = mxa_wrapper_.mxACycle();
-        if (mxa_wrapper_.isInitialized() && event_handler_extension_) {
+        if (mxa_wrapper_.isInitialized() && event_handler_extension_ && !connected_notification_sent_) {
           event_handler_extension_->OnConnected(InitializationData(mxa_wrapper_.getNumAxes(), mxa_wrapper_.getNumExtAxes()));
+          connected_notification_sent_ = true;
+        }
+        else if (mxa_wrapper_.isInitialized())
+        {
+          connected_notification_sent_ = false;
         }
         switch (error_code) {
         case 0:
