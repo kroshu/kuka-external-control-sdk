@@ -73,6 +73,8 @@ public:
     mxa_aut_ext_.ENABLE_T2 = false;
     mxa_aut_ext_.ENABLE_AUT = false;
     mxa_aut_ext_.ENABLE_EXT = true;
+
+    mxa_tech_function_m_.PARAMETERCOUNT = 2;
   }
 
   void getmxAOutput(unsigned char *read_buffer) {
@@ -110,6 +112,7 @@ public:
 
       // Reset execute flag for every new sever start, as after cancel it might not get reset
       mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_tech_function_m_.OnCycle();
     if (mxa_auto_start_.RESETVALID)
     {
       mxa_auto_start_.EXECUTERESET = true;
@@ -163,7 +166,6 @@ public:
     mxa_tech_function_m_.INT_DATA[1] = control_mode;
     mxa_tech_function_m_.INT_DATA[2] = cycle_time;
     mxa_tech_function_m_.BUFFERMODE = 2;
-    mxa_tech_function_m_.PARAMETERCOUNT = 2;
     mxa_tech_function_m_.TECHFUNCTIONID = 2;
     mxa_tech_function_m_.EXECUTECMD = true;
     mxa_tech_function_m_.OnCycle();
