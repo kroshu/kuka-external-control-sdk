@@ -9,17 +9,13 @@
 namespace kuka::external::control::kss::mxa {
 
 struct InitializationData {
-
-  // TODO: fill init data from mxA telegram
+  InitializationData (uint8_t num_ax, uint8_t num_ext_ax): num_axes(num_ax), num_external_axes(num_ext_ax)
+  {}
 
   uint8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 
-  std::string semantic_version;
   uint8_t num_axes;
   uint8_t num_external_axes;
-  std::string model_name;
-  std::string hw_version;
-  std::string sw_version;
 };
 
 struct StatusUpdate {

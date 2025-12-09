@@ -198,6 +198,10 @@ public:
 
   bool isInitialized() { return mxa_init_.DONE; }
 
+  uint8_t getNumAxes() { return mxa_init_.KRC_NUM_ROB_AXIS;}
+
+  uint8_t getNumExtAxes() { return mxa_init_.KRC_NUM_EX_AXIS;}
+
   void moveDisable() {mxa_aut_ext_.MOVE_ENABLE = false;}
 
 private:

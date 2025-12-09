@@ -50,10 +50,11 @@ public:
 
   Status RegisterStatusResponseHandler(
       std::unique_ptr<IStatusUpdateHandler> &&handler);
+  
+  Status CancelRsiProgram();
+
 
 private:
-  Status CancelRSI();
-
   bool stop_flag_;
   bool rsi_running_ = false;
   Configuration config_;

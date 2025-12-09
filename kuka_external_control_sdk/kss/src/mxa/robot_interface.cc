@@ -45,14 +45,14 @@ Status Robot::StopControlling() {
   }
 
   Status rsi_stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
-  CancelRSI();
+  CancelRsiProgram();
 
   return rsi_stop_ret.return_code == ReturnCode::OK
              ? Status{ReturnCode::OK, "RSI stopped"}
              : Status{ReturnCode::WARN, rsi_stop_ret.message};
 }
 
-Status Robot::CancelRSI() {
+Status Robot::CancelRsiProgram() {
   Status cancel_rsi_ret = client_.CancelRSI();
   if (cancel_rsi_ret.return_code == ReturnCode::OK) {
     rsi_running_ = false;
@@ -62,7 +62,7 @@ Status Robot::CancelRSI() {
 
 Status Robot::SendControlSignal() {
   if (client_.ShouldRSIStop()) {
-    CancelRSI();
+    CancelRsiProgram();
     endpoint_.Reset();
     rsi_running_ = false;
     return {ReturnCode::ERROR, "RSI communication stop triggered"};

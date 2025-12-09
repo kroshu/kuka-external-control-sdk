@@ -178,8 +178,7 @@ void Client::StartKeepAliveThread() {
         // Initialize & handle errors
         int error_code = mxa_wrapper_.mxACycle();
         if (mxa_wrapper_.isInitialized() && event_handler_extension_) {
-          // TODO: get initialization data
-          event_handler_extension_->OnConnected(InitializationData());
+          event_handler_extension_->OnConnected(InitializationData(mxa_wrapper_.getNumAxes(), mxa_wrapper_.getNumExtAxes()));
         }
         switch (error_code) {
         case 0:
