@@ -156,6 +156,7 @@ void Client::StartKeepAliveThread() {
     bool connected = false;
     std::string error_msg;
     StatusUpdate status_update;
+    StatusUpdate prev_status_update;
 
     while (!stop_requested_) {
       if (udp_subscriber_->WaitForAndReceive(kUDPTimeoutMs) ==
@@ -262,8 +263,11 @@ void Client::StartKeepAliveThread() {
           status_update.operation_mode_ =
               static_cast<OperationMode>(mxa_wrapper_.getOpMode());
           status_update.robot_stopped_ = mxa_wrapper_.robotStopped();
-          // TODO: convert between robot states
-          status_update_handler_->OnStatusUpdateReceived(status_update);
+          if (status_update != prev_status_update)
+          {
+            status_update_handler_->OnStatusUpdateReceived(status_update);
+            prev_status_update = status_update;
+          } 
         }
 
         // ----------------------------------------------------------------------------

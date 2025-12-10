@@ -182,21 +182,21 @@ public:
     return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
   }
 
-  bool isServerActive() { return mxa_aut_ext_.PRO_ACT; }
+  bool isServerActive() const { return mxa_aut_ext_.PRO_ACT; }
 
-  bool drivesPowered() { return mxa_aut_ext_.PERI_RDY; }
+  bool drivesPowered() const { return mxa_aut_ext_.PERI_RDY; }
 
-  bool emergencyStop() { return !mxa_aut_ext_.ALARM_STOP; }
+  bool emergencyStop() const { return !mxa_aut_ext_.ALARM_STOP; }
 
-  bool guardStop() { return !mxa_aut_ext_.USER_SAFE; }
+  bool guardStop() const { return !mxa_aut_ext_.USER_SAFE; }
 
-  bool inMotion() { return mxa_aut_ext_.PRO_MOVE; }
+  bool inMotion() const { return mxa_aut_ext_.PRO_MOVE; }
 
-  bool motionPossible() { return mxa_aut_ext_.PRO_ACT; }
+  bool motionPossible() const { return mxa_aut_ext_.PRO_ACT; }
 
-  bool robotStopped() { return mxa_aut_ext_.ROB_STOPPED; }
+  bool robotStopped() const { return mxa_aut_ext_.ROB_STOPPED; }
 
-  int getOpMode() {
+  int getOpMode() const {
     if (mxa_aut_ext_.T1) {
       return 1;
     } else if (mxa_aut_ext_.T2) {
@@ -210,11 +210,11 @@ public:
     }
   }
 
-  bool isInitialized() { return mxa_init_.DONE; }
+  bool isInitialized() const { return mxa_init_.DONE; }
 
-  uint8_t getNumAxes() { return mxa_init_.KRC_NUM_ROB_AXIS;}
+  uint8_t getNumAxes() const { return mxa_init_.KRC_NUM_ROB_AXIS;}
 
-  uint8_t getNumExtAxes() { return mxa_init_.KRC_NUM_EX_AXIS;}
+  uint8_t getNumExtAxes() const { return mxa_init_.KRC_NUM_EX_AXIS;}
 
   void moveDisable() {mxa_aut_ext_.MOVE_ENABLE = false;}
 

@@ -14,8 +14,8 @@ struct InitializationData {
 
   uint8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 
-  uint8_t num_axes;
-  uint8_t num_external_axes;
+  uint8_t num_axes = 0;
+  uint8_t num_external_axes = 0;
 };
 
 struct StatusUpdate {
@@ -29,6 +29,17 @@ struct StatusUpdate {
     motion_possible_ = false;
     operation_mode_ = OperationMode::UNSPECIFIED;
     robot_stopped_ = false;
+  }
+
+  bool operator== (const StatusUpdate& other) const noexcept
+  {
+    return std::tie(control_mode_, cycle_time_, drives_powered_, emergency_stop_, guard_stop_, in_motion_, motion_possible_, operation_mode_, robot_stopped_) == 
+      std::tie(other.control_mode_, other.cycle_time_, other.drives_powered_, other.emergency_stop_, other.guard_stop_, other.in_motion_, other.motion_possible_, other.operation_mode_, robot_stopped_);
+  }
+
+  bool operator!=(const StatusUpdate& other) const noexcept
+  {
+    return !(*this == other);
   }
 
   ControlMode control_mode_;
