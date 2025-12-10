@@ -6,7 +6,7 @@ Type=Block
 Type=Insert
 Before=;FOLD USER TECHFUNCM
 What=mxa_techfunc_m.txt
-Start=case 2 ; RSI joint pos
+Start=case 2 ; RSI streaming
 End=mxA_MsgMan_SetCmdStateM(QIdx,#Executed)
 
 [InsertCancelVar]
@@ -20,7 +20,7 @@ End=DECL MODUS_T mode
 Type=Insert
 Before=;FOLD USER TECHFUNCS
 What=mxa_techfunc_s.txt
-Start=case 3  ;Cancel
+Start=case 3 ; Cancel
 End=CWRITE($CMD, state, mode, "CANCEL 1")
 
 [InsertCheckPar]

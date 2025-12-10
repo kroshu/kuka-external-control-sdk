@@ -1,4 +1,16 @@
-            case 2 ; RSI joint pos
-               rsi_joint_pos_4ms()
+            case 2 ; RSI streaming
+               switch gMxA_CmdQ_Int1[QIdx]
+                  case 1 ; Joint position control
+                     switch gMxA_CmdQ_Int2[QIdx]
+                        case 1 ; RSI 4 ms
+                           rsi_joint_pos_4ms()
+                        case 2 ; RSI 12 ms
+                           rsi_joint_pos_12ms()
+                        default
+                           mxA_Error(gMxAErr_InvTechFunPar)
+                     endswitch
+                  default
+                     mxA_Error(gMxAErr_InvTechFunPar)
+               endswitch
                ;Return message function executed
                mxA_MsgMan_SetCmdStateM(QIdx,#Executed)
