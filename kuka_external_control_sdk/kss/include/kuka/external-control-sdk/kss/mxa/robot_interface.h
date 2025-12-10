@@ -50,9 +50,8 @@ public:
 
   Status RegisterStatusResponseHandler(
       std::unique_ptr<IStatusUpdateHandler> &&handler);
-  
-  Status CancelRsiProgram();
 
+  Status CancelRsiProgram();
 
 private:
   bool stop_flag_;

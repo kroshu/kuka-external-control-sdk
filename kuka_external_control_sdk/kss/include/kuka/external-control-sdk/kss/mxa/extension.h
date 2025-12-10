@@ -9,8 +9,8 @@
 namespace kuka::external::control::kss::mxa {
 
 struct InitializationData {
-  InitializationData (uint8_t num_ax, uint8_t num_ext_ax): num_axes(num_ax), num_external_axes(num_ext_ax)
-  {}
+  InitializationData(uint8_t num_ax, uint8_t num_ext_ax)
+      : num_axes(num_ax), num_external_axes(num_ext_ax) {}
 
   uint8_t GetTotalAxisCount() const { return num_axes + num_external_axes; }
 
@@ -31,14 +31,17 @@ struct StatusUpdate {
     robot_stopped_ = false;
   }
 
-  bool operator== (const StatusUpdate& other) const noexcept
-  {
-    return std::tie(control_mode_, cycle_time_, drives_powered_, emergency_stop_, guard_stop_, in_motion_, motion_possible_, operation_mode_, robot_stopped_) == 
-      std::tie(other.control_mode_, other.cycle_time_, other.drives_powered_, other.emergency_stop_, other.guard_stop_, other.in_motion_, other.motion_possible_, other.operation_mode_, robot_stopped_);
+  bool operator==(const StatusUpdate &other) const noexcept {
+    return std::tie(control_mode_, cycle_time_, drives_powered_,
+                    emergency_stop_, guard_stop_, in_motion_, motion_possible_,
+                    operation_mode_, robot_stopped_) ==
+           std::tie(other.control_mode_, other.cycle_time_,
+                    other.drives_powered_, other.emergency_stop_,
+                    other.guard_stop_, other.in_motion_, other.motion_possible_,
+                    other.operation_mode_, robot_stopped_);
   }
 
-  bool operator!=(const StatusUpdate& other) const noexcept
-  {
+  bool operator!=(const StatusUpdate &other) const noexcept {
     return !(*this == other);
   }
 

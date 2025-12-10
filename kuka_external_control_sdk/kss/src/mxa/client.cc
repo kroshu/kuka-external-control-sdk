@@ -22,7 +22,7 @@ using kuka::external::control::ControlMode;
 
 namespace kuka::external::control::kss::mxa {
 
-Client::Client(const std::string &controller_ip){
+Client::Client(const std::string &controller_ip) {
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
       os::core::udp::communication::SocketAddress(controller_ip,
                                                   kMXAControllerPort),
@@ -98,8 +98,8 @@ Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time) {
 }
 
 Status Client::CancelRSI() {
-  // Cancel only works, if program is not active, stop program by MOVE_DISABLE = false
-  // Add short sleep to make sure RSI program is stopped gracefully
+  // Cancel only works, if program is not active, stop program by MOVE_DISABLE =
+  // false Add short sleep to make sure RSI program is stopped gracefully
   // TODO(Svastits): consider using state variable instead of hard-coded sleep
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
   mxa_wrapper_.moveDisable();
@@ -179,12 +179,12 @@ void Client::StartKeepAliveThread() {
 
         // Initialize & handle errors
         int error_code = mxa_wrapper_.mxACycle();
-        if (mxa_wrapper_.isInitialized() && event_handler_extension_ && !connected_notification_sent_) {
-          event_handler_extension_->OnConnected(InitializationData(mxa_wrapper_.getNumAxes(), mxa_wrapper_.getNumExtAxes()));
+        if (mxa_wrapper_.isInitialized() && event_handler_extension_ &&
+            !connected_notification_sent_) {
+          event_handler_extension_->OnConnected(InitializationData(
+              mxa_wrapper_.getNumAxes(), mxa_wrapper_.getNumExtAxes()));
           connected_notification_sent_ = true;
-        }
-        else if (!mxa_wrapper_.isInitialized())
-        {
+        } else if (!mxa_wrapper_.isInitialized()) {
           connected_notification_sent_ = false;
         }
         switch (error_code) {
@@ -240,7 +240,7 @@ void Client::StartKeepAliveThread() {
             event_handler_->OnSampling();
           }
           if (process_rsi_res.block_state == BLOCKSTATE::DONE) {
-              start_rsi_ = false;
+            start_rsi_ = false;
           }
         }
         // ----------------------------------------------------------------------------
@@ -263,11 +263,10 @@ void Client::StartKeepAliveThread() {
           status_update.operation_mode_ =
               static_cast<OperationMode>(mxa_wrapper_.getOpMode());
           status_update.robot_stopped_ = mxa_wrapper_.robotStopped();
-          if (status_update != prev_status_update)
-          {
+          if (status_update != prev_status_update) {
             status_update_handler_->OnStatusUpdateReceived(status_update);
             prev_status_update = status_update;
-          } 
+          }
         }
 
         // ----------------------------------------------------------------------------

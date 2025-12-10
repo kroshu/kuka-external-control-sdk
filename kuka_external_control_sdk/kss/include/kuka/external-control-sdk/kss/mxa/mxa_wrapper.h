@@ -35,8 +35,7 @@ struct BLOCKRESULT {
 class mxAWrapper {
 public:
   mxAWrapper() {
-    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++)
-    {
+    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++) {
       int_array_[i] = 0;
       real_array_[i] = 0.0;
       bool_array_[i] = false;
@@ -90,8 +89,7 @@ public:
   int mxACycle() {
     mxa_init_.OnCycle();
 
-    if (!mxa_aut_ext_.PERI_RDY)
-    {
+    if (!mxa_aut_ext_.PERI_RDY) {
       mxa_aut_ext_.DRIVES_OFF = true;
     }
     mxa_aut_ext_.OnCycle();
@@ -108,13 +106,13 @@ public:
 
   // Start robot interpreter of mxA
   BLOCKRESULT startMxAServer() {
-      mxa_aut_ext_.MOVE_ENABLE = true;
+    mxa_aut_ext_.MOVE_ENABLE = true;
 
-      // Reset execute flag for every new sever start, as after cancel it might not get reset
-      mxa_tech_function_m_.EXECUTECMD = false;
-      mxa_tech_function_m_.OnCycle();
-    if (mxa_auto_start_.RESETVALID)
-    {
+    // Reset execute flag for every new sever start, as after cancel it might
+    // not get reset
+    mxa_tech_function_m_.EXECUTECMD = false;
+    mxa_tech_function_m_.OnCycle();
+    if (mxa_auto_start_.RESETVALID) {
       mxa_auto_start_.EXECUTERESET = true;
     }
     mxa_auto_start_.OnCycle();
@@ -126,7 +124,8 @@ public:
     } else if (mxa_auto_start_.DONE) {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
-      // Reset message reset flag after successful server start to avoid getting it stuck
+      // Reset message reset flag after successful server start to avoid getting
+      // it stuck
       krc_error_.MESSAGERESET = false;
       mxa_aut_ext_.CONF_MESS = false;
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
@@ -212,20 +211,18 @@ public:
 
   bool isInitialized() const { return mxa_init_.DONE; }
 
-  uint8_t getNumAxes() const { return mxa_init_.KRC_NUM_ROB_AXIS;}
+  uint8_t getNumAxes() const { return mxa_init_.KRC_NUM_ROB_AXIS; }
 
-  uint8_t getNumExtAxes() const { return mxa_init_.KRC_NUM_EX_AXIS;}
+  uint8_t getNumExtAxes() const { return mxa_init_.KRC_NUM_EX_AXIS; }
 
-  void moveDisable() {mxa_aut_ext_.MOVE_ENABLE = false;}
+  void moveDisable() { mxa_aut_ext_.MOVE_ENABLE = false; }
 
-  void drivesOff() 
-  {
+  void drivesOff() {
     mxa_aut_ext_.DRIVES_ON = false;
     mxa_aut_ext_.DRIVES_OFF = false;
   }
 
-  void drivesOn() 
-  {
+  void drivesOn() {
     mxa_aut_ext_.DRIVES_ON = true;
     mxa_aut_ext_.DRIVES_OFF = true;
   }

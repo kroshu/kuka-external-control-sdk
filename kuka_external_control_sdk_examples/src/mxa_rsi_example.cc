@@ -35,9 +35,11 @@ int main() {
 
   // Register event handler extension
   auto event_handler_extension = std::make_unique<EventHandlerExtension>();
-  ret = rob_if.RegisterEventHandlerExtension(std::move(event_handler_extension));
+  ret =
+      rob_if.RegisterEventHandlerExtension(std::move(event_handler_extension));
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to register event handler extension: " << ret.message << std::endl;
+    std::cerr << "Failed to register event handler extension: " << ret.message
+              << std::endl;
     return -1;
   }
 
@@ -45,7 +47,8 @@ int main() {
   auto status_update_handler = std::make_unique<StatusUpdateHandler>();
   ret = rob_if.RegisterStatusResponseHandler(std::move(status_update_handler));
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to register status update handler: " << ret.message << std::endl;
+    std::cerr << "Failed to register status update handler: " << ret.message
+              << std::endl;
     return -1;
   }
 
