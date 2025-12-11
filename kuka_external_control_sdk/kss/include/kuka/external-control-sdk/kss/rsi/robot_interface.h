@@ -53,6 +53,11 @@ class Robot : public IRobot {
   virtual Status SwitchControlMode(ControlMode control_mode) override;
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
+  // Extension methods not supported by plain RSI
+  virtual Status CancelRsiProgram() {return {ReturnCode::UNSUPPORTED, error_text};};
+  virtual Status TurnOnDrives() {return {ReturnCode::UNSUPPORTED, error_text};};
+  virtual Status TurnOffDrives() {return {ReturnCode::UNSUPPORTED, error_text};};
+  virtual Status SetCycleTime(CycleTime cycle_time) {return {ReturnCode::UNSUPPORTED, error_text};};
  protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;

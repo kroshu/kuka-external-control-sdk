@@ -39,19 +39,19 @@ public:
   Status
   RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) override;
 
-  Status TurnOnDrives();
+  Status TurnOnDrives() override;
 
-  Status TurnOffDrives();
+  Status TurnOffDrives() override;
 
-  Status SetCycleTime(CycleTime cycle_time);
+  Status SetCycleTime(CycleTime cycle_time) override;
+
+  Status CancelRsiProgram() override;
 
   Status RegisterEventHandlerExtension(
       std::unique_ptr<IEventHandlerExtension> &&extension);
 
   Status RegisterStatusResponseHandler(
       std::unique_ptr<IStatusUpdateHandler> &&handler);
-
-  Status CancelRsiProgram();
 
 private:
   bool stop_flag_;
