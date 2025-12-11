@@ -23,7 +23,8 @@
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/common/status.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/kss/eki/extension.h"
+#include "kuka/external-control-sdk/kss/eki/initialization_data.h"
+#include "kuka/external-control-sdk/kss/status_update.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/tcp_client.h"
 
 namespace kuka::external::control::kss::eki {

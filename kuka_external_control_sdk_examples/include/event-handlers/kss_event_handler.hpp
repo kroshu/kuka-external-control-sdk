@@ -3,12 +3,13 @@
 
 #include <iostream>
 
-#include "kuka/external-control-sdk/kss/eki/extension.h"
+#include "kuka/external-control-sdk/kss/eki/initialization_data.h"
+#include "kuka/external-control-sdk/kss/status_update.h"
 
 using kuka::external::control::kss::eki::IEventHandlerExtension;
 using kuka::external::control::kss::eki::InitializationData;
-using kuka::external::control::kss::eki::IStatusUpdateHandler;
-using kuka::external::control::kss::eki::StatusUpdate;
+using kuka::external::control::kss::IStatusUpdateHandler;
+using kuka::external::control::kss::StatusUpdate;
 
 namespace external_control_sdk_example {
 class EventHandlerExtension : public IEventHandlerExtension {
