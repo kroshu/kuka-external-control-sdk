@@ -67,4 +67,4 @@ public:
 };
 
 } // namespace kuka::external::control::kss::mxa
-#endif // KUKA_EXTERNAL_CONTROL__KSS_EKI_EXTENSION_H_
+#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_EXTENSION_H_
