@@ -76,14 +76,18 @@ public:
     mxa_tech_function_m_.PARAMETERCOUNT = 2;
   }
 
-  void getmxAOutput(unsigned char *read_buffer) {
+void getmxAOutput(unsigned char *read_buffer) {
+    if (read_buffer == nullptr) return; // Or handle error
     krc_read_.KRC4_INPUT = read_buffer;
+    // Ensure the KRC_READAXISGROUP instance knows the buffer size
     krc_read_.OnCycle();
   }
 
   void setmxAInput(unsigned char *write_buffer) {
+    if (write_buffer == nullptr) return; // Or handle error
     krc_write_.KRC4_OUTPUT = write_buffer;
     krc_write_.OnCycle();
+  }
   }
 
   int mxACycle() {
