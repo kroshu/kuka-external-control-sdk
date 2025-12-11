@@ -53,7 +53,7 @@ public:
   // Turn on drives
   void TurnOnDrives();
 
-  // Turn off driver
+  // Turn off drives
   void TurnOffDrives();
 
   // Registers an event handler
