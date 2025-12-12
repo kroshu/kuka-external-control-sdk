@@ -22,14 +22,14 @@ using kuka::external::control::ControlMode;
 
 namespace kuka::external::control::kss::mxa {
 
-Client::Client(const std::string &controller_ip) {
+Client::Client(const std::string &controller_ip, int client_port) {
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
       os::core::udp::communication::SocketAddress(controller_ip,
                                                   kMXAControllerPort),
       os::core::udp::communication::SocketAddress(), false);
 
   udp_subscriber_ = std::make_unique<os::core::udp::communication::Subscriber>(
-      os::core::udp::communication::SocketAddress(kMXAClientPort),
+      os::core::udp::communication::SocketAddress(client_port),
       os::core::udp::communication::SocketAddress(), false);
 
   event_handler_ = std::make_unique<EventHandler>();

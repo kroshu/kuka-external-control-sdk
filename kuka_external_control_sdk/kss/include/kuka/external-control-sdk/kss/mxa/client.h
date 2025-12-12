@@ -34,7 +34,7 @@ namespace kuka::external::control::kss::mxa {
 // Class for communicating with the KRC via MXA
 class Client {
 public:
-  Client(const std::string &controller_ip);
+  Client(const std::string &controller_ip, int client_port);
 
   ~Client();
 
@@ -73,7 +73,6 @@ private:
   std::unique_ptr<os::core::udp::communication::Publisher> udp_publisher_;
   std::unique_ptr<os::core::udp::communication::Subscriber> udp_subscriber_;
   static constexpr int kMXAControllerPort = 1336;
-  static constexpr int kMXAClientPort = 1337;
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
 

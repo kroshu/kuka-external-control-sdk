@@ -18,7 +18,7 @@ using kuka::external::control::kss::mxa::Robot;
 int main() {
   // Specify the IP address of the KLI interface and create a robot interface
   // instance
-  Configuration config{.kli_ip_address = "192.168.38.8"};
+  Configuration config{.kli_ip_address = "192.168.38.8", .client_port = 1337};
   Robot rob_if{config};
 
   // Holds status response from robot interface operations
