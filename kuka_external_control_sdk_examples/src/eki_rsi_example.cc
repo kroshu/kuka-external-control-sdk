@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "event-handlers/control_event_handler.hpp"
-#include "event-handlers/kss_event_handler.hpp"
+#include "event-handlers/eki_event_handler.hpp"
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
 
 using external_control_sdk_example::ControlEventHandler;
