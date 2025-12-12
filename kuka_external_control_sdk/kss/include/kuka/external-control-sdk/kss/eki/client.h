@@ -151,7 +151,7 @@ class Client : public os::core::udp::communication::TCPClient {
 
   static constexpr char kSemanticVersion[] = "1.0.0";
 
-  InitializationData init_data_;
+  EKIInitializationData init_data_;
   EventResponse event_response_;
   StatusUpdate status_update_;
 

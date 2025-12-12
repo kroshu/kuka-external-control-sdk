@@ -23,7 +23,7 @@
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
-#include "kuka/external-control-sdk/kss/mxa/initialization_data.h"
+#include "kuka/external-control-sdk/kss/initialization_data.h"
 #include "kuka/external-control-sdk/kss/status_update.h"
 #include "kuka/external-control-sdk/kss/mxa/mxa_wrapper.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"

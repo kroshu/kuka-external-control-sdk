@@ -3,11 +3,11 @@
 
 #include <iostream>
 
-#include "kuka/external-control-sdk/kss/mxa/initialization_data.h"
+#include "kuka/external-control-sdk/kss/initialization_data.h"
 #include "kuka/external-control-sdk/kss/status_update.h"
 
-using kuka::external::control::kss::mxa::IEventHandlerExtension;
-using kuka::external::control::kss::mxa::InitializationData;
+using kuka::external::control::kss::IEventHandlerExtension;
+using kuka::external::control::kss::InitializationData;
 using kuka::external::control::kss::IStatusUpdateHandler;
 using kuka::external::control::kss::StatusUpdate;
 

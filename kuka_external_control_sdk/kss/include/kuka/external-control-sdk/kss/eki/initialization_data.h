@@ -6,11 +6,13 @@
 #include <tinyxml2.h>
 
 #include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/kss/initialization_data.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
 namespace kuka::external::control::kss::eki {
 
-struct InitializationData {
+struct EKIInitializationData: public kuka::external::control::kss::InitializationData
+{
   bool Parse(const char* data_to_parse) {
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.Parse(data_to_parse);
@@ -42,21 +44,10 @@ struct InitializationData {
     return true;
   }
 
-  uint8_t GetTotalAxisCount() const {
-    return num_axes + num_external_axes;
-  }
-
   std::string semantic_version;
-  uint8_t num_axes;
-  uint8_t num_external_axes;
   std::string model_name;
   std::string hw_version;
   std::string sw_version;
-};
-
-class IEventHandlerExtension {
-public:
-  virtual void OnConnected(const InitializationData& init_data) = 0;
 };
 
 }  // namespace kuka::external::control::kss::eki
