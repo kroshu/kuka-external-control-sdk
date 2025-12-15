@@ -255,6 +255,7 @@ void Client::StartKeepAliveThread() {
         // Before writing the output buffer, send status update
         if (status_update_handler_ != nullptr) {
           status_update.control_mode_ = control_mode_;
+          status_update.cycle_time_ = cycle_time_;
           status_update.drives_powered_ = mxa_wrapper_.drivesPowered();
           status_update.emergency_stop_ = mxa_wrapper_.emergencyStop();
           status_update.guard_stop_ = mxa_wrapper_.guardStop();
