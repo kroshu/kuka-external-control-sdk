@@ -18,7 +18,8 @@ namespace kuka::external::control::kss::mxa {
 
 Robot::Robot(Configuration config)
     : kuka::external::control::kss::rsi::Robot(config),
-      client_(config.kli_ip_address, config.client_port), cycle_time_(CycleTime::UNSPECIFIED) {}
+      client_(config.kli_ip_address, config.mxa_client_port),
+      cycle_time_(CycleTime::UNSPECIFIED) {}
 
 Status Robot::Setup() {
   Status setup_ret = client_.Setup();
