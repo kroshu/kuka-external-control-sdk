@@ -91,18 +91,18 @@ Status Client::SendMessageAndWait() {
 }
 
 Status Client::SendCommand(const CommandType cmd_type) {
-  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, static_cast<int>(cmd_type));
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, static_cast<int>(cmd_type), 0, 0);
   return SendMessageAndWait();
 }
 
 Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode) {
-  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, static_cast<int>(control_mode));
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, 4, 0, static_cast<int>(control_mode));
   return SendMessageAndWait();
 }
 
 Status Client::SendCycleTimeChange(CycleTime cycle_time) {
   int cycle_time_int = static_cast<int>(cycle_time);
-  sprintf(reinterpret_cast<char*>(send_buff_), change_cycle_time_req_format_, cycle_time_int);
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, 8, cycle_time_int, 0);
   return SendMessageAndWait();
 }
 
