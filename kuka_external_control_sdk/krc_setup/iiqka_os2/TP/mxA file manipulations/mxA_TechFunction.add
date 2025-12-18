@@ -1,0 +1,24 @@
+[Version]
+Version=1.0.0
+Type=Block
+
+[InsertTechFuncVar]
+Type=Insert
+Before=;FOLD USER VARSTECHFUNC
+What=mxa_techfunc_var.txt
+Start=DECL STATE_T state
+End=DECL MODUS_T mode
+
+[InsertTechFunc]
+Type=Insert
+Before=;FOLD USER TECHFUNC
+What=mxa_techfunc.txt
+Start=case 2 ; RSI joint pos
+End=CWRITE($CMD, state, mode, "CANCEL 1")
+
+[InsertCheckPar]
+Type=Insert
+Before=;FOLD USER TECHFUNCCHECKPAR
+What=mxa_techfunc_checkpar.txt
+Start=case 2
+End=bValuesOK = TRUE

@@ -1,0 +1,194 @@
+&ACCESS R
+DEF program_handler()
+    ; =============================================
+    ; Copyright 2025 KUKA Hungaria Kft.
+    ;
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+    ; you may not use this file except in compliance with the License.
+    ; You may obtain a copy of the License at
+    ;
+    ;     http://www.apache.org/licenses/LICENSE-2.0
+    ;
+    ; Unless required by applicable law or agreed to in writing, software
+    ; distributed under the License is distributed on an "AS IS" BASIS,
+    ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ; See the License for the specific language governing permissions and
+    ; limitations under the License.
+    ; =============================================
+END
+
+GLOBAL DEFFCT BOOL ROS_StartProgram()
+    CHAR program_name[64]
+    CHAR s[256]
+    INT k
+
+    program_name[] = ROS_GetProgramName(selected_control_mode, selected_cycle_time)
+
+    ; Check to see if a program is already selected - should not happen
+    IF $PRO_STATE1 <> #P_FREE THEN
+        ; If a program is already selected, log error and return
+        ROS_Error1String("Program %1 is already selected", $PRO_NAME1[])
+        RETURN FALSE
+    ENDIF
+
+    ; Select the new program
+    s[] = "RUN/"
+    k = strAdd(s[], program_name[])
+
+    CWRITE($CMD, statement_state, command_mode, s[])
+    IF NOT WaitForStateTransition(#P_FREE, 1000) THEN
+        ROS_Error1String("Timeout selecting program %1", program_name[])
+        RETURN FALSE
+    ENDIF
+
+    RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT BOOL ROS_CancelProgram()
+    ROS_Debug("Cancelling program...")
+
+    ; Check to see if no program is selected
+    IF $PRO_STATE1 == #P_FREE THEN
+        RETURN TRUE
+    ENDIF
+
+    IF $PRO_STATE1 == #P_ACTIVE THEN
+        ROS_Debug("Sending stop command")
+        CWRITE($CMD, statement_state, command_mode, "STOP 1")
+        IF NOT WaitForStateTransition(#P_ACTIVE, 1000) THEN
+            ROS_Error("Timeout stopping program")
+            RETURN FALSE
+        ENDIF
+    ENDIF
+
+    ; Cancel the program
+    ROS_Debug("Sending cancel command")
+    CWRITE($CMD, statement_state, command_mode, "CANCEL 1")
+    IF NOT WaitForState(#P_FREE, 1000) THEN
+        ROS_Error("Timeout cancelling program")
+        RETURN FALSE
+    ENDIF
+
+    RETURN TRUE
+ENDFCT
+
+GLOBAL DEFFCT BOOL ROS_ResetProgram()
+    ; If program is already reset, just return
+    IF $PRO_STATE1 == #P_RESET THEN
+        RETURN TRUE
+    ENDIF
+
+    ; Check for no program selected
+    IF $PRO_STATE1 == #P_FREE THEN
+        ROS_Info("No program selected")
+        RETURN FALSE
+    ENDIF
+
+    ; If the program is running, stop it
+    IF $PRO_STATE1 == #P_ACTIVE THEN
+        CWRITE($CMD,statement_state,command_mode, "STOP 1")
+        IF NOT WaitForStateTransition(#P_ACTIVE, 1000) THEN
+            ROS_Error("Timeout stopping program")
+            RETURN FALSE
+        ENDIF
+    ENDIF
+
+    ; Reset the program
+    CWRITE($CMD,statement_state,command_mode, "RESET 1")
+    IF NOT WaitForState(#P_RESET, 1000) THEN
+        ROS_Error("Timeout resetting program")
+        RETURN FALSE
+    ENDIF
+
+    RETURN TRUE
+ENDFCT
+
+DEFFCT BOOL WaitForState(ProState: IN, Timeout: IN)
+    DECL PRO_STATE ProState
+    INT Timeout
+    INT StartTime, TriggerTime
+
+    StartTime = $ROB_TIMER
+
+    ; Set the trigger time based on the start time.  Account for integer rollover
+    IF (INTEGER_MAX - Timeout) < StartTime THEN
+        TriggerTime = Timeout - (INTEGER_MAX-StartTime)
+    ELSE
+        TriggerTime = StartTime + Timeout
+    ENDIF
+
+    IF TriggerTime >= StartTime THEN
+        ; No worries about timer rollover
+        REPEAT
+            WAIT SEC 0.12
+        UNTIL ($PRO_STATE1 == ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime)
+
+    ELSE
+        ; Timer rollover must be accounted for
+        REPEAT
+            WAIT SEC 0.12
+        UNTIL ($PRO_STATE1 == ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime))
+    ENDIF
+
+    RETURN $PRO_STATE1 == ProState
+ENDFCT
+
+DEFFCT BOOL WaitForStateTransition(ProState: IN, Timeout: IN)
+    DECL PRO_STATE ProState
+    INT Timeout
+    INT StartTime, TriggerTime
+
+    StartTime = $ROB_TIMER
+
+    ; Set the trigger time based on the start time.  Account for integer rollover
+    IF ((INTEGER_MAX-Timeout) < StartTime) THEN
+        TriggerTime = Timeout - (INTEGER_MAX-StartTime)
+    ELSE
+        TriggerTime = StartTime + Timeout
+    ENDIF
+
+    IF (TriggerTime >= StartTime) THEN
+        ; No worries about timer rollover
+        REPEAT
+            WAIT SEC 0.12
+        UNTIL (($PRO_STATE1 <> ProState) OR ($ROB_TIMER > TriggerTime) OR ($ROB_TIMER < StartTime))
+    ELSE
+        ; Timer rollover must be accounted for
+        REPEAT
+            WAIT SEC 0.12
+        UNTIL (($PRO_STATE1 <> ProState) OR (($ROB_TIMER > TriggerTime) AND ($ROB_TIMER < StartTime)))
+    ENDIF
+
+    IF ($PRO_STATE1 <> ProState) THEN
+        RETURN TRUE
+    ENDIF
+
+    RETURN FALSE
+ENDFCT
+
+GLOBAL DEF ROS_SelectControlMode(mode: IN)
+    DECL ControlMode mode
+
+    ROS_Info1String("Control mode set to %1", ROS_ControlModeToString(mode))
+    selected_control_mode = mode
+END
+
+; Returns the selected control mode as a string
+GLOBAL DEFFCT CHAR [32] ROS_GetSelCtrlModeStr()
+    RETURN ROS_ControlModeToString(selected_control_mode)
+ENDFCT
+
+GLOBAL DEFFCT ControlMode ROS_GetSelControlMode()
+    RETURN selected_control_mode
+ENDFCT
+
+
+
+GLOBAL DEFFCT ROS_CycleTime ROS_GetSelCycTime()
+    RETURN selected_cycle_time
+ENDFCT
+
+GLOBAL DEF ROS_ResetProgramHandler()
+    selected_control_mode = #INACTIVE
+    selected_cycle_time = #RSI_4MS
+END

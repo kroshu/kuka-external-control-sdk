@@ -1,0 +1,5 @@
+      case 2 ; RSI joint pos
+         rsi_joint_pos()
+      case 3 ; Cancel
+         mode = #SYNC
+         CWRITE($CMD, state, mode, "CANCEL 1")
