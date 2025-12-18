@@ -46,13 +46,13 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
   // EKI response / new EKI client-server with external the service
   virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
 
-  Status CancelRsiProgram();
+  Status CancelRsiProgram() override;
 
-  Status TurnOnDrives();
+  Status TurnOnDrives() override;
 
-  Status TurnOffDrives();
+  Status TurnOffDrives() override;
 
-  Status SetCycleTime(CycleTime cycle_time);
+  Status SetCycleTime(CycleTime cycle_time) override;
 
   Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
 

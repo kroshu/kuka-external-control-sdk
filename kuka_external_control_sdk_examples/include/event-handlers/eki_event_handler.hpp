@@ -3,23 +3,28 @@
 
 #include <iostream>
 
-#include "kuka/external-control-sdk/kss/eki/extension.h"
+#include "kuka/external-control-sdk/kss/eki/initialization_data.h"
+#include "kuka/external-control-sdk/kss/status_update.h"
 
-using kuka::external::control::kss::eki::IEventHandlerExtension;
-using kuka::external::control::kss::eki::InitializationData;
-using kuka::external::control::kss::eki::IStatusUpdateHandler;
-using kuka::external::control::kss::eki::StatusUpdate;
+using kuka::external::control::kss::IEventHandlerExtension;
+using kuka::external::control::kss::InitializationData;
+using kuka::external::control::kss::eki::EKIInitializationData;
+using kuka::external::control::kss::IStatusUpdateHandler;
+using kuka::external::control::kss::StatusUpdate;
 
 namespace external_control_sdk_example {
 class EventHandlerExtension : public IEventHandlerExtension {
  public:
   void OnConnected(const InitializationData& init_data) override {
     std::cout << "Established connection to KRC:" << std::endl;
-    std::cout << "  Semantic version: " << init_data.semantic_version << std::endl;
     std::cout << "  Number of axes: " << init_data.num_axes << std::endl;
     std::cout << "  Number of external axes: " << init_data.num_external_axes << std::endl;
-    std::cout << "  Model name: " << init_data.model_name << std::endl;
-    std::cout << "  Hardware version: " << init_data.hw_version << std::endl;
+    if (const EKIInitializationData* eki_init_data = dynamic_cast<const EKIInitializationData*>(&init_data))
+    {
+      std::cout << "  Semantic version: " << eki_init_data->semantic_version << std::endl;
+      std::cout << "  Model name: " << eki_init_data->model_name << std::endl;
+      std::cout << "  Hardware version: " << eki_init_data->hw_version << std::endl;
+    }
   }
 };
 

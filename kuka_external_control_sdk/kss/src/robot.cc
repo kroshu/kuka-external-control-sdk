@@ -14,6 +14,7 @@
 
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
+#include "kuka/external-control-sdk/kss/mxa/robot_interface.h"
 #include "kuka/external-control-sdk/kss/robot.h"
 
 namespace kuka::external::control::kss {
@@ -26,8 +27,11 @@ Robot::Robot(Configuration config) {
   case Configuration::InstalledInterface::RSI_ONLY:
     installed_interface_ = std::make_unique<kuka::external::control::kss::rsi::Robot>(config);
     break;
+  case Configuration::InstalledInterface::MXA_RSI:
+    installed_interface_ = std::make_unique<kuka::external::control::kss::mxa::Robot>(config);
+    break;
   default:
-    throw std::runtime_error("Configuration contains invalid interface, please choose between EKI or plain RSI.");
+    throw std::runtime_error("Configuration contains invalid interface, please choose between EKI, MXA or plain RSI.");
   };
 }
 
