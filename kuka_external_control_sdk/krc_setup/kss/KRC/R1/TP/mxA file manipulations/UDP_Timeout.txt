@@ -1,0 +1,1 @@
+DECL GLOBAL INT gmxA_MAX_UDP_Timeout=200 ;[ms]
