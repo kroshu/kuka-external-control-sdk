@@ -17,7 +17,7 @@ DEFDAT mappings PUBLIC
     ; ENDFOLD
 
     ; FOLD Constants for mapping commands
-    DECL CONST CommandType COMMAND_TYPES[9]
+    DECL CONST CommandType COMMAND_TYPES[8]
     COMMAND_TYPES[1] = #CMD_CON
     COMMAND_TYPES[2] = #CMD_START
     COMMAND_TYPES[3] = #CMD_RESET
@@ -26,7 +26,7 @@ DEFDAT mappings PUBLIC
     COMMAND_TYPES[6] = #CMD_NONE
     COMMAND_TYPES[7] = #CMD_DRIVES_ON
     COMMAND_TYPES[8] = #CMD_DRIVES_OFF
-    COMMAND_TYPES[9] = #CMD_CHANGE_CYCLE_TIME
+
     ; ENDFOLD
 
     ; FOLD Constants for mapping control modes to strings/integers and vice versa
@@ -37,10 +37,9 @@ DEFDAT mappings PUBLIC
     ; ENDFOLD
 
     ; FOLD Constants for mapping strings to ROS_CycleTime values and vice versa
-    DECL CONST CycleTimeTuple CYCLE_TIME_TUPLES[3]
+    DECL CONST CycleTimeTuple CYCLE_TIME_TUPLES[2]
     CYCLE_TIME_TUPLES[1] = { cycle_time #NONE_CYCLE_TIME, cycle_time_string[] "UNSPECIFIED", cycle_time_int 0 }
     CYCLE_TIME_TUPLES[2] = { cycle_time #RSI_4MS, cycle_time_string[] "RSI_4MS", cycle_time_int 1 }
-    CYCLE_TIME_TUPLES[3] = { cycle_time #RSI_12MS, cycle_time_string[] "RSI_12MS", cycle_time_int 2 }
     ; ENDFOLD
 
     ; FOLD Constants for mapping driver states to strings and vice versa
@@ -70,7 +69,6 @@ DEFDAT mappings PUBLIC
     ; FOLD Constants for mapping program configurations to programs to run
     CONST INT PROGRAM_CONFIG_COUNT = 2
     DECL CONST ProgramConfiguration PROGRAM_CONFIGS[2]
-    PROGRAM_CONFIGS[1] = { control_mode #JOINT_POSITION, cycle_time #RSI_4MS, program[] "R1/rsi_joint_pos_4ms()" }
-    PROGRAM_CONFIGS[2] = { control_mode #JOINT_POSITION, cycle_time #RSI_12MS, program[] "R1/rsi_joint_pos_12ms()" }
+    PROGRAM_CONFIGS[1] = { control_mode #JOINT_POSITION, cycle_time #RSI_4MS, program[] "R1/rsi_joint_pos()" }
     ; ENDFOLD
 ENDDAT

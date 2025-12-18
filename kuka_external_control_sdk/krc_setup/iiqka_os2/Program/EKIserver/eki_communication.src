@@ -26,6 +26,7 @@ GLOBAL DEF EKI_ServerStart()
     $FLAG[ROS_EKI_CONN_FLAG] = FALSE
     ; Init data recv flag - will be set TRUE internally by EKI after data is received
     $FLAG[ROS_EKI_RECV_FLAG] = FALSE
+    Connected = FALSE
 
     ret = EKI_Load(INTERFACE_NAME[])
     ret = EKI_Open(INTERFACE_NAME[])
@@ -71,9 +72,10 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
     ret = EKI_ReadNext(INTERFACE_NAME[])
 
     IF ret == EkiOk THEN
-        ret = EKI_GetInt(INTERFACE_NAME[], "External/@REQTYPE", command.cmd_int)
-        ret = EKI_GetInt(INTERFACE_NAME[], "External/@ControlMode", command.control_mode)
-        ret = EKI_GetInt(INTERFACE_NAME[], "External/@CycleTime", command.cycle_time)
+        ret = EKI_GetInt(INTERFACE_NAME[], "REQTYPE", command.cmd_int)
+        ret = EKI_GetInt(INTERFACE_NAME[], "ControlMode", command.control_mode)
+        ; Cycle time is not removed from telegram, but has only 1 supported value
+        ret = EKI_GetInt(INTERFACE_NAME[], "CycleTime", command.cycle_time)
     ELSE
         ROS_Error("No valid data received")
         WAIT SEC 0.012
@@ -81,6 +83,14 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
 END
 
 GLOBAL DEF ROS_HandleConnection()
+    DECL INT ret
+    IF IsClientConnected() THEN
+       ret = EKI_GetBufferedMsgCount(INTERFACE_NAME[])
+       if ret < 0 THEN
+           ROS_Info("Communication channel is down")
+           Connected = FALSE
+       ENDIF
+    ENDIF       
     IF IsClientConnected() <> connection_flag THEN
         connection_flag = IsClientConnected()
         IF IsClientConnected() THEN
@@ -90,15 +100,17 @@ GLOBAL DEF ROS_HandleConnection()
             EKI_ServerReset()
         ENDIF
     ENDIF
+    
 END
 
 GLOBAL DEF ROS_PublishEvent()
     DECL INT ret
     INT event_int
+    CHAR resp_value[]
     
     IF last_event <> #NONE THEN
         IF NOT IsClientConnected() THEN
-            ROS_Error("External client is not connected when trying to send event")
+            ;ROS_Error("External client is not connected when trying to send event")
             RETURN
         ENDIF
 
@@ -109,14 +121,23 @@ GLOBAL DEF ROS_PublishEvent()
         SWITCH last_event
             CASE #CONNECTED
                 ROS_WriteInitData()
+                ; Send empty response
+                ret = EKI_SetString(INTERFACE_NAME[], "Response", " ")
             CASE #SWITCH_OK
-                ret = EKI_SetString(INTERFACE_NAME[], "Response", ROS_GetSelCtrlModeStr())
+                ; TODO: EKI_SetString returns error when using ROS_GetSelCtrlModeStr
+                ; As only 1 control mode is supported, return it hard-coded for now
+                ret = EKI_SetString(INTERFACE_NAME[], "Response", "Joint Position Control")
             CASE #STATUS_UPDATED
         ENDSWITCH
 
         ; Send the message
         ret = EKI_Send(INTERFACE_NAME[])
-
+        
+        IF ret == EkiInvalidOperation THEN
+           ROS_Error("EkiInvalidOperation for send")
+           Connected = FALSE
+        ENDIF
+   
         ; Reset event
         ROS_SetLastEvent(#NONE)
         ret = EKI_SetString(INTERFACE_NAME[], "Response", " ")
@@ -129,8 +150,7 @@ GLOBAL DEF ROS_SetLastEvent(event: IN)
 END
 
 GLOBAL DEFFCT BOOL IsClientConnected()
-    ;RETURN $FLAG[ROS_EKI_CONN_FLAG]
-    RETURN TRUE ; Connected flag removed from EKI6.1
+    RETURN Connected OR $FLAG[ROS_EKI_RECV_FLAG] ; Connected flag removed from EKI6.1
 ENDFCT
 
 DEFFCT BOOL DidReceiveData()

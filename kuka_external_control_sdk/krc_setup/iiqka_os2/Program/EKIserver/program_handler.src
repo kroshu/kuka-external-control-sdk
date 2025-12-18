@@ -182,19 +182,7 @@ GLOBAL DEFFCT ControlMode ROS_GetSelControlMode()
     RETURN selected_control_mode
 ENDFCT
 
-; Selects the cycle time associated with the specified integer
-; Returns TRUE, if a valid integer was provided, otherwise FALSE
-GLOBAL DEFFCT BOOL ROS_SelectCycleTime(cycle_time_int: IN)
-    INT cycle_time_int
 
-    selected_cycle_time = ROS_IntToCycleTime(cycle_time_int)
-    IF selected_cycle_time == #NONE_CYCLE_TIME THEN
-        RETURN FALSE
-    ENDIF
-
-    ROS_Debug1String("Cycle time set to %1", ROS_CycleTimeToString(selected_cycle_time))
-    RETURN TRUE
-ENDFCT
 
 GLOBAL DEFFCT ROS_CycleTime ROS_GetSelCycTime()
     RETURN selected_cycle_time
@@ -202,5 +190,5 @@ ENDFCT
 
 GLOBAL DEF ROS_ResetProgramHandler()
     selected_control_mode = #INACTIVE
-    selected_cycle_time = #RSI_12MS
+    selected_cycle_time = #RSI_4MS
 END

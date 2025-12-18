@@ -119,34 +119,6 @@ GLOBAL DEFFCT INT ROS_ControlModeToInt(control_mode: IN)
     RETURN -1
 ENDFCT
 
-; Return the cycle time associated with the given integer
-GLOBAL DEFFCT ROS_CycleTime ROS_IntToCycleTime(cycle_time_int: IN)
-    INT cycle_time_int
-    INT idx
-
-    FOR idx = 1 TO CYCLE_TIME_COUNT
-        IF CYCLE_TIME_TUPLES[idx].cycle_time_int == cycle_time_int THEN
-            RETURN CYCLE_TIME_TUPLES[idx].cycle_time
-        ENDIF
-    ENDFOR
-
-    RETURN #NONE_CYCLE_TIME
-ENDFCT
-
-; Returns the string representation of the specified cycle time
-GLOBAL DEFFCT CHAR [32] ROS_CycleTimeToString(cycle_time: IN)
-    DECL ROS_CycleTime cycle_time
-    INT idx
-
-    FOR idx = 1 TO CYCLE_TIME_COUNT
-        IF CYCLE_TIME_TUPLES[idx].cycle_time == cycle_time THEN
-            RETURN CYCLE_TIME_TUPLES[idx].cycle_time_string[]
-        ENDIF
-    ENDFOR
-
-    ; Unreachable
-    RETURN "NOT_FOUND"
-ENDFCT
 
 ; Returns the integer representation of the specified cycle time
 GLOBAL DEFFCT INT ROS_CycleTimeToInt(cycle_time: IN)
