@@ -106,7 +106,6 @@ END
 GLOBAL DEF ROS_PublishEvent()
     DECL INT ret
     INT event_int
-    CHAR resp_value[]
     
     IF last_event <> #NONE THEN
         IF NOT IsClientConnected() THEN
