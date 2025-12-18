@@ -127,7 +127,7 @@ class Client : public os::core::udp::communication::TCPClient {
 
  private:
   static constexpr std::size_t kRecvBuffSize = 3000;
-  static constexpr std::size_t kSendBuffSize = 3000;
+  static constexpr std::size_t kSendBuffSize = 500;
 
   unsigned char recv_buff_[kRecvBuffSize];
   unsigned char send_buff_[kSendBuffSize];

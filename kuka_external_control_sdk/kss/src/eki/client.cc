@@ -237,9 +237,11 @@ bool Client::ParseEvent(char* data_to_parse) {
   event_response_.event_type = EventType::NONE;
   event_response_.message[0] = '\0';
 
+  const char *response_tag = std::strstr(data_to_parse, "<Response");
+  if (!response_tag) return false;
   // Parse event message
   int eid = -1;
-  int ret = std::sscanf(data_to_parse, event_resp_format_, &eid,
+  int ret = std::sscanf(response_tag, event_resp_format_, &eid,
                         event_response_.message);
   event_response_.event_type = static_cast<EventType>(eid);
   if (ret <= 0) return false;
