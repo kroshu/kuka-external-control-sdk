@@ -3,9 +3,10 @@
     <Server Port="54600"/>
   </Connection>
    <Behavior>
-    <ConnectionManagement>
+    <ConnectionManagement CommErrorEvent="$FLAG[106]">
       <Ping Interval_ms="120"/>
    </ConnectionManagement>
+	 <UnloadWhenInterpreterReset>NONE</UnloadWhenInterpreterReset>
   </Behavior>
   <Buffering Type="FIFO" Size="30" Strategy="ErrorWhenFull"/>   
   <Receive Format="XML" Separator="External" Event="$FLAG[110]">
