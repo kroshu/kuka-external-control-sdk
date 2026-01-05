@@ -22,8 +22,8 @@ GLOBAL DEF EKI_ServerStart()
 
     ResetComponents()
 
-    ; Init connection flag - will be set TRUE internally by EKI after connection is made
-    $FLAG[ROS_EKI_CONN_FLAG] = FALSE
+    ; Init connection error flag - will be set TRUE internally by EKI after connection is made
+    $FLAG[ROS_EKI_CONN_ERR_FLAG] = FALSE
     ; Init data recv flag - will be set TRUE internally by EKI after data is received
     $FLAG[ROS_EKI_RECV_FLAG] = FALSE
     Connected = FALSE
@@ -34,7 +34,7 @@ END
 
 GLOBAL DEF EKI_ServerReset()
     DECL INT ret
-    ret = EKI_Clear(INTERFACE_NAME[])
+    ret = EKI_Unload(INTERFACE_NAME[])
     EKI_ServerStart()
 END
 
@@ -83,13 +83,9 @@ GLOBAL DEF EKI_ReceiveData(command: OUT)
 END
 
 GLOBAL DEF ROS_HandleConnection()
-    DECL INT ret
-    IF IsClientConnected() THEN
-       ret = EKI_GetBufferedMsgCount(INTERFACE_NAME[])
-       if ret < 0 THEN
-           ROS_Info("Communication channel is down")
-           Connected = FALSE
-       ENDIF
+    IF IsClientConnected() AND $FLAG[ROS_EKI_CONN_ERR_FLAG] THEN
+        ROS_Info("Communication channel is down")
+        Connected = FALSE
     ENDIF       
     IF IsClientConnected() <> connection_flag THEN
         connection_flag = IsClientConnected()
