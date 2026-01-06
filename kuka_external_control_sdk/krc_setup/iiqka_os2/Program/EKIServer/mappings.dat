@@ -67,8 +67,8 @@ DEFDAT mappings PUBLIC
     ; ENDFOLD
 
     ; FOLD Constants for mapping program configurations to programs to run
-    CONST INT PROGRAM_CONFIG_COUNT = 2
-    DECL CONST ProgramConfiguration PROGRAM_CONFIGS[2]
+    CONST INT PROGRAM_CONFIG_COUNT = 1
+    DECL CONST ProgramConfiguration PROGRAM_CONFIGS[1]
     PROGRAM_CONFIGS[1] = { control_mode #JOINT_POSITION, cycle_time #RSI_4MS, program[] "R1/rsi_joint_pos()" }
     ; ENDFOLD
 ENDDAT
