@@ -4,10 +4,11 @@ This guide will help you understand how to use the SDK to control your robot ext
 
 ## Select Your Setup Guide
 
-Depending on the system you are using, refer to one of the following documents for setup:
+Depending on the system you are using, refer to one of the following documents for setting up the controller:
 
 - [External Control Setup for iiQKA](kuka_external_control_sdk/doc/iiqka_setup.md)
-- [External Control Setup for KSS with EKI](kuka_external_control_sdk/doc/kss_eki_setup.md)
+- [External Control Setup for KSS](kuka_external_control_sdk/doc/kss_setup.md)
+- [External Control Setup for iiQKA.OS2](kuka_external_control_sdk/doc/iiqka_os2_setup.md)
 
 ## Overview
 
