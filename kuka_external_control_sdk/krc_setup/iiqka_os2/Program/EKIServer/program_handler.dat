@@ -1,0 +1,16 @@
+&ACCESS R
+DEFDAT program_handler PUBLIC
+    ; FOLD Custom enumerations
+    GLOBAL CONST INT CYCLE_TIME_COUNT = 2
+    GLOBAL ENUM ROS_CycleTime NONE_CYCLE_TIME, RSI_4MS
+    ; ENDFOLD
+
+    CONST INT INTEGER_MAX = 2147483647
+    DECL STATE_T statement_state
+    DECL MODUS_T command_mode = #SYNC
+
+    ; FOLD Program handler state variables
+    DECL ControlMode selected_control_mode = #INACTIVE
+    DECL ROS_CycleTime selected_cycle_time = #RSI_4MS
+    ; ENDFOLD
+ENDDAT

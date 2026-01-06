@@ -126,27 +126,22 @@ class Client : public os::core::udp::communication::TCPClient {
   bool ParseMessage(char* data_to_parse);
 
  private:
-  static constexpr std::size_t kRecvBuffSize = 4096;
-  static constexpr std::size_t kSendBuffSize = 4096;
+  static constexpr std::size_t kRecvBuffSize = 3000;
+  static constexpr std::size_t kSendBuffSize = 500;
 
   unsigned char recv_buff_[kRecvBuffSize];
   unsigned char send_buff_[kSendBuffSize];
 
-  static constexpr char simple_req_format_[] = "<External REQTYPE=\"%d\"></External>";
-
-  static constexpr char change_control_mode_req_format_[] =
-      "<External REQTYPE=\"4\" ControlMode=\"%d\"></External>";
-
-  static constexpr char change_cycle_time_req_format_[] =
-      "<External REQTYPE=\"8\" CycleTime=\"%d\"></External>";
+  static constexpr char general_req_format[] =
+      "<External REQTYPE=\"%d\" CycleTime=\"%d\" ControlMode=\"%d\"></External>\n";
 
   static constexpr char event_resp_format_[] =
-      "<Robot><Response EventID=\"%d\">%[^<]</Response></Robot>";
+      "<Response EventID=\"%d\">%[^<]</Response>";
 
   static constexpr char status_report_format_[] =
-      "<Robot><Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
+      "<Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
       "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
-      "MotionPossible=\"%hhu\" OperationMode=\"%hhu\" RobotStopped=\"%hhu\"></Status></Robot>";
+      "MotionPossible=\"%hhu\" OperationMode=\"%hhu\" RobotStopped=\"%hhu\"></Status>";
   static constexpr uint8_t kStatusReportFieldCount = 9;
 
   static constexpr char kSemanticVersion[] = "1.0.0";

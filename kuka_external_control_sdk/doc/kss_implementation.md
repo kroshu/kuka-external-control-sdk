@@ -37,7 +37,7 @@ In short, monitoring is not yet supported. However, there are methods that are o
 - `TurnOffDrives()`: Turns the robot's drives off.
 - `SetCycleTime(CycleTime cycle_time)`: Set the cycle time of RSI (4ms and 12ms).
 - `RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension)`: There are events that are not meant to be handled by the event handler specified in the generic interface. This method enables the client to react to those events as well.
-- `RegisterStatusResponseHandler(std::unique_str<IStatusUpdateHandler>&& handler)`: The EKI server sends status updates whenever it has spare resources and its state has changed. This method enables the client to react to these updates.
+- `RegisterStatusResponseHandler(std::unique_str<IStatusUpdateHandler>&& handler)`: The EKI or mxA server sends status updates whenever it has spare resources and its state has changed. This method enables the client to react to these updates.
 
 All other methods work as described in the generic `IRobot` interface description.
 
@@ -45,6 +45,6 @@ If you wish to look into the implementation, you may want to start with [`robot_
 
 ## Convenience Wrapper Class
 
-Although there are currently only two versions of the robot interface for the KSS system, more may be developed in the future. To provide a unified class for using all different versions, a wrapper class was created. This class instantiates the appropriate version of the robot interface based on the configuration passed to it and forwards all method calls to the underlying implementation.
+To provide a unified class for using all different versions, a wrapper class was created. This class instantiates the appropriate version of the robot interface based on the configuration passed to it and forwards all method calls to the underlying implementation.
 
 If you wish to look into the implementation, you may want to start with [`robot.h`](../kss/include/kuka/external-control-sdk/kss/robot.h).
