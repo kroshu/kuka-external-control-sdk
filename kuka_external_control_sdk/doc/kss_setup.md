@@ -1,7 +1,7 @@
 # External Control Setup for KSS
 
 This document describes the necessary steps for setting up external control using the **Robot Sensor Interface** (RSI) option package on a controller running **KUKA System Software** (KSS).
-To be able to start control externally or react to errors, wrappers have been implemented depending on either the **Ethernet KRL Interface** (EKI) or **mxAutomation** (mxA) option packages
+To be able to start control externally or react to errors, wrappers have been implemented for both the **Ethernet KRL Interface** (EKI) and **mxAutomation** (mxA) option packages.
 
 ## Prerequisites
 

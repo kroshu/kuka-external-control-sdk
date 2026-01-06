@@ -35,7 +35,7 @@ There are several KUKA-specific files located in the [`krc_setup/iiqka_os2`](../
 2. Import the [`rsi_joint_pos.rsix`](../krc_setup/iiqka_os2/Config/RobotSensorInterface/Context/rsi_joint_pos.rsix) file under the **Context** field in the **Home** page **Devices** tab under **Option packages > iiQka.RobotSensorInterface**
 3. Import the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/RobotSensorInterface/Ethernet%20configuration/rsi_ethernet.xml) file under **Ethernet configurations** field in the **Home** page **Devices** tab under **Option packages > iiQka.RobotSensorInterface**
 
-For a more complex control scenario including external axes or I/O-s, the context and ethernet configuration files have to be modified for the specific use case.
+For a more complex control scenario, including external axes or I/O, the context and Ethernet configuration files must be modified for the specific use case.
 
 ### EKI server setup
 
@@ -50,9 +50,7 @@ For a more complex control scenario including external axes or I/O-s, the contex
 1. Perform steps of RSI setup
 2. Install the mxA option package and select *Protocol: Established*, *Device: UDP* in the *General Settings* of the option package
 3. Click *Use default I/O mapping*
-4. Perform the manual file manipulation described by the following file:
-   1. [`mxA_TechFunction.add`](../krc_setup/iiqka_os2/TP/mxA%20file%20manipulations/mxA_TechFunction.add) to extend the mxA TechFunction with user defined methods that enable starting the RSI program
-
+4. Perform the manual file manipulation described by [`mxA_TechFunction.add`](../krc_setup/iiqka_os2/TP/mxA%20file%20manipulations/mxA_TechFunction.add) to extend the mxA TechFunction with user defined methods that enable starting the RSI program
 
 Once you have completed these steps, deploy the project onto the controller. After deployment, connect the KRC to the machine you wish to control it with.
 
