@@ -51,7 +51,7 @@ For a more complex control scenario including external axes or I/O-s, the contex
 2. Install the mxA option package and select *Protocol: Established*, *Device: UDP* in the *General Settings* of the option package
 3. Click *Use default I/O mapping*
 4. Perform the manual file manipulation described by the following file:
-   2. [`mxA_TechFunction.add`](../krc_setup/iiqka_os2/TP/mxA%20file%20manipulations/mxA_TechFunction.add) to extend the mxA TechFunction with user defined methods that enable starting the RSI program
+   1. [`mxA_TechFunction.add`](../krc_setup/iiqka_os2/TP/mxA%20file%20manipulations/mxA_TechFunction.add) to extend the mxA TechFunction with user defined methods that enable starting the RSI program
 
 
 Once you have completed these steps, deploy the project onto the controller. After deployment, connect the KRC to the machine you wish to control it with.
