@@ -15,7 +15,7 @@ Before configuring the system, ensure you have the following:
 
 During configuration and setup, connect your computer with iiQWorks.Sim installed to the controller using an Ethernet cable. To enable communication between the two systems, set the IP addresses of the relevant interfaces (KLI on the robot controller and the Ethernet interface on the computer) to be on the same subnet.
 
-Update the IP address in the [`krc_setup/iiqka_os2/Config/User/Common/SensorInterface/rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
+Update the IP address in the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
 
 ### Example network configuration
 
@@ -31,7 +31,7 @@ There are several KUKA-specific files located in the [`krc_setup/iiqka_os2`](../
 
 ### RSI setup
 
-1. Import the [`krc_setup/iiqka_os2/Program/RSI/`](../krc_setup/iiqka_os2/Program/RSI/) folder to the `KRC/R1/Program` folder (in the **Program** tab in iiQWorks.Sim)
+1. Import the [`Program/RSI/`](../krc_setup/iiqka_os2/Program/RSI/) folder to the `KRC/R1/Program` folder (in the **Program** tab in iiQWorks.Sim)
 2. Import the [`rsi_joint_pos.rsix`](../krc_setup/iiqka_os2/Config/RobotSensorInterface/Context/rsi_joint_pos.rsix) file under the **Context** field in the **Home** page **Devices** tab under **Option packages > iiQka.RobotSensorInterface**
 3. Import the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/RobotSensorInterface/Ethernet%20configuration/rsi_ethernet.xml) file under **Ethernet configurations** field in the **Home** page **Devices** tab under **Option packages > iiQka.RobotSensorInterface**
 
@@ -41,7 +41,7 @@ For a more complex control scenario including external axes or I/O-s, the contex
 
 1. Perform steps of RSI setup
 2. Import the [`EkiKSSinterface.xml`](../krc_setup/iiqka_os2/Config/EthernetKRL/Ethernet%20configuration/EkiKSSinterface.xml) file under the **Context** field in the **Home** page **Devices** tab under **Option packages > iiQka.EthernetKRL**
-3. Import the [`krc_setup/iiqka_os2/Program/EKIServer/`](../krc_setup/iiqka_os2/Program/EKIServer/) folder to the `KRC/R1/Program` folder (in the **Program** tab in iiQWorks.Sim)
+3. Import the [`Program/EKIServer/`](../krc_setup/iiqka_os2/Program/EKIServer/) folder to the `KRC/R1/Program` folder (in the **Program** tab in iiQWorks.Sim)
 4. Modify the `KRC/STEU/Mada/$option.dat` file. Change the `$CHCK_MOVENA` flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`:
 5. To ensure the EKI server runs automatically, edit the `KRC/R1/System/sps.sub` submit interpreter file. Add a call to `SPS_Init()` in the `USER INIT` fold and a call to `SPS_LoopCall()` in the `USER PLC` fold.
 

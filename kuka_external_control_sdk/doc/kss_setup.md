@@ -31,7 +31,7 @@ Create a new network interface on the KRC for RSI. Ensure the RSI interface is o
 8. At the bottom, click *Save*.
 9.  Restart the robot control controller to ensure configuration changes are applied.
 
-Update the IP address in the [`krc_setup/kss/Config/User/Common/SensorInterface/rsi_ethernet.xml`](../krc_setup/kss/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
+Update the IP address in the [`rsi_ethernet.xml`](../krc_setup/kss/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
 
 Set the network interface of the computer performing external control to be on the same subnet as the RSI interface. If you are using the EKI or mxA wrappers, make sure that the computer for external control can reach both the KLI and RSI interfaces. The best way to do this is to assign multiple IP addresses to one physical network connection.
 
@@ -49,16 +49,16 @@ There are several KUKA-specific files located in the [`krc_setup/kss`](../krc_se
 
 ### RSI setup
 
-1. Copy all files from the [`krc_setup/kss/Config/User/Common/SensorInterface/`](../krc_setup/kss/Config/User/Common/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
-2. Copy all files from the [`krc_setup/kss/KRC/R1/Program/RSI/`](../krc_setup/kss/KRC/R1/Program/RSI/) directories into `KRC/R1/Program/`.
+1. Copy all files from the [`Config/User/Common/SensorInterface/`](../krc_setup/kss/Config/User/Common/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
+2. Copy all files from the [`Program/RSI/`](../krc_setup/kss/KRC/R1/Program/RSI/) directories into `KRC/R1/Program/`.
 
 For a more complex control scenario including external axes or I/O-s, the context and ethernet configuration files have to be modified for the specific use case.
 
 ### EKI server setup
 
 1. Perform steps of RSI setup
-2. Copy the [`krc_setup/kss/Config/User/Common/EthernetKRL/EkiKSSinterface.xml`](../krc_setup/kss/Config/User/Common/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
-3. Copy all files from the [`krc_setup/kss/KRC/R1/Program/EKIServer/`](../krc_setup/kss/KRC/R1/Program/EKIserver/) directories into `KRC/R1/Program/`.
+2. Copy the [`EkiKSSinterface.xml`](../krc_setup/kss/Config/User/Common/EthernetKRL/EkiKSSinterface.xml) file into the `Config/User/Common/EthernetKRL/` directory.
+3. Copy all files from the [`Program/EKIServer/`](../krc_setup/kss/KRC/R1/Program/EKIserver/) directories into `KRC/R1/Program/`.
 4. Modify the `KRC/STEU/Mada/$option.dat` file. Change the `$CHCK_MOVENA` flag to `FALSE` to prevent the system from checking whether `$MOVE_ENABLE` is connected to `$IN[1025]`.
 5. To ensure the EKI server runs automatically, edit the `KRC/R1/System/sps.sub` submit interpreter file. Add a call to `SPS_Init()` in the `USER INIT` fold and a call to `SPS_LoopCall()` in the `USER PLC` fold.
 
