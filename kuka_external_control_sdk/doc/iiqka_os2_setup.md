@@ -15,7 +15,7 @@ Before configuring the system, ensure you have the following:
 
 During configuration and setup, connect your computer with iiQWorks.Sim installed to the controller using an Ethernet cable. To enable communication between the two systems, set the IP addresses of the relevant interfaces (KLI on the robot controller and the Ethernet interface on the computer) to be on the same subnet.
 
-Update the IP address in the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/User/Common/SensorInterface/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
+Update the IP address in the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/RobotSensorInterface/Ethernet%20configuration/rsi_ethernet.xml) file with the IP address assigned to the external control computer. This informs the controller where to send data packets during each RSI cycle.
 
 ### Example network configuration
 
