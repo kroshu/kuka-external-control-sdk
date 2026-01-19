@@ -311,9 +311,6 @@ bool Client::ParseMessage(char* data_to_parse) {
         return ParseEvent(data_to_parse);
         break;
       }
-      
-      event_response_.event_type = EventType::CONNECTED;
-      return ParseInitMessage(data_to_parse);
     }
     // Response should alwasy contain EventID
     else return false;
