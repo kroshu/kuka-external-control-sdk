@@ -304,6 +304,10 @@ bool Client::ParseMessage(char* data_to_parse) {
           return ParseStatus(data_to_parse);
         break;
       default:
+        // If not first connection or status update, response is an event
+        // But it is possible that an event and status update is received with the same message, 
+        //  therefore status is also parsed
+        ParseStatus(data_to_parse);
         return ParseEvent(data_to_parse);
         break;
       }
