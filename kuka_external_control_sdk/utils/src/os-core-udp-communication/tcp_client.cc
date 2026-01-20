@@ -31,7 +31,7 @@ int TCPClientSocket::Map(int flags) {
 
 TCPClient::TCPClient(size_t buffer_size,
                      const os::core::udp::communication::SocketAddress& remote_addr, int flags)
-    : Dissector(std::make_shared<TCPClientSocket>(), buffer_size + 1)
+    : Dissector(std::make_shared<TCPClientSocket>(), buffer_size)
     , remote_addr_(remote_addr)
     , flags_(flags) {
   // TODO check whether we need to try to reconnect multiple times
