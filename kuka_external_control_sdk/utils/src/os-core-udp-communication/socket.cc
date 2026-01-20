@@ -291,6 +291,8 @@ int Socket::Receive(unsigned char* buffer, int buffer_size, int flags) {
   if (received_bytes < 0) {
     return SetError(ErrorCode::kSocketError);
   }
+
+  buffer[received_bytes] = '\0';  // Buffer is reused, null terminate for safety
   SetError(ErrorCode::kSuccess);
   return received_bytes;
 }
@@ -334,6 +336,8 @@ int Socket::ReceiveFrom(SocketAddress& incoming_remote_address, unsigned char* b
   if (received_bytes < 0) {
     return (ErrorCode::kSocketError);
   }
+
+  buffer[received_bytes] = '\0';  // Buffer is reused, null terminate for safety
   SetError(ErrorCode::kSuccess);
   return received_bytes;
 }
@@ -371,6 +375,9 @@ int Socket::ReceiveAllWithTimeout(const std::chrono::microseconds &timeout, unsi
     // Timeout - don't recv anymore
     if(select_ret <= 0) break;
     recvd_bytes = recv(socket_fd_, buffer, buffer_size,  MSG_DONTWAIT | flags);
+    if (recvd_bytes >= 0) {
+      buffer[recvd_bytes] = '\0';  // Buffer is reused, null terminate for safety
+    }
   } while (recvd_bytes > 0);
 
   // some  select error
