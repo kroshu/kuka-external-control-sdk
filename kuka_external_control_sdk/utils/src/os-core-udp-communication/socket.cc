@@ -287,7 +287,7 @@ int Socket::Receive(unsigned char* buffer, int buffer_size, int flags) {
   if (IsDGRAM() && local_address_ == std::nullopt) {
     return SetError(ErrorCode::kNotBound);
   }
-  int received_bytes = recv(socket_fd_, buffer_size - 1, buffer_size, flags);
+  int received_bytes = recv(socket_fd_, buffer, buffer_size - 1, flags);
   if (received_bytes < 0) {
     return SetError(ErrorCode::kSocketError);
   }
