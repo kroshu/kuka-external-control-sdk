@@ -33,7 +33,7 @@ Status Robot::Setup() {
     return start_ret;
   }
 
-  if (!endpoint_.Setup(config_.client_port)) {
+  if (!endpoint_.Setup(config_.client_ip, config_.client_port)) {
     return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
   }
 

@@ -47,6 +47,9 @@ struct Configuration {
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
 
+  // IP address of the client application for real-time communication.
+  std::string client_ip = "0.0.0.0";
+
   // Port number of the client application for real-time communication.
   unsigned short client_port = 59152;
 
