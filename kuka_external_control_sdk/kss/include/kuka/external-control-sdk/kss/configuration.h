@@ -25,6 +25,18 @@ namespace kuka::external::control::kss {
 // RSI cycle time
 enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
 
+// Convert CycleTime enum to human-readable string
+inline const char* CycleTimeToString(CycleTime cycle_time) {
+  switch (cycle_time) {
+    case CycleTime::RSI_4MS:
+      return "4ms";
+    case CycleTime::RSI_12MS:
+      return "12ms";
+    default:
+      return "unspecified";
+  }
+}
+
 struct GPIOConfiguration {
   // Name of the GPIO
   std::string name;
