@@ -48,6 +48,12 @@ target_compile_features(eki_rsi_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
 target_link_libraries(eki_rsi_example PRIVATE Kuka::kuka-external-control-sdk)
 target_include_directories(eki_rsi_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
+# MXA + RSI example
+add_executable(mxa_rsi_example src/mxa_rsi_example.cc)
+target_compile_features(mxa_rsi_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
+target_link_libraries(mxa_rsi_example PRIVATE Kuka::kuka-external-control-sdk)
+target_include_directories(mxa_rsi_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
+
 # Multi RSI example
 add_executable(multi_rsi_robot_example src/multi_rsi_robot_example.cc)
 target_compile_features(multi_rsi_robot_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)

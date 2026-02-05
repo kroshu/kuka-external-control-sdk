@@ -1,0 +1,152 @@
+&ACCESS R
+DEF command_handler()
+   ; =============================================
+   ; Copyright 2025 KUKA Hungaria Kft.
+   ; Licensed under the Apache License, Version 2.0 (the "License");
+   ; you may not use this file except in compliance with the License.
+   ; You may obtain a copy of the License at
+   ;     http://www.apache.org/licenses/LICENSE-2.0
+   ; Unless required by applicable law or agreed to in writing, software
+   ; distributed under the License is distributed on an "AS IS" BASIS,
+   ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   ; See the License for the specific language governing permissions and
+   ; limitations under the License.
+   ; =============================================
+END
+
+GLOBAL DEF ROS_HandleCommand(cmd:IN)
+   DECL Command cmd
+   DECL CommandType cmd_enum
+   cmd_enum=ROS_IntToCommandType(cmd.cmd_int)
+   IF cmd_enum == #CMD_NONE THEN
+      ; If nothing was received, send status update, if necessary
+      ROS_UpdateStatus()
+      RETURN
+   ENDIF
+   ; Report error if the command was invalid
+   IF NOT IsCommandValid(cmd_enum) THEN
+      ROS_SetLastEvent(#INVALID)
+      ROS_Error("Invalid transition requested")
+      RETURN
+   ENDIF
+   SWITCH cmd_enum
+      CASE #CMD_CON
+         ROS_SetLastEvent(#CONNECTED)
+         Connected=TRUE
+      CASE #CMD_START
+         StartProgram()
+      CASE #CMD_CANCEL
+         CancelProgram()
+      CASE #CMD_RESET
+         ResetProgram()
+      CASE #CMD_CHANGE
+         ChangeControlMode(cmd)
+      CASE #CMD_DRIVES_ON
+         $DRIVES_ENABLE=TRUE
+         CONFIRM 0
+         ROS_SetLastEvent(#DRIVES_TURNED_ON)
+      CASE #CMD_DRIVES_OFF
+         $DRIVES_ENABLE=FALSE
+         ROS_SetLastEvent(#DRIVES_TURNED_OFF)
+      DEFAULT
+         ROS_SetLastEvent(#INVALID)
+   ENDSWITCH
+END
+
+DEFFCT BOOL IsCommandValid(cmd:IN)
+   DECL CommandType cmd
+   ; Actual check
+   SWITCH current_driver_state
+      CASE #INITIALIZED
+         RETURN IsCommandValidInInit(cmd)
+      CASE #INACTIVE
+         RETURN IsCommandValidInInactive(cmd)
+      CASE #ACTIVE
+         RETURN IsCommandValidInActive(cmd)
+   ENDSWITCH
+ENDFCT
+
+
+DEFFCT BOOL IsCommandValidInInit(cmd:IN)
+   DECL CommandType cmd
+   INT idx
+   FOR idx = 1 TO INITIALIZED_VALID_COUNT
+      IF INIT_VALID_COMMANDS[idx] == cmd THEN
+         RETURN TRUE
+      ENDIF
+   ENDFOR
+   RETURN FALSE
+ENDFCT
+
+
+DEFFCT BOOL IsCommandValidInInactive(cmd:IN)
+   DECL CommandType cmd
+   INT idx
+   FOR idx = 1 TO INACTIVE_VALID_COUNT
+      IF INACTIVE_VALID_COMMANDS[idx] == cmd THEN
+         RETURN TRUE
+      ENDIF
+   ENDFOR
+   RETURN FALSE
+ENDFCT
+
+
+DEFFCT BOOL IsCommandValidInActive(cmd:IN)
+   DECL CommandType cmd
+   INT idx
+   FOR idx = 1 TO ACTIVE_VALID_COUNT
+      IF ACTIVE_VALID_COMMANDS[idx] == cmd THEN
+         RETURN TRUE
+      ENDIF
+   ENDFOR
+   RETURN FALSE
+ENDFCT
+
+
+GLOBAL DEF ROS_ResetCommandHandler()
+   current_driver_state=#INITIALIZED
+END
+
+DEF StartProgram()
+   CONFIRM 0
+   IF ROS_StartProgram() THEN
+      current_driver_state=#Active
+      ROS_SetLastEvent(#STARTED)
+   ELSE
+      ROS_SetLastEvent(#ERROR)
+   ENDIF
+END
+
+DEF CancelProgram()
+   CONFIRM 0
+   IF ROS_CancelProgram() THEN
+      current_driver_state=#Initialized
+      ROS_SelectControlMode(#INACTIVE)
+      ROS_SetLastEvent(#CANCELLED)
+   ELSE
+      ROS_SetLastEvent(#ERROR)
+   ENDIF
+END
+
+DEF ResetProgram()
+   CONFIRM 0
+   IF ROS_ResetProgram() THEN
+      current_driver_state=#INACTIVE
+      ROS_SetLastEvent(#RESET_OK)
+   ELSE
+      ROS_SetLastEvent(#ERROR)
+   ENDIF
+END
+
+DEF ChangeControlMode(command_struc:IN)
+   DECL Command command_struc
+   DECL ControlMode control_mode
+   control_mode=ROS_IntToControlMode(command_struc.control_mode)
+   IF control_mode == #INACTIVE THEN
+      ROS_SetLastEvent(#ERROR)
+      RETURN
+   ENDIF
+   ROS_SelectControlMode(control_mode)
+   current_driver_state=#INACTIVE
+   ROS_SetLastEvent(#SWITCH_OK)
+END

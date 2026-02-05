@@ -2,8 +2,8 @@
 #include <vector>
 
 #include "event-handlers/control_event_handler.hpp"
-#include "event-handlers/eki_event_handler.hpp"
-#include "kuka/external-control-sdk/kss/eki/robot_interface.h"
+#include "event-handlers/mxa_event_handler.hpp"
+#include "kuka/external-control-sdk/kss/mxa/robot_interface.h"
 
 using external_control_sdk_example::ControlEventHandler;
 using external_control_sdk_example::EventHandlerExtension;
@@ -13,11 +13,13 @@ using kuka::external::control::ReturnCode;
 using kuka::external::control::Status;
 using kuka::external::control::kss::Configuration;
 using kuka::external::control::kss::CycleTime;
-using kuka::external::control::kss::eki::Robot;
+using kuka::external::control::kss::mxa::Robot;
 
 int main() {
-  // Specify the IP address of the KLI interface and create a robot interface instance
-  Configuration config{.kli_ip_address = "172.31.1.147"};
+  // Specify the IP address of the KLI interface and create a robot interface
+  // instance
+  Configuration config{.kli_ip_address = "192.168.38.8",
+                       .mxa_client_port = 1337};
   Robot rob_if{config};
 
   // Holds status response from robot interface operations
@@ -27,15 +29,18 @@ int main() {
   auto control_event_handler = std::make_unique<ControlEventHandler>();
   ret = rob_if.RegisterEventHandler(std::move(control_event_handler));
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to register event handler: " << ret.message << std::endl;
+    std::cerr << "Failed to register event handler: " << ret.message
+              << std::endl;
     return -1;
   }
 
   // Register event handler extension
   auto event_handler_extension = std::make_unique<EventHandlerExtension>();
-  ret = rob_if.RegisterEventHandlerExtension(std::move(event_handler_extension));
+  ret =
+      rob_if.RegisterEventHandlerExtension(std::move(event_handler_extension));
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to register event handler extension: " << ret.message << std::endl;
+    std::cerr << "Failed to register event handler extension: " << ret.message
+              << std::endl;
     return -1;
   }
 
@@ -43,14 +48,16 @@ int main() {
   auto status_update_handler = std::make_unique<StatusUpdateHandler>();
   ret = rob_if.RegisterStatusResponseHandler(std::move(status_update_handler));
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to register status update handler: " << ret.message << std::endl;
+    std::cerr << "Failed to register status update handler: " << ret.message
+              << std::endl;
     return -1;
   }
 
   // Setup network connection
   ret = rob_if.Setup();
   if (ret.return_code != ReturnCode::OK) {
-    std::cerr << "Failed to setup robot interface: " << ret.message << std::endl;
+    std::cerr << "Failed to setup robot interface: " << ret.message
+              << std::endl;
     return -1;
   }
 
@@ -61,8 +68,8 @@ int main() {
     return -1;
   }
 
-  // Set cycle time to 12ms
-  ret = rob_if.SetCycleTime(CycleTime::RSI_12MS);
+  // Set cycle time to 4ms
+  ret = rob_if.SetCycleTime(CycleTime::RSI_4MS);
   if (ret.return_code != ReturnCode::OK) {
     std::cerr << "Failed to set cycle time: " << ret.message << std::endl;
     return -1;
@@ -84,10 +91,12 @@ int main() {
   }
 
   // Create vector to hold initial joint positions
-  std::vector<double> positions = rob_if.GetLastMotionState().GetMeasuredPositions();
+  std::vector<double> positions =
+      rob_if.GetLastMotionState().GetMeasuredPositions();
 
   // Send first control signal
-  rob_if.GetControlSignal().AddJointPositionValues(positions.cbegin(), positions.cend());
+  rob_if.GetControlSignal().AddJointPositionValues(positions.cbegin(),
+                                                   positions.cend());
   ret = rob_if.SendControlSignal();
   if (ret.return_code != ReturnCode::OK) {
     std::cerr << "Failed to send control signal: " << ret.message << std::endl;
@@ -100,7 +109,8 @@ int main() {
     // Receive the motion state in each iteration
     ret = rob_if.ReceiveMotionState(40ms);
     if (ret.return_code != ReturnCode::OK) {
-      std::cerr << "Failed to receive motion state: " << ret.message << std::endl;
+      std::cerr << "Failed to receive motion state: " << ret.message
+                << std::endl;
       return -1;
     }
 
@@ -112,10 +122,12 @@ int main() {
     }
 
     // Send the control signal with updated positions
-    rob_if.GetControlSignal().AddJointPositionValues(positions.cbegin(), positions.cend());
+    rob_if.GetControlSignal().AddJointPositionValues(positions.cbegin(),
+                                                     positions.cend());
     ret = rob_if.SendControlSignal();
     if (ret.return_code != ReturnCode::OK) {
-      std::cerr << "Failed to send control signal: " << ret.message << std::endl;
+      std::cerr << "Failed to send control signal: " << ret.message
+                << std::endl;
       return -1;
     }
   }
@@ -135,7 +147,7 @@ int main() {
   }
 
   // Wait for a while to ensure all messages arrive
-  std::this_thread::sleep_for(1s);
+  std::this_thread::sleep_for(10s);
 
   return 0;
 }

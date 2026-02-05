@@ -1,0 +1,16 @@
+[Version]
+Version=1.0.0
+Type=Block
+
+[UDPMode]
+Type=Replace 
+Start=DECL GLOBAL INT MXA_COMM_MODE = 0
+End=DECL GLOBAL INT MXA_COMM_MODE = 0
+What=UDPMode.txt
+
+[UDPTimeout]
+Type=Replace 
+Start=DECL GLOBAL INT gmxA_MAX_UDP_Timeout=50 ;[ms]
+End=DECL GLOBAL INT gmxA_MAX_UDP_Timeout=50 ;[ms]
+What=UDP_Timeout.txt
+

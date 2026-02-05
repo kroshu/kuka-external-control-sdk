@@ -1,0 +1,92 @@
+&ACCESS R
+DEF status()
+    ; =============================================
+    ; Copyright 2025 KUKA Hungaria Kft.
+    ;
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+    ; you may not use this file except in compliance with the License.
+    ; You may obtain a copy of the License at
+    ;
+    ;     http://www.apache.org/licenses/LICENSE-2.0
+    ;
+    ; Unless required by applicable law or agreed to in writing, software
+    ; distributed under the License is distributed on an "AS IS" BASIS,
+    ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ; See the License for the specific language governing permissions and
+    ; limitations under the License.
+    ; =============================================
+END
+
+GLOBAL DEF ROS_UpdateStatus()
+    BOOL should_update
+    should_update = FALSE
+
+    IF ROS_GetSelControlMode() <> control_mode THEN
+        control_mode = ROS_GetSelControlMode()
+        should_update = TRUE
+    ENDIF
+
+    IF ROS_GetSelCycTime() <> cycle_time THEN
+        cycle_time = ROS_GetSelCycTime()
+        should_update = TRUE
+    ENDIF
+
+    IF $PERI_RDY <> drives_powered THEN
+        drives_powered = $PERI_RDY
+        should_update = TRUE
+    ENDIF
+
+    IF (NOT $ALARM_STOP OR NOT $ALARM_STOP_INTERN) <> emergency_stop THEN
+        emergency_stop = NOT $ALARM_STOP OR NOT $ALARM_STOP_INTERN
+        should_update = TRUE
+    ENDIF
+
+    IF (NOT $USER_SAF) <> guard_stop THEN
+        guard_stop = NOT $USER_SAF
+        should_update = TRUE
+    ENDIF
+
+    IF $PRO_MOVE <> in_motion THEN
+        in_motion = $PRO_MOVE
+        should_update = TRUE
+    ENDIF
+
+    IF ($COULD_START_MOTION AND $PRO_ACT) <> motion_possible THEN
+        motion_possible = $COULD_START_MOTION AND $PRO_ACT
+        should_update = TRUE
+    ENDIF
+
+    IF ROS_OperationModeToInt() <> operation_mode THEN
+        operation_mode = ROS_OperationModeToInt()
+        should_update = TRUE
+    ENDIF
+
+    IF $STOPMESS <> robot_stopped THEN
+        robot_stopped = $STOPMESS
+        should_update = TRUE
+    ENDIF
+
+    IF should_update OR first_update THEN
+        ROS_WriteStatus()
+        ROS_Debug("Status updated")
+        ROS_SetLastEvent(#STATUS_UPDATED)
+        first_update = FALSE
+    ENDIF
+END
+
+GLOBAL DEF ROS_ResetStatus()
+    first_update = TRUE
+END
+
+GLOBAL DEF ROS_WriteStatus()
+    DECL INT ret
+    ret = EKI_SetInt(INTERFACE_NAME[], "ControlMode", ROS_ControlModeToInt(control_mode))
+    ret = EKI_SetInt(INTERFACE_NAME[], "CycleTime", ROS_CycleTimeToInt(cycle_time))
+    ret = EKI_SetInt(INTERFACE_NAME[], "DrivesPowered", ROS_BoolToInt(drives_powered))
+    ret = EKI_SetInt(INTERFACE_NAME[], "EmergencyStop", ROS_BoolToInt(emergency_stop))
+    ret = EKI_SetInt(INTERFACE_NAME[], "GuardStop", ROS_BoolToInt(guard_stop))
+    ret = EKI_SetInt(INTERFACE_NAME[], "InMotion", ROS_BoolToInt(in_motion))
+    ret = EKI_SetInt(INTERFACE_NAME[], "MotionPossible", ROS_BoolToInt(motion_possible))
+    ret = EKI_SetInt(INTERFACE_NAME[], "OperationMode", operation_mode)
+    ret = EKI_SetInt(INTERFACE_NAME[], "RobotStopped", ROS_BoolToInt(robot_stopped))
+END

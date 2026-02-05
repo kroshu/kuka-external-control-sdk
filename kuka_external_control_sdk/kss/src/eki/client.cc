@@ -91,18 +91,18 @@ Status Client::SendMessageAndWait() {
 }
 
 Status Client::SendCommand(const CommandType cmd_type) {
-  sprintf(reinterpret_cast<char*>(send_buff_), simple_req_format_, static_cast<int>(cmd_type));
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, static_cast<int>(cmd_type), 0, 0);
   return SendMessageAndWait();
 }
 
 Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode) {
-  sprintf(reinterpret_cast<char*>(send_buff_), change_control_mode_req_format_, static_cast<int>(control_mode));
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, 4, 0, static_cast<int>(control_mode));
   return SendMessageAndWait();
 }
 
 Status Client::SendCycleTimeChange(CycleTime cycle_time) {
   int cycle_time_int = static_cast<int>(cycle_time);
-  sprintf(reinterpret_cast<char*>(send_buff_), change_cycle_time_req_format_, cycle_time_int);
+  sprintf(reinterpret_cast<char*>(send_buff_), general_req_format, 8, cycle_time_int, 0);
   return SendMessageAndWait();
 }
 
@@ -237,9 +237,11 @@ bool Client::ParseEvent(char* data_to_parse) {
   event_response_.event_type = EventType::NONE;
   event_response_.message[0] = '\0';
 
+  const char *response_tag = std::strstr(data_to_parse, "<Response");
+  if (!response_tag) return false;
   // Parse event message
   int eid = -1;
-  int ret = std::sscanf(data_to_parse, event_resp_format_, &eid,
+  int ret = std::sscanf(response_tag, event_resp_format_, &eid,
                         event_response_.message);
   event_response_.event_type = static_cast<EventType>(eid);
   if (ret <= 0) return false;
@@ -255,8 +257,11 @@ bool Client::ParseStatus(char* data_to_parse) {
   // Reset status fields
   status_update_.Reset();
 
+  const char *status_tag = std::strstr(data_to_parse, "<Status");
+  if (!status_tag) return false;
+
   // Parse status message
-  int ret = std::sscanf(data_to_parse, status_report_format_,
+  int ret = std::sscanf(status_tag, status_report_format_,
     reinterpret_cast<uint8_t*>(&status_update_.control_mode_),
     reinterpret_cast<uint8_t*>(&status_update_.cycle_time_),
     reinterpret_cast<uint8_t*>(&status_update_.drives_powered_),
@@ -277,7 +282,38 @@ bool Client::ParseMessage(char* data_to_parse) {
     return false;
   }
 
+  // From EKI 6.1 upwards, every xml tag is sent in every message
+  // In this case we can decide evet type based on EventID
+
   tinyxml2::XMLElement* root = doc.RootElement();
+  tinyxml2::XMLElement* response = root->FirstChildElement("Response");
+
+  if (response != nullptr) {
+    int event_id = 0;
+    error = response->QueryIntAttribute("EventID", &event_id);
+    if (error == tinyxml2::XML_SUCCESS)
+    {
+      switch (static_cast<EventType>(event_id))
+      {
+      case EventType::CONNECTED:
+          event_response_.event_type = EventType::CONNECTED;
+          return ParseInitMessage(data_to_parse);
+        break;
+      case EventType::STATUS:
+          event_response_.event_type = EventType::STATUS;
+          return ParseStatus(data_to_parse);
+        break;
+      default:
+        return ParseEvent(data_to_parse);
+        break;
+      }
+      
+      event_response_.event_type = EventType::CONNECTED;
+      return ParseInitMessage(data_to_parse);
+    }
+    // Response should alwasy contain EventID
+    else return false;
+  }
 
   if (root->FirstChildElement("Init") != nullptr) {
     event_response_.event_type = EventType::CONNECTED;
@@ -289,7 +325,7 @@ bool Client::ParseMessage(char* data_to_parse) {
     return ParseStatus(data_to_parse);
   }
 
-  return ParseEvent(data_to_parse);
+  return false;
 }
 
 Status Client::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {

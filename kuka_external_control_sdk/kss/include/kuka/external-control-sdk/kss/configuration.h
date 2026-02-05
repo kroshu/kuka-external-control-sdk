@@ -47,8 +47,11 @@ struct Configuration {
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
 
-  // Port number of the client application.
+  // Port number of the client application for real-time communication.
   unsigned short client_port = 59152;
+
+  // Port number of the client application for mxAutomation communication.
+  unsigned short mxa_client_port = 1337;
 
   // Degree of freedom.
   std::size_t dof = 6;
@@ -76,11 +79,6 @@ struct Configuration {
 
   // The interface installed on the KSS robot
   InstalledInterface installed_interface = InstalledInterface::RSI_ONLY;
-
-  // Action to do after MXA/KRC error signaled to event handler
-  // If true -> reset error messages
-  // If false -> error messages remain
-  bool reset_errors = true;
 
   // Ports open on the KRC to enable external control. These values are fixed.
   const unsigned short eki_port = 54600;
