@@ -90,7 +90,7 @@ void MotionState::CreateFromXML(const char *incoming_xml) {
   next_value_idx += kAttributeSuffix.length();
 
   // External axes
-  // this -1 is to account for that there is no " before the fist attribute
+  // this -1 accounts for the lack of a quotation mark before the first attribute
   next_value_idx += kExtJointPositionsPrefix.length() - 1;
 
   for (int i = 0; i < kFixSixAxes; ++i) {
