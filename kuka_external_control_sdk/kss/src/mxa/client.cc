@@ -25,7 +25,7 @@ namespace kuka::external::control::kss::mxa {
 Client::Client(const std::string &controller_ip, int client_port) {
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
       os::core::udp::communication::SocketAddress(controller_ip,
-                                                  kMXAControllerPort),
+                                                  kMXAServerPort),
       os::core::udp::communication::SocketAddress(kMXAClientSendPort), false);
 
   udp_subscriber_ = std::make_unique<os::core::udp::communication::Subscriber>(
