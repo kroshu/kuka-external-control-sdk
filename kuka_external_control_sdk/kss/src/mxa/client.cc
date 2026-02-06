@@ -26,7 +26,7 @@ Client::Client(const std::string &controller_ip, int client_port) {
   udp_publisher_ = std::make_unique<os::core::udp::communication::Publisher>(
       os::core::udp::communication::SocketAddress(controller_ip,
                                                   kMXAControllerPort),
-      os::core::udp::communication::SocketAddress(), false);
+      os::core::udp::communication::SocketAddress(kMXAClientSendPort), false);
 
   udp_subscriber_ = std::make_unique<os::core::udp::communication::Subscriber>(
       os::core::udp::communication::SocketAddress(client_port),
