@@ -28,7 +28,6 @@ namespace kuka::external::control::kss::rsi {
 class Endpoint {
  public:
   // Set up necessary prerequsities for a successful RSI communication
-  bool Setup(unsigned short local_udp_port);
   bool Setup(const std::string& local_ip, unsigned short local_udp_port);
   
   // endpoint.cpp
