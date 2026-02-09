@@ -43,7 +43,8 @@ enum class CommandType : std::uint8_t {
 
 class Client : public os::core::udp::communication::TCPClient {
  public:
-  Client(const std::string& server_address, unsigned short server_port);
+  Client(const std::string& server_address, unsigned short server_port,
+         unsigned short client_port = 0);
   virtual ~Client() override;
 
   // Initiates EKI connection

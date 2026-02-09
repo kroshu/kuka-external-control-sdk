@@ -19,7 +19,7 @@ namespace kuka::external::control::kss::eki {
 Robot::Robot(Configuration config)
     : kuka::external::control::kss::rsi::Robot(config)
     , config_(config)
-    , tcp_client_(config.kli_ip_address, config.eki_port)
+    , tcp_client_(config.kli_ip_address, kEKIServerPort, config.eki_client_port)
 {}
 
 Status Robot::Setup() {
@@ -33,7 +33,7 @@ Status Robot::Setup() {
     return start_ret;
   }
 
-  if (!endpoint_.Setup(config_.client_port)) {
+  if (!endpoint_.Setup(config_.client_ip, config_.client_port)) {
     return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
   }
 
