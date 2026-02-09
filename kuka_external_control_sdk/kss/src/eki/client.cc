@@ -35,6 +35,7 @@ Client::Client(const std::string& server_address, unsigned short server_port,
               ? std::optional<os::core::udp::communication::SocketAddress>()
               : std::optional<os::core::udp::communication::SocketAddress>(
                     os::core::udp::communication::SocketAddress(client_port))) {
+  event_handler_ = std::make_unique<EventHandler>();
 }
 
 Client::~Client() {
