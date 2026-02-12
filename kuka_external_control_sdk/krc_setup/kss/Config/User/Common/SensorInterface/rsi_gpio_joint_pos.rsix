@@ -18,12 +18,12 @@
       </RsiObject>
       <RsiObject ObjTypeId="33" ObjType="AxisCorr" ObjId="AxisCorr_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="0" />
-            <Input InIdx="1" OutObjId="Ethernet_1" OutIdx="1" />
-            <Input InIdx="2" OutObjId="Ethernet_1" OutIdx="2" />
-            <Input InIdx="3" OutObjId="Ethernet_1" OutIdx="3" />
-            <Input InIdx="4" OutObjId="Ethernet_1" OutIdx="4" />
-            <Input InIdx="5" OutObjId="Ethernet_1" OutIdx="5" />
+            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="1" />
+            <Input InIdx="1" OutObjId="Ethernet_1" OutIdx="2" />
+            <Input InIdx="2" OutObjId="Ethernet_1" OutIdx="3" />
+            <Input InIdx="3" OutObjId="Ethernet_1" OutIdx="4" />
+            <Input InIdx="4" OutObjId="Ethernet_1" OutIdx="5" />
+            <Input InIdx="5" OutObjId="Ethernet_1" OutIdx="6" />
          </Inputs>
          <Parameters>
             <Parameter IsPublic="true" Name="LowerLimA1" ParamId="0" ParamValue="-180" />
@@ -42,7 +42,7 @@
       </RsiObject>
       <RsiObject ObjTypeId="18" ObjType="Stop" ObjId="Stop_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="6" />
+            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="0" />
          </Inputs>
          <Parameters>
             <Parameter Name="Mode" ParamId="0" ParamValue="4" />
@@ -2401,7 +2401,7 @@
       <Construct Name="Ethernet_1" BlueprintName="Ethernet" BlueprintCollection="RSI" Location="400,370">
          <Inputs>
             <Input Name="In1" SourceObject="DigOut_1" SourcePort="Out1" Points="176.08,389.5;184.08,389.5;192.08,389.5;192.08,389.5;366,389.5;382,389.5" />
-            <Input Name="In2" SourceObject="DigIn_1" SourcePort="Out1" Points="176.08,505.5;188.08,505.5;200.08,505.5;200.08,419.5;366,419.5;382,419.5" />
+            <Input Name="In2" SourceObject="DigIn_1" SourcePort="Out1" Points="176.08,955.9;188.08,955.9;200.08,955.9;200.08,419.5;366,419.5;382,419.5" />
          </Inputs>
          <Parameters>
             <StringParameter Name="ConfigFile" Value="rsi_gpio_ethernet.xml" />
@@ -2412,12 +2412,12 @@
       </Construct>
       <Construct Name="AxisCorr_1" BlueprintName="AxisCorr" BlueprintCollection="RSI" Location="800,370">
          <Inputs>
-            <Input Name="CorrA1" SourceObject="Ethernet_1" SourcePort="Out1" Points="578.516666666667,389.5;658.516666666667,389.5;738.516666666667,389.5;738.516666666667,389.5;766,389.5;782,389.5" />
-            <Input Name="CorrA2" SourceObject="Ethernet_1" SourcePort="Out2" Points="578.516666666667,419.5;650.516666666667,419.5;722.516666666667,419.5;722.516666666667,419.5;766,419.5;782,419.5" />
-            <Input Name="CorrA3" SourceObject="Ethernet_1" SourcePort="Out3" Points="578.516666666667,449.5;642.516666666667,449.5;706.516666666667,449.5;706.516666666667,449.5;766,449.5;782,449.5" />
-            <Input Name="CorrA4" SourceObject="Ethernet_1" SourcePort="Out4" Points="578.516666666667,479.5;634.516666666667,479.5;690.516666666667,479.5;690.516666666667,479.5;766,479.5;782,479.5" />
-            <Input Name="CorrA5" SourceObject="Ethernet_1" SourcePort="Out5" Points="578.516666666667,509.5;626.516666666667,509.5;674.516666666667,509.5;674.516666666667,509.5;766,509.5;782,509.5" />
-            <Input Name="CorrA6" SourceObject="Ethernet_1" SourcePort="Out6" Points="578.516666666667,539.5;618.516666666667,539.5;658.516666666667,539.5;658.516666666667,539.5;766,539.5;782,539.5" />
+            <Input Name="CorrA1" SourceObject="Ethernet_1" SourcePort="Out2" Points="578.516666666667,419.5;598.516666666667,419.5;618.516666666667,419.5;618.516666666667,389.5;766,389.5;782,389.5" />
+            <Input Name="CorrA2" SourceObject="Ethernet_1" SourcePort="Out3" Points="578.516666666667,449.5;606.516666666667,449.5;634.516666666667,449.5;634.516666666667,419.5;766,419.5;782,419.5" />
+            <Input Name="CorrA3" SourceObject="Ethernet_1" SourcePort="Out4" Points="578.516666666667,479.5;614.516666666667,479.5;650.516666666667,479.5;650.516666666667,449.5;766,449.5;782,449.5" />
+            <Input Name="CorrA4" SourceObject="Ethernet_1" SourcePort="Out5" Points="578.516666666667,509.5;622.516666666667,509.5;666.516666666667,509.5;666.516666666667,479.5;766,479.5;782,479.5" />
+            <Input Name="CorrA5" SourceObject="Ethernet_1" SourcePort="Out6" Points="578.516666666667,539.5;630.516666666667,539.5;682.516666666667,539.5;682.516666666667,509.5;766,509.5;782,509.5" />
+            <Input Name="CorrA6" SourceObject="Ethernet_1" SourcePort="Out7" Points="578.516666666667,569.5;638.516666666667,569.5;698.516666666667,569.5;698.516666666667,539.5;766,539.5;782,539.5" />
          </Inputs>
          <Parameters>
             <DoubleParameter Name="LowerLimA1" CanBeSetFromKrl="true" Value="-180" />
@@ -2436,10 +2436,10 @@
       </Construct>
       <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="800,709.8">
          <Inputs>
-            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out7" Points="578.516666666667,569.5;610.516666666667,569.5;642.516666666667,569.5;642.516666666667,729.3;766,729.3;782,729.3" />
+            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out1" Points="578.516666666667,389.5;642.516666666667,389.5;706.516666666667,389.5;706.516666666667,729.3;766,729.3;782,729.3" />
          </Inputs>
       </Construct>
-      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="408,720">
+      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,0">
          <Parameters>
             <DoubleParameter Name="MaxA1" CanBeSetFromKrl="true" Value="180" />
             <DoubleParameter Name="MaxA2" CanBeSetFromKrl="true" Value="180" />
@@ -2456,10 +2456,10 @@
          </Parameters>
       </Construct>
       <Construct Name="DigOut_1" BlueprintName="DigOut" BlueprintCollection="RSI" Location="0,370" />
-      <Construct Name="DigIn_1" BlueprintName="DigIn" BlueprintCollection="RSI" Location="0,486" />
+      <Construct Name="DigIn_1" BlueprintName="DigIn" BlueprintCollection="RSI" Location="0,936.4" />
       <Construct Name="Map2DigOut_1" BlueprintName="Map2DigOut" BlueprintCollection="RSI" Location="800,823.1">
          <Inputs>
-            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out8" Points="578.516666666667,599.5;602.516666666667,599.5;626.516666666667,599.5;626.516666666667,842.6;766,842.6;782,842.6" />
+            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out8" Points="578.516666666667,599.5;586.516666666667,599.5;594.516666666667,599.5;594.516666666667,842.6;766,842.6;782,842.6" />
          </Inputs>
       </Construct>
    </Constructs>
