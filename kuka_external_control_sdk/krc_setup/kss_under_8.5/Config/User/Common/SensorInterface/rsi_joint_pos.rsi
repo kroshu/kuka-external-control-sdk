@@ -1,36 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <rSIModel dslVersion="1.0.0.0" name="" xmlns="http://schemas.microsoft.com/dsltools/RSIVisual">
   <rSIObjects>
     <rSIElement name="AxisCorr_1" objType="AXISCORR" objTypeID="33" maxInputs="0" maxOutputs="0">
       <rSIInPorts>
         <rSIInPort name="CorrA1" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out1" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out2" />
           </source>
         </rSIInPort>
         <rSIInPort name="CorrA2" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out2" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out3" />
           </source>
         </rSIInPort>
         <rSIInPort name="CorrA3" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out3" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out4" />
           </source>
         </rSIInPort>
         <rSIInPort name="CorrA4" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out4" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out5" />
           </source>
         </rSIInPort>
         <rSIInPort name="CorrA5" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out5" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out6" />
           </source>
         </rSIInPort>
         <rSIInPort name="CorrA6" mandatory="false">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out6" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out7" />
           </source>
         </rSIInPort>
       </rSIInPorts>
@@ -113,7 +113,7 @@
       <rSIInPorts>
         <rSIInPort name="In1" signalType="Bool">
           <source>
-            <rSIOutPortMoniker name="//ETHERNET1/Out7" />
+            <rSIOutPortMoniker name="//ETHERNET1/Out1" />
           </source>
         </rSIInPort>
       </rSIInPorts>

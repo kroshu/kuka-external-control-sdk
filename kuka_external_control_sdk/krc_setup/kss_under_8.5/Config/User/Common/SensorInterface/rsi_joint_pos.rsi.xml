@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <RSIObjects xsi:noNamespaceSchemaLocation="/Roboter/Config/System/Common/Schemes/RSIContext.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <RSIObject ObjType="AXISCORR" ObjTypeID="33" ObjID="AxisCorr_1">
     <Inputs>
-      <Input InIdx="1" OutObjID="ETHERNET1" OutIdx="1" />
-      <Input InIdx="2" OutObjID="ETHERNET1" OutIdx="2" />
-      <Input InIdx="3" OutObjID="ETHERNET1" OutIdx="3" />
-      <Input InIdx="4" OutObjID="ETHERNET1" OutIdx="4" />
-      <Input InIdx="5" OutObjID="ETHERNET1" OutIdx="5" />
-      <Input InIdx="6" OutObjID="ETHERNET1" OutIdx="6" />
+      <Input InIdx="1" OutObjID="ETHERNET1" OutIdx="2" />
+      <Input InIdx="2" OutObjID="ETHERNET1" OutIdx="3" />
+      <Input InIdx="3" OutObjID="ETHERNET1" OutIdx="4" />
+      <Input InIdx="4" OutObjID="ETHERNET1" OutIdx="5" />
+      <Input InIdx="5" OutObjID="ETHERNET1" OutIdx="6" />
+      <Input InIdx="6" OutObjID="ETHERNET1" OutIdx="7" />
     </Inputs>
     <Parameters>
       <Parameter Name="LowerLimA1" ParamID="1" ParamValue="-170.0" IsPublic="true" />
@@ -50,7 +50,7 @@
   </RSIObject>
   <RSIObject ObjType="STOP" ObjTypeID="18" ObjID="STOP1">
     <Inputs>
-      <Input InIdx="1" OutObjID="ETHERNET1" OutIdx="7" />
+      <Input InIdx="1" OutObjID="ETHERNET1" OutIdx="1" />
     </Inputs>
     <Parameters>
       <Parameter Name="Mode" ParamID="1" ParamValue="4" />
