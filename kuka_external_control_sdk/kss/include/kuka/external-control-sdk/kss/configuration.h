@@ -43,6 +43,30 @@ struct GPIOConfiguration {
   double max_value = 0;
 };
 
+struct JointConfiguration {
+  enum class Type : uint8_t { UNKONWN = 0, REVOLUTE = 1, PRISMATIC = 2 };
+
+  JointConfiguration(const std::string& n, Type t, bool e) : name(n), type(t), is_external(e) {}
+
+  std::string name;
+  Type type = Type::REVOLUTE;
+  bool is_external = false;
+
+  static constexpr Type ToType(std::string_view s) {
+    if (s == "revolute")  return Type::REVOLUTE;
+    if (s == "prismatic") return Type::PRISMATIC;
+    return Type::UNKONWN;
+  }
+
+  static constexpr std::string_view TypeToString(Type t) {
+    switch (t) {
+    case Type::REVOLUTE:  return "revolute";
+    case Type::PRISMATIC: return "prismatic";
+    default:              return "unkown";
+    }
+  }
+};
+
 struct Configuration {
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
@@ -55,6 +79,9 @@ struct Configuration {
 
   // Degree of freedom.
   std::size_t dof = 6;
+
+  // Joint configuration
+  std::vector<JointConfiguration> joint_configs;
 
   // GPIO states
   std::vector<GPIOConfiguration> gpio_state_configs;
