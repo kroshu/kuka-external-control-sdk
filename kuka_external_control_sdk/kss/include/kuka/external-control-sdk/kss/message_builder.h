@@ -30,11 +30,11 @@ namespace kuka::external::control::kss {
 class MotionState : public BaseMotionState {
 public:
   MotionState(std::size_t dof, std::vector<GPIOConfiguration> gpio_configs, std::vector<JointConfiguration> joint_configs)
-      : BaseMotionState(dof), joint_configs_(joint_configs) {
-    if (joint_configs.size() != dof_) {
+      : BaseMotionState(dof), joint_configs_(std::move(joint_configs)) {
+    if (joint_configs_.size() != dof_) {
       throw std::invalid_argument("Number of joint configurations does not match degrees of freedom");
     }
-    num_internal_axes_ = std::count_if(joint_configs.cbegin(), joint_configs.cend(), [](const auto &config) { return !config.is_external; });
+    num_internal_axes_ = std::count_if(joint_configs_.cbegin(), joint_configs_.cend(), [](const auto &config) { return !config.is_external; });
     num_external_axes_ = dof_ - num_internal_axes_;
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
@@ -101,11 +101,11 @@ public:
   ControlSignal(std::size_t dof,
                 std::vector<GPIOConfiguration> gpio_configs,
                 std::vector<JointConfiguration> joint_configs)
-      : BaseControlSignal(dof), joint_configs_(joint_configs) {
-    if (joint_configs.size() != dof_) {
+      : BaseControlSignal(dof), joint_configs_(std::move(joint_configs)) {
+    if (joint_configs_.size() != dof_) {
       throw std::invalid_argument("Number of joint configurations does not match degrees of freedom");
     }
-    num_internal_axes_ = std::count_if(joint_configs.cbegin(), joint_configs.cend(), [](const auto &config) { return !config.is_external; });
+    num_internal_axes_ = std::count_if(joint_configs_.cbegin(), joint_configs_.cend(), [](const auto &config) { return !config.is_external; });
     num_external_axes_ = dof_ - num_internal_axes_;
     joint_position_values_.resize(dof, 0.0);
     initial_positions_.resize(dof, 0.0);
