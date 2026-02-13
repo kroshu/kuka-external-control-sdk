@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Do not change! The content of this file is generated. -->
 <!-- Generated with RSIVisual iiQWorks.AppBuilder plugin. -->
-<!-- iiQKA.RobotSensorInterface 6.1.2.4 -->
+<!-- iiQKA.RobotSensorInterface 6.2.0.34 -->
 <RsiContext xsi:schemaLocation="RsiContext RsiContext.xsd" SchemaVersion="2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="RsiContext">
    <RsiObjects xmlns="RsiDriver">
       <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="ETHERNET1">
@@ -14,7 +14,7 @@
       </RsiObject>
       <RsiObject ObjTypeId="18" ObjType="Stop" ObjId="Stop_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="ETHERNET1" OutIdx="6" SignalName="ETHERNET1|Out7" />
+            <Input InIdx="0" OutObjId="ETHERNET1" OutIdx="0" SignalName="ETHERNET1|Out1" />
          </Inputs>
          <Parameters>
             <Parameter Name="Mode" ParamId="0" ParamValue="4" />
@@ -23,12 +23,12 @@
       </RsiObject>
       <RsiObject ObjTypeId="33" ObjType="AxisCorr" ObjId="AxisCorr_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="ETHERNET1" OutIdx="0" SignalName="ETHERNET1|Out1" />
-            <Input InIdx="1" OutObjId="ETHERNET1" OutIdx="1" SignalName="ETHERNET1|Out2" />
-            <Input InIdx="2" OutObjId="ETHERNET1" OutIdx="2" SignalName="ETHERNET1|Out3" />
-            <Input InIdx="3" OutObjId="ETHERNET1" OutIdx="3" SignalName="ETHERNET1|Out4" />
-            <Input InIdx="4" OutObjId="ETHERNET1" OutIdx="4" SignalName="ETHERNET1|Out5" />
-            <Input InIdx="5" OutObjId="ETHERNET1" OutIdx="5" SignalName="ETHERNET1|Out6" />
+            <Input InIdx="0" OutObjId="ETHERNET1" OutIdx="1" SignalName="ETHERNET1|Out2" />
+            <Input InIdx="1" OutObjId="ETHERNET1" OutIdx="2" SignalName="ETHERNET1|Out3" />
+            <Input InIdx="2" OutObjId="ETHERNET1" OutIdx="3" SignalName="ETHERNET1|Out4" />
+            <Input InIdx="3" OutObjId="ETHERNET1" OutIdx="4" SignalName="ETHERNET1|Out5" />
+            <Input InIdx="4" OutObjId="ETHERNET1" OutIdx="5" SignalName="ETHERNET1|Out6" />
+            <Input InIdx="5" OutObjId="ETHERNET1" OutIdx="6" SignalName="ETHERNET1|Out7" />
          </Inputs>
          <Parameters>
             <Parameter IsPublic="true" Name="LowerLimA1" ParamId="0" ParamValue="-180" />
@@ -2486,19 +2486,19 @@
             <IntParameter Name="Precision" Value="4" />
          </Parameters>
       </Construct>
-      <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="400,383.52">
+      <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="400,0">
          <Inputs>
-            <Input Name="In1" SourceObject="ETHERNET1" SourcePort="Out7" Points="181.93,203.96;189.93,203.96;197.93,203.96;197.93,407.48;366,407.48;382,407.48" />
+            <Input Name="In1" SourceObject="ETHERNET1" SourcePort="Out1" Points="181.93,23.96;237.93,23.96;293.93,23.96;293.93,23.96;366,23.96;382,23.96" />
          </Inputs>
       </Construct>
-      <Construct Name="AxisCorr_1" BlueprintName="AxisCorr" BlueprintCollection="RSI" Location="402,0">
+      <Construct Name="AxisCorr_1" BlueprintName="AxisCorr" BlueprintCollection="RSI" Location="400,123.92">
          <Inputs>
-            <Input Name="CorrA1" SourceObject="ETHERNET1" SourcePort="Out1" Points="181.93,23.96;237.93,23.96;293.93,23.96;293.93,23.96;368,23.96;384,23.96" />
-            <Input Name="CorrA2" SourceObject="ETHERNET1" SourcePort="Out2" Points="181.93,53.96;229.93,53.96;277.93,53.96;277.93,53.96;368,53.96;384,53.96" />
-            <Input Name="CorrA3" SourceObject="ETHERNET1" SourcePort="Out3" Points="181.93,83.96;221.93,83.96;261.93,83.96;261.93,83.96;368,83.96;384,83.96" />
-            <Input Name="CorrA4" SourceObject="ETHERNET1" SourcePort="Out4" Points="181.93,113.96;213.93,113.96;245.93,113.96;245.93,113.96;368,113.96;384,113.96" />
-            <Input Name="CorrA5" SourceObject="ETHERNET1" SourcePort="Out5" Points="181.93,143.96;205.93,143.96;229.93,143.96;229.93,143.96;368,143.96;384,143.96" />
-            <Input Name="CorrA6" SourceObject="ETHERNET1" SourcePort="Out6" Points="181.93,173.96;197.93,173.96;213.93,173.96;213.93,173.96;368,173.96;384,173.96" />
+            <Input Name="CorrA1" SourceObject="ETHERNET1" SourcePort="Out2" Points="181.93,53.96;229.93,53.96;277.93,53.96;277.93,147.88;366,147.88;382,147.88" />
+            <Input Name="CorrA2" SourceObject="ETHERNET1" SourcePort="Out3" Points="181.93,83.960000000000008;221.93,83.960000000000008;261.93,83.960000000000008;261.93,177.88;366,177.88;382,177.88" />
+            <Input Name="CorrA3" SourceObject="ETHERNET1" SourcePort="Out4" Points="181.93,113.96000000000001;213.93,113.96000000000001;245.93,113.96000000000001;245.93,207.88;366,207.88;382,207.88" />
+            <Input Name="CorrA4" SourceObject="ETHERNET1" SourcePort="Out5" Points="181.93,143.96;205.93,143.96;229.93,143.96;229.93,237.88;366,237.88;382,237.88" />
+            <Input Name="CorrA5" SourceObject="ETHERNET1" SourcePort="Out6" Points="181.93,173.96;197.93,173.96;213.93,173.96;213.93,267.88;366,267.88;382,267.88" />
+            <Input Name="CorrA6" SourceObject="ETHERNET1" SourcePort="Out7" Points="181.93,203.96;189.93,203.96;197.93,203.96;197.93,297.88;366,297.88;382,297.88" />
          </Inputs>
          <Parameters>
             <DoubleParameter Name="LowerLimA1" CanBeSetFromKrl="true" Value="-180" />
@@ -2515,7 +2515,7 @@
             <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
          </Parameters>
       </Construct>
-      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="12,252">
+      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,507.44">
          <Parameters>
             <DoubleParameter Name="MaxA1" Value="1000" />
             <DoubleParameter Name="MaxA2" Value="1000" />
@@ -2525,5 +2525,24 @@
             <DoubleParameter Name="MaxA6" Value="1000" />
          </Parameters>
       </Construct>
+   </Constructs>
+</RsiContext>meter Name="UpperLimA2" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA3" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA4" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA5" CanBeSetFromKrl="true" Value="180" />
+            <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
+         </Parameters>
+      </Construct>
+      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,507.44">
+         <Parameters>
+            <DoubleParameter Name="MaxA1" Value="1000" />
+            <DoubleParameter Name="MaxA2" Value="1000" />
+            <DoubleParameter Name="MaxA3" Value="1000" />
+            <DoubleParameter Name="MaxA4" Value="1000" />
+            <DoubleParameter Name="MaxA5" Value="1000" />
+            <DoubleParameter Name="MaxA6" Value="1000" />
+         </Parameters>
+      </Construct>
+      <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="0,890.96" />
    </Constructs>
 </RsiContext>
