@@ -62,6 +62,8 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
  private:
   Configuration config_;
   Client tcp_client_;
+
+  static constexpr int kEKIServerPort = 54600;  // Port on which the controller listens for EKI messages
 };
 
 }  // namespace kuka::external::control::kss

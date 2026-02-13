@@ -24,7 +24,7 @@ Robot::Robot(Configuration config)
       control_signal_(config.dof, config.gpio_command_configs, config.joint_configs) {}
 
 Status Robot::Setup() {
-  if (!endpoint_.Setup(config_.client_port)) {
+  if (!endpoint_.Setup(config_.client_ip, config_.client_port)) {
     return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
   }
 

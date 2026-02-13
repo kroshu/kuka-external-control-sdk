@@ -16,6 +16,7 @@
 #include <cstring>
 
 #include <tinyxml2.h>
+#include <optional>
 
 #include "kuka/external-control-sdk/kss/eki/client.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
@@ -24,9 +25,16 @@
 
 namespace kuka::external::control::kss::eki {
 
-Client::Client(const std::string& server_address, unsigned short server_port)
+Client::Client(const std::string& server_address, unsigned short server_port,
+               unsigned short client_port)
     : os::core::udp::communication::TCPClient(
-          kRecvBuffSize, os::core::udp::communication::SocketAddress(server_address, server_port)) {
+          kRecvBuffSize,
+          os::core::udp::communication::SocketAddress(server_address, server_port),
+          0,
+          (client_port == 0)
+              ? std::optional<os::core::udp::communication::SocketAddress>()
+              : std::optional<os::core::udp::communication::SocketAddress>(
+                    os::core::udp::communication::SocketAddress(client_port))) {
   event_handler_ = std::make_unique<EventHandler>();
 }
 

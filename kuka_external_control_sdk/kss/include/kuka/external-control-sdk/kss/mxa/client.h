@@ -72,7 +72,8 @@ private:
   // UDP communication
   std::unique_ptr<os::core::udp::communication::Publisher> udp_publisher_;
   std::unique_ptr<os::core::udp::communication::Subscriber> udp_subscriber_;
-  static constexpr int kMXAControllerPort = 1336;
+  static constexpr int kMXAServerPort = 1336;  // Port on which the controller listens for MXA messages
+  static constexpr int kMXAClientSendPort = 1335;  // Port from which the client sends MXA messages
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
 

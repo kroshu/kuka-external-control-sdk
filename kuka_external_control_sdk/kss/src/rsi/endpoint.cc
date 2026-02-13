@@ -5,8 +5,8 @@
 
 namespace kuka::external::control::kss::rsi {
 
-bool Endpoint::Setup(unsigned short local_udp_port) {
-  os::core::udp::communication::SocketAddress replier_address(local_udp_port);
+bool Endpoint::Setup(const std::string& local_ip, unsigned short local_udp_port) {
+  os::core::udp::communication::SocketAddress replier_address(local_ip, local_udp_port);
 
   return (replier_socket_ =
               std::make_unique<os::core::udp::communication::Replier>(replier_address))

@@ -32,7 +32,8 @@ class TCPClient : public Dissector {
   typedef Socket::ErrorCode ErrorCode;
 
  public:
-  TCPClient(size_t buffer_size, const SocketAddress &remote_addr, int flags = 0);
+  TCPClient(size_t buffer_size, const SocketAddress &remote_addr, int flags = 0,
+            const std::optional<SocketAddress> &local_addr = std::nullopt);
   ~TCPClient() = default;
 
   ErrorCode Setup();
@@ -43,6 +44,7 @@ class TCPClient : public Dissector {
  private:
   SocketAddress remote_addr_;
   int flags_;
+  std::optional<SocketAddress> local_addr_;
 };
 
 } // namespace os::core::udp::communication

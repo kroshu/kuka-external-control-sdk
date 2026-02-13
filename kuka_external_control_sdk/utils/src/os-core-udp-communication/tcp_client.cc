@@ -30,10 +30,12 @@ int TCPClientSocket::Map(int flags) {
 }
 
 TCPClient::TCPClient(size_t buffer_size,
-                     const os::core::udp::communication::SocketAddress& remote_addr, int flags)
+                     const os::core::udp::communication::SocketAddress& remote_addr, int flags,
+                     const std::optional<os::core::udp::communication::SocketAddress>& local_addr)
     : Dissector(std::make_shared<TCPClientSocket>(), buffer_size)
     , remote_addr_(remote_addr)
-    , flags_(flags) {
+    , flags_(flags)
+    , local_addr_(local_addr) {
   // TODO check whether we need to try to reconnect multiple times
 }
 
@@ -48,6 +50,12 @@ TCPClient::ErrorCode TCPClient::Setup() {
   result = socket_->SetReuseAddress();
   if (result < 0) {
     return TCPClient::ErrorCode::kSocketError;
+  }
+  if (local_addr_.has_value()) {
+    result = socket_->Bind(*local_addr_);
+    if (result < 0) {
+      return TCPClient::ErrorCode::kSocketError;
+    }
   }
   result = socket_->Connect(remote_addr_);
   if (result < 0) {
