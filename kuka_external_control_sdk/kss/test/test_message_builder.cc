@@ -52,12 +52,12 @@ protected:
 
 TEST_F(KSSMotionState, TestZeroInit6Dof) {
   kuka::external::control::kss::MotionState initial_motion_state(kFixSixAxes, {}, GetSixAxesConfig());
-  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"0.00000\" Y=\"0.00000\" Z=\"0.00000\" A=\"0.00000\" B=\"0.00000\" C=\"0.00000\"/><AIPos A1=\"1.00000\" A2=\"1.00000\" A3=\"1.00000\" A4=\"1.00000\" A5=\"1.00000\" A6=\"1.00000\"/><EIPos E1=\"0.00000\" E2=\"0.00000\" E3=\"0.00000\" E4=\"0.00000\" E5=\"0.00000\" E6=\"0.00000\"/><Delay D=\"15\"/><IPOC>0</IPOC></Rob>";
+  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"0.00000\" Y=\"0.00000\" Z=\"0.00000\" A=\"0.00000\" B=\"0.00000\" C=\"0.00000\"/><AIPos A1=\"0.00000\" A2=\"0.00000\" A3=\"0.00000\" A4=\"0.00000\" A5=\"0.00000\" A6=\"0.00000\"/><EIPos E1=\"0.00000\" E2=\"0.00000\" E3=\"0.00000\" E4=\"0.00000\" E5=\"0.00000\" E6=\"0.00000\"/><Delay D=\"15\"/><IPOC>0</IPOC></Rob>";
   initial_motion_state.CreateFromXML(rsi_xml);
 
   for (auto v : initial_motion_state.GetMeasuredCartesianPositions()) { EXPECT_FLOAT_EQ(v, 0.0); }
 
-  for (auto v : initial_motion_state.GetMeasuredPositions()) { EXPECT_FLOAT_EQ(v, 1.0); }
+  for (auto v : initial_motion_state.GetMeasuredPositions()) { EXPECT_FLOAT_EQ(v, 0.0); }
 
   EXPECT_EQ(initial_motion_state.GetDelay(), 15);
   EXPECT_EQ(initial_motion_state.GetIpoc(), 0);
@@ -69,12 +69,12 @@ TEST_F(KSSMotionState, TestZeroInit6DofWith1ExternalAxis) {
   joint_configs.emplace_back("rail_joint", JC::Type::PRISMATIC, true);
 
   kuka::external::control::kss::MotionState initial_motion_state(kFixSixAxes + 1, {}, joint_configs);
-  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"0.00000\" Y=\"0.00000\" Z=\"0.00000\" A=\"0.00000\" B=\"0.00000\" C=\"0.00000\"/><AIPos A1=\"1.00000\" A2=\"1.00000\" A3=\"1.00000\" A4=\"1.00000\" A5=\"1.00000\" A6=\"1.00000\"/><EIPos E1=\"1.00000\" E2=\"0.00000\" E3=\"0.00000\" E4=\"0.00000\" E5=\"0.00000\" E6=\"0.00000\"/><Delay D=\"15\"/><IPOC>0</IPOC></Rob>";
+  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"0.00000\" Y=\"0.00000\" Z=\"0.00000\" A=\"0.00000\" B=\"0.00000\" C=\"0.00000\"/><AIPos A1=\"0.00000\" A2=\"0.00000\" A3=\"0.00000\" A4=\"0.00000\" A5=\"0.00000\" A6=\"0.00000\"/><EIPos E1=\"0.00000\" E2=\"0.00000\" E3=\"0.00000\" E4=\"0.00000\" E5=\"0.00000\" E6=\"0.00000\"/><Delay D=\"15\"/><IPOC>0</IPOC></Rob>";
   initial_motion_state.CreateFromXML(rsi_xml);
 
   for (auto v : initial_motion_state.GetMeasuredCartesianPositions()) { EXPECT_FLOAT_EQ(v, 0.0); }
 
-  for (auto v : initial_motion_state.GetMeasuredPositions()) { EXPECT_FLOAT_EQ(v, 1.0); }
+  for (auto v : initial_motion_state.GetMeasuredPositions()) { EXPECT_FLOAT_EQ(v, 0.0); }
 
   EXPECT_EQ(initial_motion_state.GetDelay(), 15);
   EXPECT_EQ(initial_motion_state.GetIpoc(), 0);
@@ -124,7 +124,7 @@ TEST_F(KSSMotionState, TestFillEverything) {
   }
 
   kuka::external::control::kss::MotionState initial_motion_state(kFixSixAxes * 2, {}, joint_configs);
-  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"5.32000\" Y=\"6.4\" Z=\"111.30000\" A=\"12.20000\" B=\"0.00000\" C=\"12.50000\"/><AIPos A1=\"8.2\" A2=\"3.3\" A3=\"111.67\" A4=\"12.22220\" A5=\"-35.20000\" A6=\"-12.50000\"/><EIPos E1=\"1.00000\" E2=\"2.00000\" E3=\"3.00000\" E4=\"4.00000\" E5=\"5.00000\" E6=\"6.00000\"/><Delay D=\"11\"/><IPOC>357</IPOC></Rob>";
+  const char* rsi_xml = "<Rob Type=\"KUKA\"><RIst X=\"5.32000\" Y=\"6.4\" Z=\"111.30000\" A=\"12.20000\" B=\"0.00000\" C=\"12.50000\"/><AIPos A1=\"8.2\" A2=\"3.3\" A3=\"111.67\" A4=\"12.22220\" A5=\"-35.20000\" A6=\"-12.50000\"/><EIPos E1=\"1000.00000\" E2=\"2000.00000\" E3=\"3000.00000\" E4=\"4000.00000\" E5=\"5000.00000\" E6=\"6000.00000\"/><Delay D=\"11\"/><IPOC>357</IPOC></Rob>";
   initial_motion_state.CreateFromXML(rsi_xml);
 
   EXPECT_NEAR(initial_motion_state.GetMeasuredCartesianPositions()[0], 5.32, 0.002);
@@ -160,7 +160,7 @@ TEST_F(KSSControlSignal, TestZeroInit6Dof) {
   control_signal.SetInitialPositions(initial_motion_state);
 
   const char* expected_xml =
-    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><IPOC>0</IPOC></Sen>";
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK A1=\"-1.000000\" A2=\"-1.000000\" A3=\"-1.000000\" A4=\"-1.000000\" A5=\"-1.000000\" A6=\"-1.000000\"/><IPOC>0</IPOC></Sen>";
   EXPECT_STREQ(control_signal.CreateXMLString(0).value().data(), expected_xml);
 }
 
@@ -170,7 +170,7 @@ TEST_F(KSSControlSignal, TestFillEverything6Dof) {
   std::vector<double> values = {3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
   control_signal.AddJointPositionValues(values.begin(), values.end());
   const char* expected_xml =
-    "<Sen Type=\"KROSHU\"><Stop>1</Stop><AK A1=\"193.805650\" A2=\"192.805650\" A3=\"191.805650\" A4=\"190.805650\" A5=\"189.805650\" A6=\"188.805650\"/><IPOC>543265442</IPOC></Sen>";
+    "<Sen Type=\"KROSHU\"><Stop>1</Stop><AK A1=\"194.805650\" A2=\"194.805650\" A3=\"194.805650\" A4=\"194.805650\" A5=\"194.805650\" A6=\"194.805650\"/><IPOC>543265442</IPOC></Sen>";
 
   EXPECT_STREQ(control_signal.CreateXMLString(543265442, true).value().data(), expected_xml);
 }
@@ -182,12 +182,12 @@ TEST_F(KSSControlSignal, TestFillEverything) {
     joint_configs.emplace_back("ext_joint_" + std::to_string(i + 1), JC::Type::PRISMATIC, true);
   }
 
-  kuka::external::control::kss::ControlSignal control_signal(kFixSixAxes * 2, {}, GetSixAxesConfig());
+  kuka::external::control::kss::ControlSignal control_signal(kFixSixAxes * 2, {}, joint_configs);
 
-  std::vector<double> values = {1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
+  std::vector<double> values = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 3.4, 3.4, 3.4, 3.4, 3.4, 3.4};
   control_signal.AddJointPositionValues(values.begin(), values.end());
   const char* expected_xml =
-    "<Sen Type=\"KROSHU\"><Stop>1</Stop><AK A1=\"194.805650\" A2=\"194.805650\" A3=\"194.805650\" A4=\"194.805650\" A5=\"194.805650\" A6=\"194.805650\"/><EK E1=\"1.000000\" E2=\"1.000000\" E3=\"1.000000\" E4=\"1.000000\" E5=\"1.000000\" E6=\"1.000000\"/><IPOC>543265442</IPOC></Sen>";
+    "<Sen Type=\"KROSHU\"><Stop>1</Stop><AK A1=\"194.805650\" A2=\"194.805650\" A3=\"194.805650\" A4=\"194.805650\" A5=\"194.805650\" A6=\"194.805650\"/><EK E1=\"1000.000000\" E2=\"1000.000000\" E3=\"1000.000000\" E4=\"1000.000000\" E5=\"1000.000000\" E6=\"1000.000000\"/><IPOC>543265442</IPOC></Sen>";
 
   EXPECT_STREQ(control_signal.CreateXMLString(543265442, true).value().data(), expected_xml);
 }
