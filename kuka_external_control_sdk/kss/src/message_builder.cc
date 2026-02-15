@@ -131,6 +131,9 @@ bool MotionState::ParseMeasuredPositions(
   std::size_t & next_value_idx, const std::size_t offset)
 {
   using JointType = JointConfiguration::Type;
+
+  // RSI always sends exactly six joint values regardless of actual axis count.
+  // Values beyond num_values are skipped without storage.
   for (std::size_t i = 0; i < kFixSixAxes; ++i) {
     next_value_idx += 6;
 
