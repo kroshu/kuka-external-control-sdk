@@ -20,7 +20,7 @@ using ::testing::Test;
 
 class KSSRobot : public ::testing::Test {
  protected:
-  kuka::external::control::kss::Configuration eci_config_;
+  kuka::external::control::kss::Configuration kss_config_;
   std::unique_ptr<kuka::external::control::kss::Robot> robot_;
 
   KSSRobot(){};
@@ -28,9 +28,7 @@ class KSSRobot : public ::testing::Test {
   virtual ~KSSRobot() = default;
 
   virtual void SetUp() {
-    eci_config_.client_ip_address = "127.0.0.1";
-    eci_config_.kli_ip_address = "127.0.0.3";
-    robot_ = std::make_unique<kuka::external::control::kss::Robot>(eci_config_);
+    robot_ = std::make_unique<kuka::external::control::kss::Robot>(kss_config_);
   }
 
   virtual void TearDown() {
