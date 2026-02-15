@@ -29,6 +29,7 @@ std::vector<kuka::external::control::kss::JointConfiguration> GetSixAxesConfig()
   for (std::size_t i = 0; i < kFixSixAxes; ++i) {
     joint_configs.emplace_back("joint_"+ std::to_string(i+1), JC::Type::REVOLUTE, false);
   }
+  return joint_configs;
 }
 
 class KSSControlSignal : public ::testing::Test {
