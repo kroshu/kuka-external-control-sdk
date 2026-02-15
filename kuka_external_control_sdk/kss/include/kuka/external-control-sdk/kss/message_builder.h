@@ -105,6 +105,19 @@ public:
     if (joint_configs_.size() != dof_) {
       throw std::invalid_argument("Number of joint configurations does not match degrees of freedom");
     }
+
+    // Validate that external axes precede internal axes
+    for (std::size_t i = 0; i < joint_configs_.size(); ++i) {
+      if (!joint_configs_[i].is_external) {
+        for (std::size_t j = i + 1; j < joint_configs_.size(); ++j) {
+          if (joint_configs_[j].is_external) {
+            throw std::invalid_argument("External axes must precede internal axes");
+          }
+        }
+        break;
+      }
+    }
+
     num_internal_axes_ = std::count_if(joint_configs_.cbegin(), joint_configs_.cend(), [](const auto &config) { return !config.is_external; });
     num_external_axes_ = dof_ - num_internal_axes_;
     joint_position_values_.resize(dof, 0.0);
