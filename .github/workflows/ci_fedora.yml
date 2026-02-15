@@ -33,7 +33,7 @@ jobs:
       working-directory: ./kuka_external_control_sdk/build/iiqka
 
     - name: Run KSS tests
-      run: ./test_message_builder
+      run: ./test_kss_message_builder
       working-directory: ./kuka_external_control_sdk/build/kss
 
     - name: Build and install examples
