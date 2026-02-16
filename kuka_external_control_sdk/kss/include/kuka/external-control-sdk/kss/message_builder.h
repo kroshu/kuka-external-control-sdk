@@ -27,6 +27,21 @@
 
 namespace kuka::external::control::kss {
 
+static bool ExternalsPrecedeInternals(const std::vector<JointConfiguration> & joint_configs) {
+  const std::size_t num_configs = joint_configs.size();
+  for (std::size_t i = 0; i < num_configs; ++i) {
+    if (!joint_configs[i].is_external) {
+      for (std::size_t j = i + 1; j < num_configs; ++j) {
+        if (joint_configs[j].is_external) {
+          return false;
+        }
+      }
+      break;
+    }
+  }
+  return true;
+}
+
 class MotionState : public BaseMotionState {
 public:
   MotionState(std::size_t dof, std::vector<GPIOConfiguration> gpio_configs, std::vector<JointConfiguration> joint_configs)
@@ -34,6 +49,11 @@ public:
     if (joint_configs_.size() != dof_) {
       throw std::invalid_argument("Number of joint configurations does not match degrees of freedom");
     }
+
+    if (!ExternalsPrecedeInternals(joint_configs_)) {
+      throw std::invalid_argument("External axes must precede internal axes");
+    }
+
     num_internal_axes_ = std::count_if(joint_configs_.cbegin(), joint_configs_.cend(), [](const auto &config) { return !config.is_external; });
     num_external_axes_ = dof_ - num_internal_axes_;
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
@@ -106,16 +126,8 @@ public:
       throw std::invalid_argument("Number of joint configurations does not match degrees of freedom");
     }
 
-    // Validate that external axes precede internal axes
-    for (std::size_t i = 0; i < joint_configs_.size(); ++i) {
-      if (!joint_configs_[i].is_external) {
-        for (std::size_t j = i + 1; j < joint_configs_.size(); ++j) {
-          if (joint_configs_[j].is_external) {
-            throw std::invalid_argument("External axes must precede internal axes");
-          }
-        }
-        break;
-      }
+    if (!ExternalsPrecedeInternals(joint_configs_)) {
+      throw std::invalid_argument("External axes must precede internal axes");
     }
 
     num_internal_axes_ = std::count_if(joint_configs_.cbegin(), joint_configs_.cend(), [](const auto &config) { return !config.is_external; });
