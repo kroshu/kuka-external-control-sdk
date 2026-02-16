@@ -26,9 +26,13 @@ jobs:
       run: cmake -DBUILD_TESTING=1 .. && make install
       working-directory: ./kuka_external_control_sdk/build
 
-    - name: Run tests
+    - name: Run iiQKA tests
       run: ./test_robot && ./test_message_builder
       working-directory: ./kuka_external_control_sdk/build/iiqka
+
+    - name: Run KSS tests
+      run: ./test_kss_message_builder
+      working-directory: ./kuka_external_control_sdk/build/kss
 
     - name: Build and install examples
       run: cmake -DBUILD_TESTING=1 .. && make

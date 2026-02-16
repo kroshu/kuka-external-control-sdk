@@ -1,0 +1,5 @@
+&ACCESS R
+DEFDAT rsi_joint_pos PUBLIC
+    CONST CHAR CONTEXT_NAME[64]
+    CONTEXT_NAME[] = "rsi_joint_pos"
+ENDDAT

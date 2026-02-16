@@ -63,10 +63,8 @@ target_link_libraries(${target_name}
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
 # Build tests for KSS
-if (CMAKE_TESTING_ENABLED)
-  if (NOT TARGET gtest)
-    add_subdirectory(/usr/src/googletest GTest)
-  endif()
+if (BUILD_TESTING)
+  find_package(GTest)
   enable_testing()
 
   add_executable(
@@ -77,7 +75,7 @@ if (CMAKE_TESTING_ENABLED)
   target_link_libraries(
     test_kss_message_builder
     GTest::gtest_main
-    kuka-kss-client-library
+    kuka-external-control-sdk
     GTest::gtest
   )
 
@@ -90,7 +88,6 @@ if (CMAKE_TESTING_ENABLED)
   target_compile_features(test_kss_message_builder INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
   include(GoogleTest)
-
   gtest_discover_tests(test_kss_message_builder)
 endif()
 

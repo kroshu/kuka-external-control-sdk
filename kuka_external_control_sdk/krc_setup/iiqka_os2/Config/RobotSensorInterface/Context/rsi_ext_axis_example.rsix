@@ -1,29 +1,69 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Do not change! The content of this file is generated. -->
-<!-- Generated with RSIVisual WorkVisual plugin. -->
-<!-- RobotSensorInterface 4.1 B567 -->
+<!-- Generated with RSIVisual iiQWorks.AppBuilder plugin. -->
+<!-- iiQKA.RobotSensorInterface 6.2.0.34 -->
 <RsiContext xsi:schemaLocation="RsiContext RsiContext.xsd" SchemaVersion="2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="RsiContext">
    <RsiObjects xmlns="RsiDriver">
-      <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="Ethernet_1">
+      <RsiObject ObjTypeId="18" ObjType="Stop" ObjId="Stop_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="DigOut_1" OutIdx="0" />
-            <Input InIdx="1" OutObjId="DigIn_1" OutIdx="0" />
+            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="0" SignalName="Ethernet_1|Out1" />
          </Inputs>
          <Parameters>
-            <Parameter IsRuntime="false" Name="ConfigFile" ParamId="0" ParamValue="rsi_gpio_ethernet.xml" />
+            <Parameter Name="Mode" ParamId="0" ParamValue="4" />
+            <Parameter Name="Channel" ParamId="1" ParamValue="0" />
+         </Parameters>
+      </RsiObject>
+      <RsiObject ObjTypeId="64" ObjType="Ethernet" ObjId="Ethernet_1">
+         <Parameters>
+            <Parameter IsRuntime="false" Name="ConfigFile" ParamId="0" ParamValue="rsi_ethernet.xml" />
             <Parameter Name="Timeout" ParamId="0" ParamValue="100" />
             <Parameter Name="Flag" ParamId="3" ParamValue="1" />
             <Parameter Name="Precision" ParamId="7" ParamValue="4" />
          </Parameters>
       </RsiObject>
+      <RsiObject ObjTypeId="82" ObjType="AxisCorrMon" ObjId="AxisCorrMon_1">
+         <Parameters>
+            <Parameter IsRuntime="false" Name="MaxA1" ParamId="0" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA2" ParamId="1" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA3" ParamId="2" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA4" ParamId="3" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA5" ParamId="4" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxA6" ParamId="5" ParamValue="1000" />
+            <Parameter IsRuntime="false" Name="MaxE1" ParamId="6" ParamValue="2000" />
+            <Parameter IsRuntime="false" Name="MaxE2" ParamId="7" ParamValue="6" />
+            <Parameter IsRuntime="false" Name="MaxE3" ParamId="8" ParamValue="6" />
+            <Parameter IsRuntime="false" Name="MaxE4" ParamId="9" ParamValue="6" />
+            <Parameter IsRuntime="false" Name="MaxE5" ParamId="10" ParamValue="6" />
+            <Parameter IsRuntime="false" Name="MaxE6" ParamId="11" ParamValue="6" />
+         </Parameters>
+      </RsiObject>
+      <RsiObject ObjTypeId="87" ObjType="AxisCorrExt" ObjId="AxisCorrExt_1">
+         <Inputs>
+            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="7" SignalName="Ethernet_1|Out8" />
+         </Inputs>
+         <Parameters>
+            <Parameter IsPublic="true" Name="LowerLimE1" ParamId="0" ParamValue="-1000" />
+            <Parameter IsPublic="true" Name="LowerLimE2" ParamId="1" ParamValue="-5" />
+            <Parameter IsPublic="true" Name="LowerLimE3" ParamId="2" ParamValue="-5" />
+            <Parameter IsPublic="true" Name="LowerLimE4" ParamId="3" ParamValue="-5" />
+            <Parameter IsPublic="true" Name="LowerLimE5" ParamId="4" ParamValue="-5" />
+            <Parameter IsPublic="true" Name="LowerLimE6" ParamId="5" ParamValue="-5" />
+            <Parameter IsPublic="true" Name="UpperLimE1" ParamId="6" ParamValue="1000" />
+            <Parameter IsPublic="true" Name="UpperLimE2" ParamId="7" ParamValue="5" />
+            <Parameter IsPublic="true" Name="UpperLimE3" ParamId="8" ParamValue="5" />
+            <Parameter IsPublic="true" Name="UpperLimE4" ParamId="9" ParamValue="5" />
+            <Parameter IsPublic="true" Name="UpperLimE5" ParamId="10" ParamValue="5" />
+            <Parameter IsPublic="true" Name="UpperLimE6" ParamId="11" ParamValue="5" />
+         </Parameters>
+      </RsiObject>
       <RsiObject ObjTypeId="33" ObjType="AxisCorr" ObjId="AxisCorr_1">
          <Inputs>
-            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="1" />
-            <Input InIdx="1" OutObjId="Ethernet_1" OutIdx="2" />
-            <Input InIdx="2" OutObjId="Ethernet_1" OutIdx="3" />
-            <Input InIdx="3" OutObjId="Ethernet_1" OutIdx="4" />
-            <Input InIdx="4" OutObjId="Ethernet_1" OutIdx="5" />
-            <Input InIdx="5" OutObjId="Ethernet_1" OutIdx="6" />
+            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="1" SignalName="Ethernet_1|Out2" />
+            <Input InIdx="1" OutObjId="Ethernet_1" OutIdx="2" SignalName="Ethernet_1|Out3" />
+            <Input InIdx="2" OutObjId="Ethernet_1" OutIdx="3" SignalName="Ethernet_1|Out4" />
+            <Input InIdx="3" OutObjId="Ethernet_1" OutIdx="4" SignalName="Ethernet_1|Out5" />
+            <Input InIdx="4" OutObjId="Ethernet_1" OutIdx="5" SignalName="Ethernet_1|Out6" />
+            <Input InIdx="5" OutObjId="Ethernet_1" OutIdx="6" SignalName="Ethernet_1|Out7" />
          </Inputs>
          <Parameters>
             <Parameter IsPublic="true" Name="LowerLimA1" ParamId="0" ParamValue="-180" />
@@ -40,55 +80,9 @@
             <Parameter IsPublic="true" Name="UpperLimA6" ParamId="11" ParamValue="180" />
          </Parameters>
       </RsiObject>
-      <RsiObject ObjTypeId="18" ObjType="Stop" ObjId="Stop_1">
-         <Inputs>
-            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="0" />
-         </Inputs>
-         <Parameters>
-            <Parameter Name="Mode" ParamId="0" ParamValue="4" />
-            <Parameter Name="Channel" ParamId="1" ParamValue="0" />
-         </Parameters>
-      </RsiObject>
-      <RsiObject ObjTypeId="82" ObjType="AxisCorrMon" ObjId="AxisCorrMon_1">
-         <Parameters>
-            <Parameter IsPublic="true" Name="MaxA1" ParamId="0" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxA2" ParamId="1" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxA3" ParamId="2" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxA4" ParamId="3" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxA5" ParamId="4" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxA6" ParamId="5" ParamValue="180" />
-            <Parameter IsPublic="true" Name="MaxE1" ParamId="6" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxE2" ParamId="7" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxE3" ParamId="8" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxE4" ParamId="9" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxE5" ParamId="10" ParamValue="6" />
-            <Parameter IsPublic="true" Name="MaxE6" ParamId="11" ParamValue="6" />
-         </Parameters>
-      </RsiObject>
-      <RsiObject ObjTypeId="43" ObjType="DigOut" ObjId="DigOut_1">
-         <Parameters>
-            <Parameter Name="Index" ParamId="0" ParamValue="1" />
-            <Parameter Name="DataType" ParamId="1" ParamValue="0" />
-         </Parameters>
-      </RsiObject>
-      <RsiObject ObjTypeId="29" ObjType="DigIn" ObjId="DigIn_1">
-         <Parameters>
-            <Parameter Name="Index" ParamId="0" ParamValue="1" />
-            <Parameter Name="DataType" ParamId="1" ParamValue="0" />
-         </Parameters>
-      </RsiObject>
-      <RsiObject ObjTypeId="14" ObjType="Map2DigOut" ObjId="Map2DigOut_1">
-         <Inputs>
-            <Input InIdx="0" OutObjId="Ethernet_1" OutIdx="7" />
-         </Inputs>
-         <Parameters>
-            <Parameter Name="Index" ParamId="0" ParamValue="1" />
-            <Parameter Name="DataType" ParamId="1" ParamValue="0" />
-         </Parameters>
-      </RsiObject>
    </RsiObjects>
    <BlueprintCollections SchemaVersion="2.0.0" xmlns="RsiBlueprint">
-      <BlueprintCollection Name="RSI" Version="2.0.3">
+      <BlueprintCollection Name="RSI" Version="3.1.0">
          <Subset Name="Editor">
             <Element Name="Comment" DisplayCategory="Comment">
                <Description>Tooltip_COMMENT</Description>
@@ -328,26 +322,6 @@
                   <Input Name="In1" Index="0" />
                   <Input Name="In2" Index="1" IsMandatory="false" IsDynamic="true" DynamicCopiesCount="23" />
                </Inputs>
-               <Parameters>
-                  <IntParameter Name="Refresh" Index="0" Min="1" Default="1">
-                     <Description>Tooltip_MONITOR_Refresh</Description>
-                  </IntParameter>
-                  <IntParameter Name="Timeout" Index="1" Min="0" Default="50">
-                     <Description>Tooltip_MONITOR_Timeout</Description>
-                  </IntParameter>
-                  <IntParameter Name="ReqTimeZero" Index="2" Min="0" Max="1" Default="1">
-                     <Description>Tooltip_MONITOR_ReqTimeZero</Description>
-                  </IntParameter>
-                  <StringParameter Name="IP" Index="0" CanBeSetAtRuntime="false" Default="192.168.0.1" RestrictionType="Ip">
-                     <Description>Tooltip_MONITOR_IP</Description>
-                  </StringParameter>
-                  <IntParameter Name="Channel" Index="1" CanBeSetAtRuntime="false" Min="1" Max="8" Default="1">
-                     <Description>
-                        <Remarks>Remarks_MONITOR_Channel</Remarks>
-                        <Summary>Tooltip_MONITOR_Channel</Summary>
-                     </Description>
-                  </IntParameter>
-               </Parameters>
             </Element>
             <Element Name="Output" Id="86">
                <Description>Tooltip_OUTPUT</Description>
@@ -427,6 +401,54 @@
                   <IntParameter Name="Index" Index="0" Min="1" Max="8192" Default="1">
                      <Description>Tooltip_SETDIGOUT_Index</Description>
                   </IntParameter>
+               </Parameters>
+            </Element>
+            <Element Name="Message" Id="102">
+               <Description>
+                  <Remarks>Remarks_Message</Remarks>
+                  <Summary>Summary_Message</Summary>
+               </Description>
+               <Inputs>
+                  <Input Name="Set" Index="0">
+                     <Description>Summary_Message_Set</Description>
+                  </Input>
+                  <Input Name="Parameter1" Index="1" IsMandatory="false">
+                     <Description>
+                        <Remarks>Remarks_Message_Parameter</Remarks>
+                        <Summary>Summary_Message_Parameter1</Summary>
+                     </Description>
+                  </Input>
+                  <Input Name="Parameter2" Index="2" IsMandatory="false">
+                     <Description>
+                        <Remarks>Remarks_Message_Parameter</Remarks>
+                        <Summary>Summary_Message_Parameter2</Summary>
+                     </Description>
+                  </Input>
+                  <Input Name="Parameter3" Index="3" IsMandatory="false">
+                     <Description>
+                        <Remarks>Remarks_Message_Parameter</Remarks>
+                        <Summary>Summary_Message_Parameter3</Summary>
+                     </Description>
+                  </Input>
+               </Inputs>
+               <Parameters>
+                  <EnumParameter Name="Type" Index="0" CanBeSetAtRuntime="false" EnumType="MessageType" Default="Info">
+                     <Description>
+                        <Remarks>Remarks_Message_Type</Remarks>
+                        <Summary>Summary_Message_Type</Summary>
+                     </Description>
+                     <EnumValues>
+                        <Value>Info</Value>
+                        <Value>State</Value>
+                     </EnumValues>
+                  </EnumParameter>
+                  <StringParameter Name="Text" Index="1" CanBeSetAtRuntime="false" Default="Message text" RestrictionType="Message">
+                     <Description>
+                        <Example>Example_Message_Text</Example>
+                        <Remarks>Remarks_Message_Text</Remarks>
+                        <Summary>Summary_Message_Text</Summary>
+                     </Description>
+                  </StringParameter>
                </Parameters>
             </Element>
          </Subset>
@@ -580,6 +602,24 @@
                   </Output>
                </Outputs>
             </Element>
+            <Element Name="SignalSelector" Id="106">
+               <Description>Tooltip_SIGNALSELECTOR</Description>
+               <Inputs>
+                  <Input Name="Ctrl" Index="0">
+                     <Description>Tooltip_SIGNALSELECTOR_Ctrl</Description>
+                  </Input>
+                  <Input Name="In1" Index="1" />
+                  <Input Name="In2" Index="2" IsMandatory="false" IsDynamic="true" DynamicCopiesCount="19" />
+               </Inputs>
+               <Outputs>
+                  <Output Name="Out1" Index="0" />
+               </Outputs>
+               <Parameters>
+                  <DoubleParameter Name="Default" Index="0" Default="0">
+                     <Description>Tooltip_SIGNALSELECTOR_Default</Description>
+                  </DoubleParameter>
+               </Parameters>
+            </Element>
          </Subset>
          <Subset Name="Math">
             <Element Name="ABS" Id="48">
@@ -663,6 +703,22 @@
                <Outputs>
                   <Output Name="Out1" Index="0">
                      <Description>Tooltip_COS_Out1</Description>
+                  </Output>
+               </Outputs>
+            </Element>
+            <Element Name="Division" Id="100">
+               <Description>Tooltip_Division</Description>
+               <Inputs>
+                  <Input Name="Dividend" Index="0">
+                     <Description>Tooltip_Division_Dividend</Description>
+                  </Input>
+                  <Input Name="Divisor" Index="1">
+                     <Description>Tooltip_Division_Divisor</Description>
+                  </Input>
+               </Inputs>
+               <Outputs>
+                  <Output Name="Quotient" Index="0">
+                     <Description>Tooltip_Division_Quotient</Description>
                   </Output>
                </Outputs>
             </Element>
@@ -1019,6 +1075,15 @@
                   </DoubleParameter>
                </Parameters>
             </Element>
+            <Element Name="SumUp" Id="105">
+               <Description>Tooltip_SUMUP</Description>
+               <Inputs>
+                  <Input Name="In1" Index="0" />
+               </Inputs>
+               <Outputs>
+                  <Output Name="Out1" Index="0" />
+               </Outputs>
+            </Element>
          </Subset>
          <Subset Name="Motion Manipulation">
             <Element Name="AxisCorr" Id="33">
@@ -1242,40 +1307,40 @@
                   </Output>
                </Outputs>
                <Parameters>
-                  <DoubleParameter Name="MaxA1" Index="0" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA1" Index="0" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA1</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxA2" Index="1" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA2" Index="1" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA2</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxA3" Index="2" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA3" Index="2" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA3</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxA4" Index="3" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA4" Index="3" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA4</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxA5" Index="4" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA5" Index="4" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA5</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxA6" Index="5" Min="0" Default="6">
+                  <DoubleParameter Name="MaxA6" Index="5" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxA6</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE1" Index="6" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE1" Index="6" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE1</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE2" Index="7" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE2" Index="7" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE2</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE3" Index="8" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE3" Index="8" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE3</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE4" Index="9" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE4" Index="9" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE4</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE5" Index="10" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE5" Index="10" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE5</Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxE6" Index="11" Min="0" Default="6">
+                  <DoubleParameter Name="MaxE6" Index="11" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>Tooltip_AXISCORRMON_MaxE6</Description>
                   </DoubleParameter>
                </Parameters>
@@ -1420,13 +1485,13 @@
                   </Output>
                </Outputs>
                <Parameters>
-                  <DoubleParameter Name="MaxTrans" Index="0" Min="0" Default="6">
+                  <DoubleParameter Name="MaxTrans" Index="0" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>
                         <Remarks>Remark_ParamNoChangeDuringRuntime</Remarks>
                         <Summary>Tooltip_POSCORRMON_MaxTrans</Summary>
                      </Description>
                   </DoubleParameter>
-                  <DoubleParameter Name="MaxRotAngle" Index="1" Min="0" Default="6">
+                  <DoubleParameter Name="MaxRotAngle" Index="1" CanBeSetAtRuntime="false" Min="0" Default="6">
                      <Description>
                         <Remarks>Remark_ParamNoChangeDuringRuntime</Remarks>
                         <Summary>Tooltip_POSCORRMON_MaxRotAngle</Summary>
@@ -1460,6 +1525,37 @@
                      </Description>
                   </IntParameter>
                </Parameters>
+            </Element>
+            <Element Name="StopRobot" Id="103">
+               <Description>
+                  <Remarks>Remarks_STOPROBOT</Remarks>
+                  <Summary>Tooltip_STOPROBOT</Summary>
+               </Description>
+               <Inputs>
+                  <Input Name="In1" Index="0" />
+               </Inputs>
+               <Parameters>
+                  <EnumParameter Name="Mode" Index="0" CanBeSetAtRuntime="false" EnumType="StopMode" Default="Brake">
+                     <Description>
+                        <Remarks>Remarks_STOPROBOT_Mode</Remarks>
+                        <Summary>Tooltip_STOPROBOT_Mode</Summary>
+                     </Description>
+                     <EnumValues>
+                        <Value>Brake</Value>
+                        <Value>BrakeF</Value>
+                        <Value>BrakeFF</Value>
+                     </EnumValues>
+                  </EnumParameter>
+               </Parameters>
+            </Element>
+            <Element Name="ExitMoveCorr" Id="104">
+               <Description>
+                  <Remarks>Remarks_EXITMOVECORR</Remarks>
+                  <Summary>Tooltip_EXITMOVECORR</Summary>
+               </Description>
+               <Inputs>
+                  <Input Name="In1" Index="0" />
+               </Inputs>
             </Element>
          </Subset>
          <Subset Name="Robot Data">
@@ -1917,8 +2013,11 @@
                         <Value>O10</Value>
                      </EnumValues>
                   </EnumParameter>
-                  <DoubleParameter Name="Cutoff" Index="3" CanBeSetAtRuntime="false" Min="0" Default="1">
-                     <Description>Tooltip_IIRFILTER_Cuttoff</Description>
+                  <DoubleParameter Name="Cutoff" Index="3" CanBeSetAtRuntime="false" Min="1E-06" Default="1">
+                     <Description>
+                        <Remarks>Remarks_IIRFILTER_Cutoff</Remarks>
+                        <Summary>Tooltip_IIRFILTER_Cuttoff</Summary>
+                     </Description>
                   </DoubleParameter>
                </Parameters>
             </Element>
@@ -2398,26 +2497,57 @@
       </BlueprintCollection>
    </BlueprintCollections>
    <Constructs xmlns="RsiConstruct">
-      <Construct Name="Ethernet_1" BlueprintName="Ethernet" BlueprintCollection="RSI" Location="400,370">
+      <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="400,0">
          <Inputs>
-            <Input Name="In1" SourceObject="DigOut_1" SourcePort="Out1" Points="176.08,389.5;184.08,389.5;192.08,389.5;192.08,389.5;366,389.5;382,389.5" />
-            <Input Name="In2" SourceObject="DigIn_1" SourcePort="Out1" Points="176.08,955.9;188.08,955.9;200.08,955.9;200.08,419.5;366,419.5;382,419.5" />
+            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out1" Points="181.93,23.96;245.93,23.96;309.93,23.96;309.93,23.96;366,23.96;382,23.96" />
          </Inputs>
+      </Construct>
+      <Construct Name="Ethernet_1" BlueprintName="Ethernet" BlueprintCollection="RSI" Location="0,0">
          <Parameters>
-            <StringParameter Name="ConfigFile" Value="rsi_gpio_ethernet.xml" />
+            <StringParameter Name="ConfigFile" Value="rsi_ethernet.xml" />
             <IntParameter Name="Timeout" Value="100" />
             <IntParameter Name="Flag" Value="1" />
             <IntParameter Name="Precision" Value="4" />
          </Parameters>
       </Construct>
-      <Construct Name="AxisCorr_1" BlueprintName="AxisCorr" BlueprintCollection="RSI" Location="800,370">
+      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,890.96">
+         <Parameters>
+            <DoubleParameter Name="MaxA1" Value="1000" />
+            <DoubleParameter Name="MaxA2" Value="1000" />
+            <DoubleParameter Name="MaxA3" Value="1000" />
+            <DoubleParameter Name="MaxA4" Value="1000" />
+            <DoubleParameter Name="MaxA5" Value="1000" />
+            <DoubleParameter Name="MaxA6" Value="1000" />
+            <DoubleParameter Name="MaxE1" Value="2000" />
+         </Parameters>
+      </Construct>
+      <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="400,123.92">
          <Inputs>
-            <Input Name="CorrA1" SourceObject="Ethernet_1" SourcePort="Out2" Points="578.516666666667,419.5;598.516666666667,419.5;618.516666666667,419.5;618.516666666667,389.5;766,389.5;782,389.5" />
-            <Input Name="CorrA2" SourceObject="Ethernet_1" SourcePort="Out3" Points="578.516666666667,449.5;606.516666666667,449.5;634.516666666667,449.5;634.516666666667,419.5;766,419.5;782,419.5" />
-            <Input Name="CorrA3" SourceObject="Ethernet_1" SourcePort="Out4" Points="578.516666666667,479.5;614.516666666667,479.5;650.516666666667,479.5;650.516666666667,449.5;766,449.5;782,449.5" />
-            <Input Name="CorrA4" SourceObject="Ethernet_1" SourcePort="Out5" Points="578.516666666667,509.5;622.516666666667,509.5;666.516666666667,509.5;666.516666666667,479.5;766,479.5;782,479.5" />
-            <Input Name="CorrA5" SourceObject="Ethernet_1" SourcePort="Out6" Points="578.516666666667,539.5;630.516666666667,539.5;682.516666666667,539.5;682.516666666667,509.5;766,509.5;782,509.5" />
-            <Input Name="CorrA6" SourceObject="Ethernet_1" SourcePort="Out7" Points="578.516666666667,569.5;638.516666666667,569.5;698.516666666667,569.5;698.516666666667,539.5;766,539.5;782,539.5" />
+            <Input Name="CorrE1" SourceObject="Ethernet_1" SourcePort="Out8" Points="181.93,233.96;249.93,233.96;317.93,233.96;317.93,147.88;366,147.88;382,147.88" />
+         </Inputs>
+         <Parameters>
+            <DoubleParameter Name="LowerLimE1" CanBeSetFromKrl="true" Value="-1000" />
+            <DoubleParameter Name="LowerLimE2" CanBeSetFromKrl="true" Value="-5" />
+            <DoubleParameter Name="LowerLimE3" CanBeSetFromKrl="true" Value="-5" />
+            <DoubleParameter Name="LowerLimE4" CanBeSetFromKrl="true" Value="-5" />
+            <DoubleParameter Name="LowerLimE5" CanBeSetFromKrl="true" Value="-5" />
+            <DoubleParameter Name="LowerLimE6" CanBeSetFromKrl="true" Value="-5" />
+            <DoubleParameter Name="UpperLimE1" CanBeSetFromKrl="true" Value="1000" />
+            <DoubleParameter Name="UpperLimE2" CanBeSetFromKrl="true" Value="5" />
+            <DoubleParameter Name="UpperLimE3" CanBeSetFromKrl="true" Value="5" />
+            <DoubleParameter Name="UpperLimE4" CanBeSetFromKrl="true" Value="5" />
+            <DoubleParameter Name="UpperLimE5" CanBeSetFromKrl="true" Value="5" />
+            <DoubleParameter Name="UpperLimE6" CanBeSetFromKrl="true" Value="5" />
+         </Parameters>
+      </Construct>
+      <Construct Name="AxisCorr_1" BlueprintName="AxisCorr" BlueprintCollection="RSI" Location="400,507.44">
+         <Inputs>
+            <Input Name="CorrA1" SourceObject="Ethernet_1" SourcePort="Out2" Points="181.93,53.96;237.93,53.96;309.93,53.96;309.93,531.4;366,531.4;382,531.4" />
+            <Input Name="CorrA2" SourceObject="Ethernet_1" SourcePort="Out3" Points="181.93,83.960000000000008;229.93,83.960000000000008;293.93,83.960000000000008;293.93,561.4;366,561.4;382,561.4" />
+            <Input Name="CorrA3" SourceObject="Ethernet_1" SourcePort="Out4" Points="181.93,113.96000000000001;221.93,113.96000000000001;277.93,113.96000000000001;277.93,591.4;366,591.4;382,591.4" />
+            <Input Name="CorrA4" SourceObject="Ethernet_1" SourcePort="Out5" Points="181.93,143.96;213.93,143.96;261.93,143.96;261.93,621.4;366,621.4;382,621.4" />
+            <Input Name="CorrA5" SourceObject="Ethernet_1" SourcePort="Out6" Points="181.93,173.96;205.93,173.96;245.93,173.96;245.93,651.4;366,651.4;382,651.4" />
+            <Input Name="CorrA6" SourceObject="Ethernet_1" SourcePort="Out7" Points="181.93,203.96;197.93,203.96;213.93,203.96;213.93,681.4;366,681.4;382,681.4" />
          </Inputs>
          <Parameters>
             <DoubleParameter Name="LowerLimA1" CanBeSetFromKrl="true" Value="-180" />
@@ -2433,34 +2563,6 @@
             <DoubleParameter Name="UpperLimA5" CanBeSetFromKrl="true" Value="180" />
             <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
          </Parameters>
-      </Construct>
-      <Construct Name="Stop_1" BlueprintName="Stop" BlueprintCollection="RSI" Location="800,709.8">
-         <Inputs>
-            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out1" Points="578.516666666667,389.5;642.516666666667,389.5;706.516666666667,389.5;706.516666666667,729.3;766,729.3;782,729.3" />
-         </Inputs>
-      </Construct>
-      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,0">
-         <Parameters>
-            <DoubleParameter Name="MaxA1" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxA2" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxA3" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxA4" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxA5" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxA6" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="MaxE1" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxE2" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxE3" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxE4" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxE5" CanBeSetFromKrl="true" Value="6" />
-            <DoubleParameter Name="MaxE6" CanBeSetFromKrl="true" Value="6" />
-         </Parameters>
-      </Construct>
-      <Construct Name="DigOut_1" BlueprintName="DigOut" BlueprintCollection="RSI" Location="0,370" />
-      <Construct Name="DigIn_1" BlueprintName="DigIn" BlueprintCollection="RSI" Location="0,936.4" />
-      <Construct Name="Map2DigOut_1" BlueprintName="Map2DigOut" BlueprintCollection="RSI" Location="800,823.1">
-         <Inputs>
-            <Input Name="In1" SourceObject="Ethernet_1" SourcePort="Out8" Points="578.516666666667,599.5;586.516666666667,599.5;594.516666666667,599.5;594.516666666667,842.6;766,842.6;782,842.6" />
-         </Inputs>
       </Construct>
    </Constructs>
 </RsiContext>
