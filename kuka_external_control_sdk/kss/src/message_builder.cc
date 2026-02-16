@@ -157,7 +157,7 @@ bool MotionState::ParseMeasuredPositions(
         }
       } else {
         // Skip all values associated with unconfigured axes
-        while (str[++next_value_idx] != '"');
+        while (++next_value_idx < len && str[next_value_idx] != '"');
       }
     } else {
       return false;
