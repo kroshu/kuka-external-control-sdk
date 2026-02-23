@@ -86,7 +86,7 @@ GLOBAL DEF ROS_HandleConnection()
     IF IsClientConnected() AND $FLAG[ROS_EKI_CONN_ERR_FLAG] THEN
         ROS_Info("Communication channel is down")
         Connected = FALSE
-    ENDIF       
+    ENDIF
     IF IsClientConnected() <> connection_flag THEN
         connection_flag = IsClientConnected()
         IF IsClientConnected() THEN
@@ -96,13 +96,13 @@ GLOBAL DEF ROS_HandleConnection()
             EKI_ServerReset()
         ENDIF
     ENDIF
-    
+
 END
 
 GLOBAL DEF ROS_PublishEvent()
     DECL INT ret
     INT event_int
-    
+
     IF last_event <> #NONE THEN
         IF NOT IsClientConnected() THEN
             ;ROS_Error("External client is not connected when trying to send event")
@@ -127,12 +127,12 @@ GLOBAL DEF ROS_PublishEvent()
 
         ; Send the message
         ret = EKI_Send(INTERFACE_NAME[])
-        
+
         IF ret == EkiInvalidOperation THEN
            ROS_Error("EkiInvalidOperation for send")
            Connected = FALSE
         ENDIF
-   
+
         ; Reset event
         ROS_SetLastEvent(#NONE)
         ret = EKI_SetString(INTERFACE_NAME[], "Response", " ")

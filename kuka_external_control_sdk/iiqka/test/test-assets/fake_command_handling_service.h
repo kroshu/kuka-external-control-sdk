@@ -63,14 +63,14 @@ class FakeCommandHandlingService : public ::kuka::ecs::v1::ExternalControlServic
     *(motion_state.mutable_header()) = control_signal.header();
     motion_state.mutable_motion_state()->set_ipo_stopped(control_signal.control_signal().stop_ipo());
 
-    if (control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_POSITION_CONTROL 
+    if (control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_POSITION_CONTROL
         || control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_IMPEDANCE_CONTROL) {
       for (int i = 0; i < control_signal.control_signal().joint_command().values_size();
             ++i) {
         motion_state.mutable_motion_state()->mutable_measured_positions()->set_values(i, control_signal.control_signal().joint_command().values(i));
       }
     }
-    
+
     if (control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_TORQUE_CONTROL) {
       for (int i = 0; i < control_signal.control_signal().joint_torque_command().values_size();
             ++i) {

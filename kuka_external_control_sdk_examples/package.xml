@@ -5,7 +5,6 @@
   <version>1.4.1</version>
   <description>Examples for using KUKA external control SDK</description>
   <maintainer email="kovacsge.work@gmail.com">Gergely Kovacs</maintainer>
-  <maintainer email="sanyi.komaromi@gmail.com">Sandor Komaromi</maintainer>
   <maintainer email="pasztor.kristof.kp@gmail.com">Kristof Matyas Pasztor</maintainer>
   <maintainer email="pepo.tamas@gmail.com">Tamas Pepo</maintainer>
   <maintainer email="svastits1@gmail.com">Aron Svastits</maintainer>

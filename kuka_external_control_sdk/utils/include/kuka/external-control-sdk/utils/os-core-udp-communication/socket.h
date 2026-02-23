@@ -73,8 +73,8 @@ class Socket {
   virtual ~Socket();
 
  public:
-  /* creates a new socket with the given `flags`, and returns the underlaying
-   * socket identifer */
+  /* creates a new socket with the given `flags`, and returns the underlying
+   * socket identifier */
   virtual int Map(int flags = 0);
 
   /*sets generic socket option*/

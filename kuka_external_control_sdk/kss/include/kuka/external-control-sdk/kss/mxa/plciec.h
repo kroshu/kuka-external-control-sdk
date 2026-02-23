@@ -26,7 +26,7 @@
 #define _OUT    // NOOP
 #define _INOUT  // NOOP
 
-// on windows in minwindef.h these identifiers are definied as macros thus sometimes causing problems
+// on windows in minwindef.h these identifiers are defined as macros thus sometimes causing problems
 #undef IN
 #undef OUT
 #undef ERROR
@@ -68,7 +68,7 @@ typedef float REAL;
 // 11 LREAL lange reelle Zahl 64 f
 typedef double LREAL;
 // 12 TIME Zeitdauer -- b
-typedef int TIME;  // Milisecond timestamp. Must be signed!
+typedef int TIME;  // Millisecond timestamp. Must be signed!
 /*
 // 13 DATE Datum(nur) --b
 typedef unsigned int DATE;
@@ -79,7 +79,7 @@ typedef unsigned int TOD;
 typedef unsigned int DATE_AND_TIME;
 typedef unsigned int DT;
 */
-// 16 STRING variabel - lange Zeichenfolge 8 i, g
+// 16 STRING variable - lange Zeichenfolge 8 i, g
 typedef std::string STRING;
 // 17 BYTE Bit - Folge 8 8 J, g
 typedef unsigned char BYTE;

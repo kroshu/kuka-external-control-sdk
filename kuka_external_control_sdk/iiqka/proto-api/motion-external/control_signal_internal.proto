@@ -49,4 +49,3 @@ message ControlSignalInternal {
   // The control mode for the command sent
   ExternalControlMode control_mode = 10;
 }
-

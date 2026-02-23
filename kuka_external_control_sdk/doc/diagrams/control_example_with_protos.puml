@@ -37,7 +37,7 @@ loop until stop requested
 		app -> app: execute calculations based on motion state
 		app -> app: fill ControlSignalExternal message based on calculations with motion state
 		autoactivate on
-		
+
 		alt normal execution
 			app -> ctrl: send control signal
 			ctrl --> app: OK
@@ -58,8 +58,8 @@ loop until stop requested
 			ctrl --> app: OK
 			ctrl --> app: return STOPPED state on observer stream
 		end
-		
-	else error occured on controller
+
+	else error occurred on controller
 		ctrl --> app: return ERROR state on observer stream
 	end
 end

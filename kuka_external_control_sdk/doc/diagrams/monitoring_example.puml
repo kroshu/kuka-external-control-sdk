@@ -36,8 +36,8 @@ robot --> app: OK
 
 loop until stop wanted
 	ctrl --> robot: motion state: BaseMotionState
-	robot --> app: call motion state handler callback 
-	
+	robot --> app: call motion state handler callback
+
 
 	autoactivate off
 	app -> app: execute calculations/act based on motion state

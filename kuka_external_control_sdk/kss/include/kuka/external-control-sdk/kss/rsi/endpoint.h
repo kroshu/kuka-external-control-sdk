@@ -29,7 +29,7 @@ class Endpoint {
  public:
   // Set up necessary prerequsities for a successful RSI communication
   bool Setup(const std::string& local_ip, unsigned short local_udp_port);
-  
+
   // endpoint.cpp
   bool Setup(unsigned short local_udp_port) { return Setup("0.0.0.0", local_udp_port); }
 

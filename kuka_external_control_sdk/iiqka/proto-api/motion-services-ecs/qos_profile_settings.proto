@@ -45,6 +45,3 @@ message RTPacketLossProfile
   // Intervene after we lose at least this many packets consequently
   uint32 consequent_lost_packets = 3;
 }
-
-
-

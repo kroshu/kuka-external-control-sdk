@@ -56,4 +56,3 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/kuka_external_control_sdk/hook/a
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/kuka_external_control_sdk/hook/ros_package_path.dsv "prepend-non-duplicate;ROS_PACKAGE_PATH;")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/kuka_external_control_sdk/hook/ros_package_path.dsv DESTINATION share/kuka_external_control_sdk/hook)
 #### End import ####
-

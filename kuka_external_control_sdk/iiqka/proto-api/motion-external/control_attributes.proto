@@ -31,7 +31,7 @@ message JointImpedanceControlAttributes{
   repeated double damping = 2;
 }
 
-// Type to describe the attributes specific to the cartesion impedance control mode.
+// Type to describe the attributes specific to the cartesian impedance control mode.
 message CartesianImpedanceControlAttributes{
   // Cartesian stiffness values (xyzabc)
   repeated double stiffness = 1;
@@ -42,4 +42,3 @@ message CartesianImpedanceControlAttributes{
   // Cartesian damping values for nullspaces of robot
   repeated double nullspace_damping = 4;
 }
-

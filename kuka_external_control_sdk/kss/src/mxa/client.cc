@@ -170,7 +170,7 @@ void Client::StartKeepAliveThread() {
         // that always occurs
         connected = false;
         event_handler_->OnError(
-            "Keep-alive thread: UDP subcriber receive timed out");
+            "Keep-alive thread: UDP subscriber receive timed out");
       }
       if (connected) {
         // ----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void Client::StartKeepAliveThread() {
           error_msg = "ESTOP is active";
           break;
         default:
-          error_msg = "Keep-alive thread error occured with ID: " +
+          error_msg = "Keep-alive thread error occurred with ID: " +
                       std::to_string(error_code);
           break;
         }

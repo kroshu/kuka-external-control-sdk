@@ -56,7 +56,7 @@ struct GPIOConfiguration {
 };
 
 struct JointConfiguration {
-  enum class Type : uint8_t { UNKONWN = 0, REVOLUTE = 1, PRISMATIC = 2 };
+  enum class Type : uint8_t { UNKNOWN = 0, REVOLUTE = 1, PRISMATIC = 2 };
 
   JointConfiguration(const std::string& n, Type t, bool e) : name(n), type(t), is_external(e) {}
 
@@ -67,14 +67,14 @@ struct JointConfiguration {
   static constexpr Type ToType(std::string_view s) {
     if (s == "revolute")  return Type::REVOLUTE;
     if (s == "prismatic") return Type::PRISMATIC;
-    return Type::UNKONWN;
+    return Type::UNKNOWN;
   }
 
   static constexpr std::string_view TypeToString(Type t) {
     switch (t) {
     case Type::REVOLUTE:  return "revolute";
     case Type::PRISMATIC: return "prismatic";
-    default:              return "unkown";
+    default:              return "unknown";
     }
   }
 };

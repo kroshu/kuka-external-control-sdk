@@ -22,8 +22,8 @@ namespace os::core::udp::communication {
 
 class TCPClientSocket : public Socket {
  public:
-  /* creates a new socket with the given `flags`, and returns the underlaying
-   * socket identifer */
+  /* creates a new socket with the given `flags`, and returns the underlying
+   * socket identifier */
   virtual int Map(int flags = 0) override;
 };
 

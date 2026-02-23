@@ -16,7 +16,7 @@ class ControlEventHandler : public kuka::external::control::EventHandler {
     std::cout << "Stopped, reason: " << reason << std::endl;
   };
   virtual void OnError(const std::string& reason) override {
-    std::cout << "Error occured, reason: " << reason << std::endl;
+    std::cout << "Error occurred, reason: " << reason << std::endl;
   };
 };
 
