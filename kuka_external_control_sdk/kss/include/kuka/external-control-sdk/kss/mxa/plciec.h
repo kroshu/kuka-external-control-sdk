@@ -42,52 +42,52 @@
 namespace PLCIEC
 {
 
-// 1 BOOL boolesche 1 h
+// 1 BOOL boolean 1 h
 typedef bool BOOL;
-// 3 INT ganze Zahl(integer) 16 c
+// 3 INT whole number (integer) 16 c
 typedef short INT;
-// 7 UINT vorzeichenlose ganze Zahl 16 d
+// 7 UINT unsigned whole number 16 d
 typedef unsigned short UINT;
-// 19 DWORD Bit - Folge 32 32 J, g
+// 19 DWORD bit sequence 32 32 J, g
 typedef unsigned int DWORD;
 
-// 2 SINT kurze ganze Zahl(short integer) 8 c
+// 2 SINT short whole number (short integer) 8 c
 typedef signed char SINT;
-// 4 DINT doppelte ganze Zahl(double integer) 32 c
+// 4 DINT double whole number (double integer) 32 c
 typedef int DINT;
-// 5 LINT lange ganze Zahl(long integer) 64 c
+// 5 LINT long whole number (long integer) 64 c
 typedef long LINT;
-// 6 USINT vorzeichenlose kurze ganze Zahl(unsigned short integer) 8 d
+// 6 USINT unsigned short whole number (unsigned short integer) 8 d
 typedef unsigned char USINT;
-// 8 UDINT vorzeichenlose doppelte ganze Zahl 32 d
+// 8 UDINT unsigned double whole number 32 d
 typedef unsigned int UDINT;
-// 9 ULINT vorzeichenlose lange ganze Zahl 64 d
+// 9 ULINT unsigned long whole number 64 d
 typedef unsigned long ULINT;
-// 10 REAL reelle Zahl 32 e
+// 10 REAL real number 32 e
 typedef float REAL;
-// 11 LREAL lange reelle Zahl 64 f
+// 11 LREAL long real number 64 f
 typedef double LREAL;
-// 12 TIME Zeitdauer -- b
+// 12 TIME time duration -- b
 typedef int TIME;  // Millisecond timestamp. Must be signed!
 /*
-// 13 DATE Datum(nur) --b
+// 13 DATE date (only) --b
 typedef unsigned int DATE;
-// 14 TIME_OF_DAY oder TOD Uhrzeit(nur) --b
+// 14 TIME_OF_DAY or TOD time of day --b
 typedef unsigned int TIME_OF_DAY;
 typedef unsigned int TOD;
-// 15 DATE_AND_TIME oder DT Datum und Uhrzeit -- b
+// 15 DATE_AND_TIME or DT date and time -- b
 typedef unsigned int DATE_AND_TIME;
 typedef unsigned int DT;
 */
-// 16 STRING variable - lange Zeichenfolge 8 i, g
+// 16 STRING variable-length string 8 i, g
 typedef std::string STRING;
-// 17 BYTE Bit - Folge 8 8 J, g
+// 17 BYTE bit sequence 8 8 J, g
 typedef unsigned char BYTE;
-// 18 WORD Bit - Folge 16 16 J, g
+// 18 WORD bit sequence 16 16 J, g
 typedef unsigned short WORD;
-// 20 LWORD Bit - Folge 64 64 J, g
+// 20 LWORD bit sequence 64 64 J, g
 typedef unsigned long LWORD;
-// 21 WSTRING Variable lange Doppel - Byte - Zeichenfolge 16 i, g
+// 21 WSTRING variable-length double-byte string 16 i, g
 typedef std::wstring WSTRING;
 
 /* Set bit @ pos if val is true, clear bit @ pos if val is false */
