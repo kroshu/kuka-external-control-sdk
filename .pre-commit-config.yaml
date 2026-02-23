@@ -82,6 +82,7 @@ repos:
         stages: [commit]
         entry: ament_copyright
         language: system
+        exclude: (cmake/|plciec\.h|mxAutomation\.h)
 
   # Docs - RestructuredText hooks
   - repo: https://github.com/PyCQA/doc8
