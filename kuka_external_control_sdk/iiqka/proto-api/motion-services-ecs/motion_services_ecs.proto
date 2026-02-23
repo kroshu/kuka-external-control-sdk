@@ -25,9 +25,9 @@ option java_multiple_files = true;
 option java_outer_classname = "ExternalControlServiceProto";
 option java_package = "com.kuka.ecs.v1";
 
-
 // External control gRPC Service
-service ExternalControlService {
+service ExternalControlService
+{
   // Start external control
   rpc OpenControlChannel(OpenControlChannelRequest) returns (OpenControlChannelResponse);
   // Observe external control state
@@ -58,36 +58,44 @@ message OpenControlChannelRequest
 }
 
 // Start control response
-message OpenControlChannelResponse {
+message OpenControlChannelResponse
+{
   // Empty
 }
 // Start Monitoring Request
-message StartMonitoringRequest {
+message StartMonitoringRequest
+{
   // Empty
 }
 // Start Monitoring Response
-message StartMonitoringResponse {
+message StartMonitoringResponse
+{
   // Empty
 }
 // Stop Monitoring Request
-message StopMonitoringRequest {
+message StopMonitoringRequest
+{
   // Empty
 }
 // Stop Monitoring Response
-message StopMonitoringResponse {
+message StopMonitoringResponse
+{
   // Empty
 }
 // Set QoS Profile Request
-message SetQoSProfileRequest {
+message SetQoSProfileRequest
+{
   // List of QoSProfiles to include
   repeated QoSProfile qos_profiles = 1;
 }
 // Set QoS Profile Response
-message SetQoSProfileResponse {
+message SetQoSProfileResponse
+{
   // Empty
 }
 // Observe Control StateRequest
-message ObserveControlStateRequest {
+message ObserveControlStateRequest
+{
   // Empty
 }
 // Command State for external client

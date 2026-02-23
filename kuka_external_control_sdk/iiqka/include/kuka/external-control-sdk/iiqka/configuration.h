@@ -20,9 +20,11 @@
 
 #include "kuka/external-control-sdk/common/irobot.h"
 
-namespace kuka::external::control::iiqka {
+namespace kuka::external::control::iiqka
+{
 
-struct Configuration {
+struct Configuration
+{
   // IP address of the KONI interface on the KRC-5.
   std::string koni_ip_address;
   // IP address of the client machine.
@@ -58,7 +60,8 @@ struct Configuration {
   const std::string udp_subscriber_multicast_address = "239.255.123.250";
 };
 
-struct QoS_Configuration {
+struct QoS_Configuration
+{
   // If the number of lost packets in a given timeframe exceeds this value, the connection is
   // lost.
   uint32_t packet_loss_in_timeframe_limit = 3;

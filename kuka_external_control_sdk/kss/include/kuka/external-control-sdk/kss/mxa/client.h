@@ -24,17 +24,19 @@
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/initialization_data.h"
-#include "kuka/external-control-sdk/kss/status_update.h"
 #include "kuka/external-control-sdk/kss/mxa/mxa_wrapper.h"
+#include "kuka/external-control-sdk/kss/status_update.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 
-namespace kuka::external::control::kss::mxa {
+namespace kuka::external::control::kss::mxa
+{
 
 // Class for communicating with the KRC via MXA
-class Client {
+class Client
+{
 public:
-  Client(const std::string &controller_ip, int client_port);
+  Client(const std::string & controller_ip, int client_port);
 
   ~Client();
 
@@ -57,13 +59,11 @@ public:
   void TurnOffDrives();
 
   // Registers an event handler
-  Status RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler);
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler);
 
-  Status RegisterEventHandlerExtension(
-      std::unique_ptr<IEventHandlerExtension> &&extension);
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension);
 
-  Status
-  RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler> &&handler);
+  Status RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler> && handler);
 
 private:
   // Start keep-alive thread
@@ -72,7 +72,8 @@ private:
   // UDP communication
   std::unique_ptr<os::core::udp::communication::Publisher> udp_publisher_;
   std::unique_ptr<os::core::udp::communication::Subscriber> udp_subscriber_;
-  static constexpr int kMXAServerPort = 1336;  // Port on which the controller listens for MXA messages
+  static constexpr int kMXAServerPort =
+    1336;  // Port on which the controller listens for MXA messages
   static constexpr int kMXAClientSendPort = 1335;  // Port from which the client sends MXA messages
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
@@ -121,6 +122,6 @@ private:
   static constexpr std::size_t kMxaTechFunctionParamSize = 41;
 };
 
-} // namespace kuka::external::control::kss::mxa
+}  // namespace kuka::external::control::kss::mxa
 
-#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_

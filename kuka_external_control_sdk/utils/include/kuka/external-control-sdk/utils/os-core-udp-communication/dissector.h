@@ -21,7 +21,8 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
 /*
   *Dissector* handles message dissection for packets.
@@ -32,40 +33,42 @@ namespace os::core::udp::communication {
   For custom dissector (behaviour to determine message is valid and if yes what length it has) the
   *Dissect()* fn must be implemented.
 */
-class Dissector {
- public:
-  using raw_message_t = std::pair<char*, size_t>;
+class Dissector
+{
+public:
+  using raw_message_t = std::pair<char *, size_t>;
 
- public:
+public:
   Dissector(std::shared_ptr<Socket> socket, size_t buffer_size);
   virtual ~Dissector() = default;
 
- public:  //<socket operations>
-  virtual Socket::ErrorCode Receive(raw_message_t& message, int flags = 0);
-  virtual Socket::ErrorCode ReceiveOrTimeout(const std::chrono::microseconds& timeout,
-                                             raw_message_t& message, int flags = 0);
+public:  //<socket operations>
+  virtual Socket::ErrorCode Receive(raw_message_t & message, int flags = 0);
+  virtual Socket::ErrorCode ReceiveOrTimeout(
+    const std::chrono::microseconds & timeout, raw_message_t & message, int flags = 0);
 
- protected:
-  virtual int Dissect(char* /*cursor_ptr*/, size_t available_bytes) { return available_bytes; }
+protected:
+  virtual int Dissect(char * /*cursor_ptr*/, size_t available_bytes) { return available_bytes; }
 
- public:  //<properties>
+public:  //<properties>
   std::string GetLastErrorText() const { return socket_->GetLastErrorText(); };
-  std::pair<Socket::ErrorCode, int> GetLastSocketError() const {
+  std::pair<Socket::ErrorCode, int> GetLastSocketError() const
+  {
     return socket_->GetLastSocketError();
   };
-  const char* Cursor() const { return buffer_.data() + data_cursor_; }
-  char* Cursor() { return buffer_.data() + data_cursor_; }
-  std::shared_ptr<Socket>& socket() { return socket_; }
-  const std::shared_ptr<Socket>& socket() const { return socket_; }
+  const char * Cursor() const { return buffer_.data() + data_cursor_; }
+  char * Cursor() { return buffer_.data() + data_cursor_; }
+  std::shared_ptr<Socket> & socket() { return socket_; }
+  const std::shared_ptr<Socket> & socket() const { return socket_; }
 
- protected:
+protected:
   std::shared_ptr<Socket> socket_;
 
- protected:
+protected:
   std::vector<char> buffer_;
   int maximum_buffer_size_{0};
 
- protected:
+protected:
   int data_cursor_{0};
   int data_length_{0};
 };
@@ -74,20 +77,22 @@ class Dissector {
  *DynamicDissector* is special version of *Dissector* to enable dynamic dissector behaviour to avoid
  *creating new derived classes for smaller logics.
  */
-class DynamicDissector : public Dissector {
- public:
-  using dissector_fn_t = int(char* data_ptr, size_t data_length);
+class DynamicDissector : public Dissector
+{
+public:
+  using dissector_fn_t = int(char * data_ptr, size_t data_length);
 
- public:
-  DynamicDissector(std::shared_ptr<Socket> socket, size_t buffer_size,
-                   std::function<dissector_fn_t> dissector_fn);
+public:
+  DynamicDissector(
+    std::shared_ptr<Socket> socket, size_t buffer_size, std::function<dissector_fn_t> dissector_fn);
 
- protected:  //<Dissector>
-  virtual int Dissect(char* cursor_ptr, size_t available_bytes) {
+protected:  //<Dissector>
+  virtual int Dissect(char * cursor_ptr, size_t available_bytes)
+  {
     return message_dissector_fn_(cursor_ptr, available_bytes);
   }
 
- public:
+public:
   std::function<dissector_fn_t> message_dissector_fn_;
 };
 

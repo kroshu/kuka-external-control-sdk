@@ -26,15 +26,17 @@
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
-class Robot : public IRobot {
+class Robot : public IRobot
+{
   // Special methods
- public:
+public:
   Robot(Configuration);
 
   // Interface implementation
- public:
+public:
   virtual Status Setup() override;
 
   virtual Status StartControlling(kuka::external::control::ControlMode) override;
@@ -43,7 +45,7 @@ class Robot : public IRobot {
   virtual Status StopControlling() override;
   virtual Status StopMonitoring() override;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
+  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
   virtual Status CancelMonitoringSubscription() override;
 
   virtual bool HasMonitoringSubscription() override;
@@ -51,15 +53,15 @@ class Robot : public IRobot {
   virtual Status SendControlSignal() override;
   virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
-  BaseControlSignal& GetControlSignal() override;
-  BaseMotionState& GetLastMotionState() override;
+  BaseControlSignal & GetControlSignal() override;
+  BaseMotionState & GetLastMotionState() override;
 
   // TODO add to documentation that other commands could come in between the Stop and Start call
   // here, also evaluate dispatcher mode
   virtual Status SwitchControlMode(ControlMode control_mode) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
- private:
+private:
   std::unique_ptr<IRobot> installed_interface_ = nullptr;
 };
 

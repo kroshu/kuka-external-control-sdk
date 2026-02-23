@@ -25,19 +25,24 @@ using kuka::external::control::kss::InitializationData;
 using kuka::external::control::kss::IStatusUpdateHandler;
 using kuka::external::control::kss::StatusUpdate;
 
-namespace external_control_sdk_example {
-class EventHandlerExtension : public IEventHandlerExtension {
- public:
-  void OnConnected(const InitializationData& init_data) override {
+namespace external_control_sdk_example
+{
+class EventHandlerExtension : public IEventHandlerExtension
+{
+public:
+  void OnConnected(const InitializationData & init_data) override
+  {
     std::cout << "Established connection to KRC:" << std::endl;
     std::cout << "  Number of axes: " << init_data.num_axes << std::endl;
     std::cout << "  Number of external axes: " << init_data.num_external_axes << std::endl;
   }
 };
 
-class StatusUpdateHandler : public IStatusUpdateHandler {
- public:
-  void OnStatusUpdateReceived(const StatusUpdate& status) override {
+class StatusUpdateHandler : public IStatusUpdateHandler
+{
+public:
+  void OnStatusUpdateReceived(const StatusUpdate & status) override
+  {
     std::cout << "Received status update from KRC:" << std::endl;
     std::cout << "  Control mode: " << static_cast<int>(status.control_mode_) << std::endl;
     std::cout << "  Cycle time: " << static_cast<int>(status.cycle_time_) << std::endl;

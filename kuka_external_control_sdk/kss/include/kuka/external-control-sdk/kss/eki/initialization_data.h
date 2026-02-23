@@ -20,27 +20,32 @@
 #include <tinyxml2.h>
 
 #include "kuka/external-control-sdk/common/irobot.h"
-#include "kuka/external-control-sdk/kss/initialization_data.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
+#include "kuka/external-control-sdk/kss/initialization_data.h"
 
-namespace kuka::external::control::kss::eki {
-
-struct EKIInitializationData: public kuka::external::control::kss::InitializationData
+namespace kuka::external::control::kss::eki
 {
-  bool Parse(const char* data_to_parse) {
+
+struct EKIInitializationData : public kuka::external::control::kss::InitializationData
+{
+  bool Parse(const char * data_to_parse)
+  {
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLError error = doc.Parse(data_to_parse);
-    if (error != tinyxml2::XMLError::XML_SUCCESS) {
+    if (error != tinyxml2::XMLError::XML_SUCCESS)
+    {
       return false;
     }
 
-    tinyxml2::XMLElement* root = doc.RootElement();
-    if (root == nullptr) {
+    tinyxml2::XMLElement * root = doc.RootElement();
+    if (root == nullptr)
+    {
       return false;
     }
 
-    tinyxml2::XMLElement* init_elem = root->FirstChildElement("Init");
-    if (init_elem == nullptr) {
+    tinyxml2::XMLElement * init_elem = root->FirstChildElement("Init");
+    if (init_elem == nullptr)
+    {
       return false;
     }
 

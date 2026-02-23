@@ -19,32 +19,34 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class Replier {
- public:
+class Replier
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:  //<ctor>
-  Replier(const SocketAddress& local_address);
+public:  //<ctor>
+  Replier(const SocketAddress & local_address);
   virtual ~Replier() = default;
   virtual ErrorCode Setup();
   virtual void Reset();
 
- public:  //<operations>
+public:  //<operations>
   virtual ErrorCode ReceiveRequest();
   virtual ErrorCode ReceiveRequestOrTimeout(std::chrono::microseconds recv_timeout);
   virtual ErrorCode EmptyBuffer();
-  virtual ErrorCode SendReply(uint8_t* reply_msg_data, size_t reply_msg_size);
+  virtual ErrorCode SendReply(uint8_t * reply_msg_data, size_t reply_msg_size);
 
- public:  //<properties>
+public:  //<properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   bool IsRequestActive() const { return active_request_; }
-  std::pair<const uint8_t*, size_t> GetRequestMessage() const;
-  const SocketAddress& LocalAddress() const { return local_address_; }
-  const SocketAddress& LastRemoteAddress() const { return last_remote_address_; }
+  std::pair<const uint8_t *, size_t> GetRequestMessage() const;
+  const SocketAddress & LocalAddress() const { return local_address_; }
+  const SocketAddress & LastRemoteAddress() const { return last_remote_address_; }
 
- protected:
+protected:
   uint8_t server_buffer_[kMaxBufferSize];
 
   Socket socket_;

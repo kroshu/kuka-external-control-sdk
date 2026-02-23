@@ -17,10 +17,13 @@
 
 #include <google/protobuf/arena.h>
 
-namespace kuka::external::control::iiqka {
+namespace kuka::external::control::iiqka
+{
 template <typename T>
-struct ArenaWrapper {
-  ArenaWrapper() {
+struct ArenaWrapper
+{
+  ArenaWrapper()
+  {
     initial_buffer_ = new char[kBufferSize];
 
     google::protobuf::ArenaOptions arena_options;
@@ -32,15 +35,18 @@ struct ArenaWrapper {
     arena_ = new google::protobuf::Arena(arena_options);
   }
 
-  ~ArenaWrapper() {
+  ~ArenaWrapper()
+  {
     delete arena_;
     delete[] initial_buffer_;
   }
 
-  T* CreateMessage() { return (message_ = google::protobuf::Arena::CreateMessage<T>(arena_)); }
+  T * CreateMessage() { return (message_ = google::protobuf::Arena::CreateMessage<T>(arena_)); }
 
-  bool SerializeExistingMessageToArray(unsigned char* serialized_bytes, std::size_t size) {
-    if (!message_->SerializeToArray(serialized_bytes, size)) {
+  bool SerializeExistingMessageToArray(unsigned char * serialized_bytes, std::size_t size)
+  {
+    if (!message_->SerializeToArray(serialized_bytes, size))
+    {
       return false;
     }
 
@@ -48,15 +54,18 @@ struct ArenaWrapper {
     return true;
   }
 
-  bool SerializeToArray(unsigned char* serialized_bytes, std::size_t size) {
+  bool SerializeToArray(unsigned char * serialized_bytes, std::size_t size)
+  {
     message_ = google::protobuf::Arena::CreateMessage<T>(arena_);
     return SerializeExistingMessageToArray(serialized_bytes, size);
   }
 
-  bool ParseFromArray(const unsigned char* serialized_bytes, std::size_t size) {
+  bool ParseFromArray(const unsigned char * serialized_bytes, std::size_t size)
+  {
     message_ = google::protobuf::Arena::CreateMessage<T>(arena_);
 
-    if (!message_->ParseFromArray(serialized_bytes, size)) {
+    if (!message_->ParseFromArray(serialized_bytes, size))
+    {
       return false;
     }
 
@@ -64,23 +73,24 @@ struct ArenaWrapper {
     return true;
   }
 
-  google::protobuf::Arena* Get() { return arena_; }
+  google::protobuf::Arena * Get() { return arena_; }
 
-  T* GetMessage() { return message_; }
+  T * GetMessage() { return message_; }
 
- private:
-  void ResetIfNecessary() {
-    if (arena_->SpaceUsed() > kResetArenaThreshold) {
+private:
+  void ResetIfNecessary()
+  {
+    if (arena_->SpaceUsed() > kResetArenaThreshold)
+    {
       arena_->Reset();
     }
   }
-  char* initial_buffer_;
-  google::protobuf::Arena* arena_;
-  T* message_ = nullptr;
+  char * initial_buffer_;
+  google::protobuf::Arena * arena_;
+  T * message_ = nullptr;
   const std::size_t kBufferSize = 8000;
   const std::size_t kInitialBlockSize = kBufferSize;
-  const std::size_t kResetArenaThreshold =
-      6000;
+  const std::size_t kResetArenaThreshold = 6000;
 };
 
 }  // namespace kuka::external::control::iiqka

@@ -20,12 +20,16 @@
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
-struct InitializationData {
+struct InitializationData
+{
   InitializationData() = default;
   InitializationData(uint8_t num_ax, uint8_t num_ext_ax)
-      : num_axes(num_ax), num_external_axes(num_ext_ax) {}
+  : num_axes(num_ax), num_external_axes(num_ext_ax)
+  {
+  }
 
   virtual ~InitializationData() = default;  // makes it polymorphic
 
@@ -35,11 +39,11 @@ struct InitializationData {
   uint8_t num_external_axes = 0;
 };
 
-class IEventHandlerExtension {
+class IEventHandlerExtension
+{
 public:
-  virtual void OnConnected(const InitializationData &init_data) = 0;
+  virtual void OnConnected(const InitializationData & init_data) = 0;
 };
 
-
-} // namespace kuka::external::control::kss::mxa
-#endif // KUKA_EXTERNAL_CONTROL__KSS_INITIALIZATION_DATA_H_
+}  // namespace kuka::external::control::kss
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_INITIALIZATION_DATA_H_

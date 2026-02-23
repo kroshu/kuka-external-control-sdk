@@ -17,12 +17,22 @@
 
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
-namespace kuka::external::control {
-enum class ReturnCode { UNSPECIFIED, OK, WARN, ERROR, TIMEOUT, UNSUPPORTED };
+namespace kuka::external::control
+{
+enum class ReturnCode
+{
+  UNSPECIFIED,
+  OK,
+  WARN,
+  ERROR,
+  TIMEOUT,
+  UNSUPPORTED
+};
 
-struct Status {
+struct Status
+{
   Status() = default;
-  Status(ReturnCode, const char* = "\0");
+  Status(ReturnCode, const char * = "\0");
 
   ReturnCode return_code = ReturnCode::UNSPECIFIED;
   char message[256] = {};

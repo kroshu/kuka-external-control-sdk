@@ -20,27 +20,30 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
-class Requester {
- public:
+namespace os::core::udp::communication
+{
+class Requester
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:  //<ctor>
-  Requester(const SocketAddress& local_address, const SocketAddress& replier_address);
+public:  //<ctor>
+  Requester(const SocketAddress & local_address, const SocketAddress & replier_address);
   virtual ~Requester() = default;
 
   template <typename SocketType, class... Args>
-  void SetSocket(Args&&... args) {
+  void SetSocket(Args &&... args)
+  {
     socket_ = std::make_unique<SocketType>(std::forward<Args>(args)...);
   }
 
   ErrorCode Setup();
   virtual void Reset();
 
- public:  //<operations>
-  ErrorCode SendRequest(uint8_t* req_msg_data, size_t req_msg_size);
-  virtual ErrorCode SendRequestOrTimeout(uint8_t* req_msg_data, size_t req_msg_size,
-                                         std::chrono::microseconds send_timeout);
+public:  //<operations>
+  ErrorCode SendRequest(uint8_t * req_msg_data, size_t req_msg_size);
+  virtual ErrorCode SendRequestOrTimeout(
+    uint8_t * req_msg_data, size_t req_msg_size, std::chrono::microseconds send_timeout);
 
   ErrorCode ReceiveReply();
   virtual ErrorCode ReceiveReplyOrTimeout(std::chrono::microseconds recv_timeout);
@@ -48,21 +51,21 @@ class Requester {
   ErrorCode ReceiveReplyAll();
   virtual ErrorCode ReceiveReplyAllOrTimeout(std::chrono::microseconds recv_timeout);
 
- public:  //<properties>
+public:  //<properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   bool IsRequestActive() const { return active_request_; }
-  virtual std::pair<const uint8_t*, size_t> GetReplyMessage() const;
-  const SocketAddress& LocalAddress() const { return local_address_; }
-  const SocketAddress& ReplierAddress() const { return replier_address_; }
+  virtual std::pair<const uint8_t *, size_t> GetReplyMessage() const;
+  const SocketAddress & LocalAddress() const { return local_address_; }
+  const SocketAddress & ReplierAddress() const { return replier_address_; }
 
- protected:
-  virtual void StartSending(std::chrono::milliseconds, uint8_t*, size_t) {}
+protected:
+  virtual void StartSending(std::chrono::milliseconds, uint8_t *, size_t) {}
 
   virtual void StopSending(std::chrono::milliseconds, Requester::ErrorCode) {}
 
   virtual void StartReceiving(std::chrono::milliseconds) {}
 
-  virtual void StopReceiving(std::chrono::milliseconds, uint8_t*, size_t, Requester::ErrorCode) {}
+  virtual void StopReceiving(std::chrono::milliseconds, uint8_t *, size_t, Requester::ErrorCode) {}
 
   uint8_t reply_buffer_[kMaxBufferSize];
 

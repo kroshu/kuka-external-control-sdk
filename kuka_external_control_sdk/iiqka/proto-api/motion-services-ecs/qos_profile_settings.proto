@@ -22,12 +22,12 @@ option java_multiple_files = true;
 option java_outer_classname = "QosProfileSettingsProto";
 option java_package = "com.kuka.ecs.v1";
 
-
 // QoS profile
 message QoSProfile
 {
   // One of the available QoS profiles
-  oneof profile_type {
+  oneof profile_type
+  {
     // RT Packet Loss Profile
     RTPacketLossProfile rt_packet_loss_profile = 1;
   }

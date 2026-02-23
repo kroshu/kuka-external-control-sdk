@@ -20,10 +20,13 @@
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
-struct StatusUpdate {
-  void Reset() {
+struct StatusUpdate
+{
+  void Reset()
+  {
     control_mode_ = ControlMode::UNSPECIFIED;
     cycle_time_ = CycleTime::UNSPECIFIED;
     drives_powered_ = false;
@@ -35,19 +38,18 @@ struct StatusUpdate {
     robot_stopped_ = false;
   }
 
-  bool operator==(const StatusUpdate &other) const noexcept {
-    return std::tie(control_mode_, cycle_time_, drives_powered_,
-                    emergency_stop_, guard_stop_, in_motion_, motion_possible_,
-                    operation_mode_, robot_stopped_) ==
-           std::tie(other.control_mode_, other.cycle_time_,
-                    other.drives_powered_, other.emergency_stop_,
-                    other.guard_stop_, other.in_motion_, other.motion_possible_,
-                    other.operation_mode_, robot_stopped_);
+  bool operator==(const StatusUpdate & other) const noexcept
+  {
+    return std::tie(
+             control_mode_, cycle_time_, drives_powered_, emergency_stop_, guard_stop_, in_motion_,
+             motion_possible_, operation_mode_, robot_stopped_) ==
+           std::tie(
+             other.control_mode_, other.cycle_time_, other.drives_powered_, other.emergency_stop_,
+             other.guard_stop_, other.in_motion_, other.motion_possible_, other.operation_mode_,
+             robot_stopped_);
   }
 
-  bool operator!=(const StatusUpdate &other) const noexcept {
-    return !(*this == other);
-  }
+  bool operator!=(const StatusUpdate & other) const noexcept { return !(*this == other); }
 
   ControlMode control_mode_;
   CycleTime cycle_time_;
@@ -60,10 +62,11 @@ struct StatusUpdate {
   bool robot_stopped_;
 };
 
-class IStatusUpdateHandler {
+class IStatusUpdateHandler
+{
 public:
-  virtual void OnStatusUpdateReceived(const StatusUpdate &response) = 0;
+  virtual void OnStatusUpdateReceived(const StatusUpdate & response) = 0;
 };
 
-} // namespace kuka::external::control::kss
-#endif // KUKA_EXTERNAL_CONTROL__KSS_STATUS_UPDATE_H_
+}  // namespace kuka::external::control::kss
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_STATUS_UPDATE_H_

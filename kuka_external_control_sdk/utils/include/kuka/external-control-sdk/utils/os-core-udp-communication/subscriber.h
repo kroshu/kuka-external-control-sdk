@@ -19,32 +19,34 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class Subscriber {
- public:
+class Subscriber
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:  //<ctor>
-  Subscriber(const SocketAddress& sub_address, const SocketAddress& interface_address,
-             bool is_multicast);
+public:  //<ctor>
+  Subscriber(
+    const SocketAddress & sub_address, const SocketAddress & interface_address, bool is_multicast);
   virtual ~Subscriber() = default;
   ErrorCode Setup();
 
- public:  //<operations>
+public:  //<operations>
   ErrorCode Receive();
   ErrorCode ReceiveAllArrived();
   ErrorCode WaitForAndReceive(std::chrono::microseconds timeout);
   ErrorCode WaitForAndReceiveAllArrived(std::chrono::microseconds timeout);
-  std::pair<const uint8_t*, size_t> GetMessage() const;
+  std::pair<const uint8_t *, size_t> GetMessage() const;
 
- public:  //<properties>
+public:  //<properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   static constexpr int kRecvBufferSize = 1024 * kMaxBufferSize;
-  const SocketAddress& Address() const { return sub_address_; }
+  const SocketAddress & Address() const { return sub_address_; }
   bool IsMulticast() const { return is_multicast_; }
 
- protected:
+protected:
   Socket socket_;
   SocketAddress sub_address_;
   SocketAddress interface_address_;

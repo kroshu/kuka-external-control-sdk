@@ -14,136 +14,175 @@
 
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/requester.h"
 
-//#HOWTO: how to handle error logs?
+// #HOWTO: how to handle error logs?
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-Requester::Requester(const SocketAddress& local_address, const SocketAddress& replier_address)
-    : local_address_(local_address), replier_address_(replier_address) {}
+Requester::Requester(const SocketAddress & local_address, const SocketAddress & replier_address)
+: local_address_(local_address), replier_address_(replier_address)
+{
+}
 
-Requester::ErrorCode Requester::Setup() {
-  if (!socket_) {
+Requester::ErrorCode Requester::Setup()
+{
+  if (!socket_)
+  {
     socket_ = std::make_unique<Socket>();
   }
-  if (socket_->IsActive()) {
+  if (socket_->IsActive())
+  {
     return Requester::ErrorCode::kAlreadyActive;
   }
   int result = socket_->Map(0);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Requester::ErrorCode::kSocketError;
   }
   result = socket_->SetReuseAddress();
-  if (result < 0) {
+  if (result < 0)
+  {
     return Requester::ErrorCode::kSocketError;
   }
   result = socket_->Bind(local_address_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Requester::ErrorCode::kSocketError;
   }
   result = socket_->Connect(replier_address_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Requester::ErrorCode::kSocketError;
   }
   return (Requester::ErrorCode)socket_->DoHandshake();
 }
 
-void Requester::Reset() {
+void Requester::Reset()
+{
   active_request_ = false;
   last_reply_size_ = 0;
 }
 
-Requester::ErrorCode Requester::SendRequest(uint8_t* req_msg_data, size_t req_msg_size) {
+Requester::ErrorCode Requester::SendRequest(uint8_t * req_msg_data, size_t req_msg_size)
+{
   return SendRequestOrTimeout(req_msg_data, req_msg_size, std::chrono::microseconds(0));
 }
 
-Requester::ErrorCode Requester::SendRequestOrTimeout(uint8_t* req_msg_data, size_t req_msg_size,
-                                                     std::chrono::microseconds send_timeout) {
-  if (active_request_) {
+Requester::ErrorCode Requester::SendRequestOrTimeout(
+  uint8_t * req_msg_data, size_t req_msg_size, std::chrono::microseconds send_timeout)
+{
+  if (active_request_)
+  {
     return Requester::ErrorCode::kError;
   }
   auto time_start_send = std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::system_clock::now().time_since_epoch());
 
   StartSending(time_start_send, req_msg_data, req_msg_size);
 
   auto sent_bytes = socket_->Send(req_msg_data, req_msg_size, MSG_DONTWAIT);
 
   auto time_stop_send = std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::system_clock::now().time_since_epoch());
   Requester::ErrorCode send_op_result;
-  send_op_result = sent_bytes >= 0 ? Requester::ErrorCode::kSuccess
-                                   : (sent_bytes == Requester::ErrorCode::kTimeout
-                                          ? Requester::ErrorCode::kTimeout
-                                          : Requester::ErrorCode::kError);
+  send_op_result =
+    sent_bytes >= 0 ? Requester::ErrorCode::kSuccess
+                    : (sent_bytes == Requester::ErrorCode::kTimeout ? Requester::ErrorCode::kTimeout
+                                                                    : Requester::ErrorCode::kError);
   StopSending(time_stop_send, send_op_result);
 
-  if (sent_bytes < 0) {
-    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+  if (sent_bytes < 0)
+  {
+    if (errno == EAGAIN || errno == EWOULDBLOCK)
+    {
       // if(send_timeout.count() != 0) -- avoid unnecessary select
       auto result = socket_->Select(send_timeout, false);
-      if (result == 0) {
+      if (result == 0)
+      {
         return Requester::ErrorCode::kTimeout;
-      } else if (result < 0) {
+      }
+      else if (result < 0)
+      {
         return Requester::ErrorCode::kSocketError;
-      } else {
+      }
+      else
+      {
         // socket got writable, try again
         sent_bytes = socket_->Send(req_msg_data, req_msg_size, MSG_DONTWAIT);
       }
-    } else {
+    }
+    else
+    {
       return Requester::ErrorCode::kSocketError;
     }
   }
 
-  if (sent_bytes >= 0) {
+  if (sent_bytes >= 0)
+  {
     active_request_ = true;
     return Requester::ErrorCode::kSuccess;
-  } else {
+  }
+  else
+  {
     return Requester::ErrorCode::kSocketError;
   }
 
   return Requester::ErrorCode::kError;
 }
 
-Requester::ErrorCode Requester::ReceiveReply() {
+Requester::ErrorCode Requester::ReceiveReply()
+{
   return ReceiveReplyOrTimeout(std::chrono::microseconds(0));
 }
 
-Requester::ErrorCode Requester::ReceiveReplyOrTimeout(std::chrono::microseconds recv_timeout) {
-  if (!active_request_) {
+Requester::ErrorCode Requester::ReceiveReplyOrTimeout(std::chrono::microseconds recv_timeout)
+{
+  if (!active_request_)
+  {
     return Requester::ErrorCode::kError;
   }
   int recv_bytes = 0;
 
   auto time_start_recv = std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::system_clock::now().time_since_epoch());
   StartReceiving(time_start_recv);
-  if (recv_timeout.count() == 0) {
+  if (recv_timeout.count() == 0)
+  {
     recv_bytes = socket_->Receive(reply_buffer_, kMaxBufferSize);
-  } else {
+  }
+  else
+  {
     recv_bytes = socket_->ReceiveOrTimeout(recv_timeout, reply_buffer_, kMaxBufferSize);
   }
   auto time_stop_recv = std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::system_clock::now().time_since_epoch());
+    std::chrono::system_clock::now().time_since_epoch());
   Requester::ErrorCode recv_op_result;
-  recv_op_result = recv_bytes >= 0 ? Requester::ErrorCode::kSuccess
-                                   : (recv_bytes == Requester::ErrorCode::kTimeout
-                                          ? Requester::ErrorCode::kTimeout
-                                          : Requester::ErrorCode::kError);
+  recv_op_result =
+    recv_bytes >= 0 ? Requester::ErrorCode::kSuccess
+                    : (recv_bytes == Requester::ErrorCode::kTimeout ? Requester::ErrorCode::kTimeout
+                                                                    : Requester::ErrorCode::kError);
   StopReceiving(time_stop_recv, reply_buffer_, recv_bytes, recv_op_result);
 
-  if (recv_bytes >= 0) {
+  if (recv_bytes >= 0)
+  {
     last_reply_size_ = recv_bytes;
     active_request_ = false;
     return Requester::ErrorCode::kSuccess;
-  } else if (recv_bytes == Requester::ErrorCode::kTimeout) {
+  }
+  else if (recv_bytes == Requester::ErrorCode::kTimeout)
+  {
     return Requester::ErrorCode::kTimeout;
-  } else {
+  }
+  else
+  {
     return Requester::ErrorCode::kSocketError;
   }
 }
 
-Requester::ErrorCode Requester::ReceiveReplyAll() {
-  if (!active_request_) {
+Requester::ErrorCode Requester::ReceiveReplyAll()
+{
+  if (!active_request_)
+  {
     return Requester::ErrorCode::kError;
   }
   int recv_bytes = 0;
@@ -151,26 +190,35 @@ Requester::ErrorCode Requester::ReceiveReplyAll() {
   recv_bytes = socket_->Receive(reply_buffer_, kMaxBufferSize);
 
   recv_bytes = peek_size = socket_->Receive(reply_buffer_, kMaxBufferSize);
-  while (peek_size > 0) {
+  while (peek_size > 0)
+  {
     peek_size = socket_->Receive(reply_buffer_, kMaxBufferSize, MSG_DONTWAIT);
-    if (peek_size > 0) {
+    if (peek_size > 0)
+    {
       recv_bytes = peek_size;
     }
   }
 
-  if (recv_bytes >= 0) {
+  if (recv_bytes >= 0)
+  {
     last_reply_size_ = recv_bytes;
     active_request_ = false;
     return Requester::ErrorCode::kSuccess;
-  } else if (recv_bytes == Requester::ErrorCode::kTimeout) {
+  }
+  else if (recv_bytes == Requester::ErrorCode::kTimeout)
+  {
     return Requester::ErrorCode::kTimeout;
-  } else {
+  }
+  else
+  {
     return Requester::ErrorCode::kSocketError;
   }
 }
 
-Requester::ErrorCode Requester::ReceiveReplyAllOrTimeout(std::chrono::microseconds recv_timeout) {
-  if (!active_request_) {
+Requester::ErrorCode Requester::ReceiveReplyAllOrTimeout(std::chrono::microseconds recv_timeout)
+{
+  if (!active_request_)
+  {
     return Requester::ErrorCode::kError;
   }
 
@@ -178,25 +226,33 @@ Requester::ErrorCode Requester::ReceiveReplyAllOrTimeout(std::chrono::microsecon
   int peek_size;
   recv_bytes = peek_size = socket_->ReceiveOrTimeout(recv_timeout, reply_buffer_, kMaxBufferSize);
 
-  while (peek_size > 0) {
+  while (peek_size > 0)
+  {
     peek_size = socket_->Receive(reply_buffer_, kMaxBufferSize, MSG_DONTWAIT);
-    if (peek_size > 0) {
+    if (peek_size > 0)
+    {
       recv_bytes = peek_size;
     }
   }
 
-  if (recv_bytes >= 0) {
+  if (recv_bytes >= 0)
+  {
     last_reply_size_ = recv_bytes;
     active_request_ = false;
     return Requester::ErrorCode::kSuccess;
-  } else if (recv_bytes == Requester::ErrorCode::kTimeout) {
+  }
+  else if (recv_bytes == Requester::ErrorCode::kTimeout)
+  {
     return Requester::ErrorCode::kTimeout;
-  } else {
+  }
+  else
+  {
     return Requester::ErrorCode::kSocketError;
   }
 }
 
-std::pair<const uint8_t*, size_t> Requester::GetReplyMessage() const {
+std::pair<const uint8_t *, size_t> Requester::GetReplyMessage() const
+{
   return {reply_buffer_, last_reply_size_};
 }
 

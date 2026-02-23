@@ -17,26 +17,28 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class Publisher {
- public:
+class Publisher
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:
-  Publisher(const SocketAddress& pub_address, const SocketAddress& interface_address,
-            bool is_multicast);
+public:
+  Publisher(
+    const SocketAddress & pub_address, const SocketAddress & interface_address, bool is_multicast);
   virtual ~Publisher() = default;
   ErrorCode Setup();
 
-  ErrorCode Send(const uint8_t* msg_data, uint16_t msg_size);
+  ErrorCode Send(const uint8_t * msg_data, uint16_t msg_size);
   bool SetTTL(int ttl);
 
- public:
-  const SocketAddress& Address() const { return pub_address_; }
+public:
+  const SocketAddress & Address() const { return pub_address_; }
   bool IsMulticast() const { return is_multicast_; }
 
- protected:
+protected:
   Socket socket_;
   SocketAddress pub_address_;
   SocketAddress interface_address_;

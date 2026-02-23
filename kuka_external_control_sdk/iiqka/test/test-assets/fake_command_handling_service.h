@@ -23,84 +23,110 @@
 #include "grpcpp/grpcpp.h"
 #include "grpcpp/server.h"
 #include "grpcpp/server_builder.h"
-#include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/publisher.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/requester.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
+#include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 
-namespace kuka::external::control::test {
-class FakeCommandHandlingService : public ::kuka::ecs::v1::ExternalControlService::Service {
- public:
+namespace kuka::external::control::test
+{
+class FakeCommandHandlingService : public ::kuka::ecs::v1::ExternalControlService::Service
+{
+public:
   FakeCommandHandlingService() {}
   ~FakeCommandHandlingService();
 
-  void Setup(const std::string& service_ip);
+  void Setup(const std::string & service_ip);
 
   virtual ::grpc::Status OpenControlChannel(
-      ::grpc::ServerContext* context, const ::kuka::ecs::v1::OpenControlChannelRequest* request,
-      ::kuka::ecs::v1::OpenControlChannelResponse* response) override;
+    ::grpc::ServerContext * context, const ::kuka::ecs::v1::OpenControlChannelRequest * request,
+    ::kuka::ecs::v1::OpenControlChannelResponse * response) override;
 
-  virtual ::grpc::Status StartMonitoring(::grpc::ServerContext* context,
-                                         const ::kuka::ecs::v1::StartMonitoringRequest*,
-                                         ::kuka::ecs::v1::StartMonitoringResponse*) override;
+  virtual ::grpc::Status StartMonitoring(
+    ::grpc::ServerContext * context, const ::kuka::ecs::v1::StartMonitoringRequest *,
+    ::kuka::ecs::v1::StartMonitoringResponse *) override;
 
-  virtual ::grpc::Status StopMonitoring(::grpc::ServerContext* context,
-                                        const ::kuka::ecs::v1::StopMonitoringRequest*,
-                                        ::kuka::ecs::v1::StopMonitoringResponse*) override;
+  virtual ::grpc::Status StopMonitoring(
+    ::grpc::ServerContext * context, const ::kuka::ecs::v1::StopMonitoringRequest *,
+    ::kuka::ecs::v1::StopMonitoringResponse *) override;
 
   virtual ::grpc::Status ObserveControlState(
-      ::grpc::ServerContext* context, const ::kuka::ecs::v1::ObserveControlStateRequest* request,
-      ::grpc::ServerWriter<::kuka::ecs::v1::CommandState>* writer) override;
+    ::grpc::ServerContext * context, const ::kuka::ecs::v1::ObserveControlStateRequest * request,
+    ::grpc::ServerWriter<::kuka::ecs::v1::CommandState> * writer) override;
 
-  virtual ::grpc::Status SetQoSProfile(::grpc::ServerContext* context,
-                                       const ::kuka::ecs::v1::SetQoSProfileRequest*,
-                                       ::kuka::ecs::v1::SetQoSProfileResponse*) override;
+  virtual ::grpc::Status SetQoSProfile(
+    ::grpc::ServerContext * context, const ::kuka::ecs::v1::SetQoSProfileRequest *,
+    ::kuka::ecs::v1::SetQoSProfileResponse *) override;
 
- private:
-  void Teleport(kuka::ecs::v1::ControlSignalExternal& control_signal,
-                kuka::ecs::v1::MotionStateExternal& motion_state) {
+private:
+  void Teleport(
+    kuka::ecs::v1::ControlSignalExternal & control_signal,
+    kuka::ecs::v1::MotionStateExternal & motion_state)
+  {
     *(motion_state.mutable_header()) = control_signal.header();
-    motion_state.mutable_motion_state()->set_ipo_stopped(control_signal.control_signal().stop_ipo());
+    motion_state.mutable_motion_state()->set_ipo_stopped(
+      control_signal.control_signal().stop_ipo());
 
-    if (control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_POSITION_CONTROL
-        || control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_IMPEDANCE_CONTROL) {
-      for (int i = 0; i < control_signal.control_signal().joint_command().values_size();
-            ++i) {
-        motion_state.mutable_motion_state()->mutable_measured_positions()->set_values(i, control_signal.control_signal().joint_command().values(i));
+    if (
+      control_signal.control_signal().control_mode() ==
+        kuka::motion::external::ExternalControlMode::JOINT_POSITION_CONTROL ||
+      control_signal.control_signal().control_mode() ==
+        kuka::motion::external::ExternalControlMode::JOINT_IMPEDANCE_CONTROL)
+    {
+      for (int i = 0; i < control_signal.control_signal().joint_command().values_size(); ++i)
+      {
+        motion_state.mutable_motion_state()->mutable_measured_positions()->set_values(
+          i, control_signal.control_signal().joint_command().values(i));
       }
     }
 
-    if (control_signal.control_signal().control_mode() == kuka::motion::external::ExternalControlMode::JOINT_TORQUE_CONTROL) {
-      for (int i = 0; i < control_signal.control_signal().joint_torque_command().values_size();
-            ++i) {
-        // motion_state.mutable_motion_state()->mutable_measured_torques()->set_values(i, control_signal.control_signal().joint_torque_command().values(i));
+    if (
+      control_signal.control_signal().control_mode() ==
+      kuka::motion::external::ExternalControlMode::JOINT_TORQUE_CONTROL)
+    {
+      for (int i = 0; i < control_signal.control_signal().joint_torque_command().values_size(); ++i)
+      {
+        // motion_state.mutable_motion_state()->mutable_measured_torques()->set_values(i,
+        // control_signal.control_signal().joint_torque_command().values(i));
       }
     }
 
-    if (control_signal.control_signal().control_mode() ==
-        kuka::motion::external::ExternalControlMode::JOINT_IMPEDANCE_CONTROL) {
-        for (size_t i = 0;
-              i < control_signal.control_signal().joint_attributes().stiffness_size(); ++i) {
-          if (control_signal.control_signal().joint_attributes().stiffness(i) < 0 ||
-              control_signal.control_signal().joint_attributes().stiffness(i) > 2000) {
-            control_signal.mutable_control_signal()->mutable_joint_attributes()->set_stiffness(i, prev_control_signal_external_.control_signal().joint_attributes().stiffness(i));
-            return;
-          }
+    if (
+      control_signal.control_signal().control_mode() ==
+      kuka::motion::external::ExternalControlMode::JOINT_IMPEDANCE_CONTROL)
+    {
+      for (size_t i = 0; i < control_signal.control_signal().joint_attributes().stiffness_size();
+           ++i)
+      {
+        if (
+          control_signal.control_signal().joint_attributes().stiffness(i) < 0 ||
+          control_signal.control_signal().joint_attributes().stiffness(i) > 2000)
+        {
+          control_signal.mutable_control_signal()->mutable_joint_attributes()->set_stiffness(
+            i, prev_control_signal_external_.control_signal().joint_attributes().stiffness(i));
+          return;
         }
-        for (size_t i = 0;
-              i < control_signal.control_signal().joint_attributes().damping_size(); ++i) {
-          if (control_signal.control_signal().joint_attributes().damping(i) < 0 ||
-              control_signal.control_signal().joint_attributes().damping(i) > 2000) {
-            control_signal.mutable_control_signal()->mutable_joint_attributes()->set_damping(i, prev_control_signal_external_.control_signal().joint_attributes().damping(i));
-            return;
-          }
+      }
+      for (size_t i = 0; i < control_signal.control_signal().joint_attributes().damping_size(); ++i)
+      {
+        if (
+          control_signal.control_signal().joint_attributes().damping(i) < 0 ||
+          control_signal.control_signal().joint_attributes().damping(i) > 2000)
+        {
+          control_signal.mutable_control_signal()->mutable_joint_attributes()->set_damping(
+            i, prev_control_signal_external_.control_signal().joint_attributes().damping(i));
+          return;
         }
+      }
     }
 
-    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_attributes() = control_signal.control_signal().joint_attributes();
-    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_torque_command() = control_signal.control_signal().joint_torque_command();
-    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_command() = control_signal.control_signal().joint_command();
+    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_attributes() =
+      control_signal.control_signal().joint_attributes();
+    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_torque_command() =
+      control_signal.control_signal().joint_torque_command();
+    *prev_control_signal_external_.mutable_control_signal()->mutable_joint_command() =
+      control_signal.control_signal().joint_command();
   }
 
   std::unique_ptr<os::core::udp::communication::Publisher> publisher_{nullptr};

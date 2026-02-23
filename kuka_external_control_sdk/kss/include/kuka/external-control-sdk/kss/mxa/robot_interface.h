@@ -20,9 +20,11 @@
 #include "kuka/external-control-sdk/kss/mxa/client.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 
-namespace kuka::external::control::kss::mxa {
+namespace kuka::external::control::kss::mxa
+{
 
-class Robot : public kuka::external::control::kss::rsi::Robot {
+class Robot : public kuka::external::control::kss::rsi::Robot
+{
 public:
   Robot(Configuration);
 
@@ -36,8 +38,7 @@ public:
 
   Status SwitchControlMode(ControlMode control_mode) override;
 
-  Status
-  RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
   Status TurnOnDrives() override;
 
@@ -47,11 +48,9 @@ public:
 
   Status CancelRsiProgram() override;
 
-  Status RegisterEventHandlerExtension(
-      std::unique_ptr<IEventHandlerExtension> &&extension);
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension);
 
-  Status RegisterStatusResponseHandler(
-      std::unique_ptr<IStatusUpdateHandler> &&handler);
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler);
 
 private:
   bool stop_flag_;
@@ -61,6 +60,6 @@ private:
   CycleTime cycle_time_;
 };
 
-} // namespace kuka::external::control::kss::mxa
+}  // namespace kuka::external::control::kss::mxa
 
-#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_

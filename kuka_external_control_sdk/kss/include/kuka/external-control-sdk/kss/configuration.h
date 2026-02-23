@@ -20,14 +20,22 @@
 
 #include "kuka/external-control-sdk/common/irobot.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
 // RSI cycle time
-enum class CycleTime : uint8_t { UNSPECIFIED = 0, RSI_4MS = 1, RSI_12MS = 2 };
+enum class CycleTime : uint8_t
+{
+  UNSPECIFIED = 0,
+  RSI_4MS = 1,
+  RSI_12MS = 2
+};
 
 // Convert CycleTime enum to human-readable string
-inline const char* CycleTimeToString(CycleTime cycle_time) {
-  switch (cycle_time) {
+inline const char * CycleTimeToString(CycleTime cycle_time)
+{
+  switch (cycle_time)
+  {
     case CycleTime::RSI_4MS:
       return "4ms";
     case CycleTime::RSI_12MS:
@@ -37,7 +45,8 @@ inline const char* CycleTimeToString(CycleTime cycle_time) {
   }
 }
 
-struct GPIOConfiguration {
+struct GPIOConfiguration
+{
   // Name of the GPIO
   std::string name;
   //  Type of the GPIO value (BOOL, DOUBLE, LONG)
@@ -55,31 +64,50 @@ struct GPIOConfiguration {
   double max_value = 0;
 };
 
-struct JointConfiguration {
-  enum class Type : uint8_t { UNKNOWN = 0, REVOLUTE = 1, PRISMATIC = 2 };
+struct JointConfiguration
+{
+  enum class Type : uint8_t
+  {
+    UNKNOWN = 0,
+    REVOLUTE = 1,
+    PRISMATIC = 2
+  };
 
-  JointConfiguration(const std::string& n, Type t, bool e) : name(n), type(t), is_external(e) {}
+  JointConfiguration(const std::string & n, Type t, bool e) : name(n), type(t), is_external(e) {}
 
   std::string name;
   Type type = Type::REVOLUTE;
   bool is_external = false;
 
-  static constexpr Type ToType(std::string_view s) {
-    if (s == "revolute")  return Type::REVOLUTE;
-    if (s == "prismatic") return Type::PRISMATIC;
+  static constexpr Type ToType(std::string_view s)
+  {
+    if (s == "revolute")
+    {
+      return Type::REVOLUTE;
+    }
+    if (s == "prismatic")
+    {
+      return Type::PRISMATIC;
+    }
     return Type::UNKNOWN;
   }
 
-  static constexpr std::string_view TypeToString(Type t) {
-    switch (t) {
-    case Type::REVOLUTE:  return "revolute";
-    case Type::PRISMATIC: return "prismatic";
-    default:              return "unknown";
+  static constexpr std::string_view TypeToString(Type t)
+  {
+    switch (t)
+    {
+      case Type::REVOLUTE:
+        return "revolute";
+      case Type::PRISMATIC:
+        return "prismatic";
+      default:
+        return "unknown";
     }
   }
 };
 
-struct Configuration {
+struct Configuration
+{
   // IP address of the KONI interface on the KRC-5.
   std::string kli_ip_address;
 
@@ -115,7 +143,8 @@ struct Configuration {
   // This value is ignored if plain RSI is used
   CycleTime cycle_time = CycleTime::RSI_12MS;
 
-  enum class InstalledInterface {
+  enum class InstalledInterface
+  {
     UNSPECIFIED = 0,
     MXA_RSI = 1,
     EKI_RSI = 2,
@@ -126,6 +155,6 @@ struct Configuration {
   InstalledInterface installed_interface = InstalledInterface::RSI_ONLY;
 };
 
-} // namespace kuka::external::control::kss
+}  // namespace kuka::external::control::kss
 
-#endif // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
+#endif  // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_

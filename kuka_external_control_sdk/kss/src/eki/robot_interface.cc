@@ -14,75 +14,80 @@
 
 #include "kuka/external-control-sdk/kss/eki/robot_interface.h"
 
-namespace kuka::external::control::kss::eki {
+namespace kuka::external::control::kss::eki
+{
 
 Robot::Robot(Configuration config)
-    : kuka::external::control::kss::rsi::Robot(config)
-    , config_(config)
-    , tcp_client_(config.kli_ip_address, kEKIServerPort, config.eki_client_port)
-{}
+: kuka::external::control::kss::rsi::Robot(config),
+  config_(config),
+  tcp_client_(config.kli_ip_address, kEKIServerPort, config.eki_client_port)
+{
+}
 
-Status Robot::Setup() {
+Status Robot::Setup()
+{
   os::core::udp::communication::TCPClient::ErrorCode setup_ret = tcp_client_.Setup();
-  if (setup_ret != os::core::udp::communication::TCPClient::ErrorCode::kSuccess) {
+  if (setup_ret != os::core::udp::communication::TCPClient::ErrorCode::kSuccess)
+  {
     return {ReturnCode::ERROR, "Setup failed with error code: " + setup_ret};
   }
 
   Status start_ret = tcp_client_.Start();
-  if (start_ret.return_code != ReturnCode::OK && start_ret.return_code != ReturnCode::WARN) {
+  if (start_ret.return_code != ReturnCode::OK && start_ret.return_code != ReturnCode::WARN)
+  {
     return start_ret;
   }
 
-  if (!endpoint_.Setup(config_.client_ip, config_.client_port)) {
+  if (!endpoint_.Setup(config_.client_ip, config_.client_port))
+  {
     return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
   }
 
   return start_ret;
 }
 
-Status Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
+Status Robot::StartControlling(kuka::external::control::ControlMode control_mode)
+{
   return tcp_client_.StartRSI(control_mode);
 }
 
-Status Robot::StopControlling() {
+Status Robot::StopControlling()
+{
   Status stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
-  if (stop_ret.return_code != ReturnCode::OK && stop_ret.return_code != ReturnCode::WARN) {
+  if (stop_ret.return_code != ReturnCode::OK && stop_ret.return_code != ReturnCode::WARN)
+  {
     return stop_ret;
   }
 
   return tcp_client_.StopRSI();
 }
 
-Status Robot::SwitchControlMode(ControlMode control_mode) {
+Status Robot::SwitchControlMode(ControlMode control_mode)
+{
   return {ReturnCode::UNSUPPORTED, "Changing control modes via EKI is not yet implemented"};
 }
 
-Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) {
+Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler)
+{
   return tcp_client_.RegisterEventHandler(std::move(event_handler));
 }
 
-Status Robot::CancelRsiProgram() {
-  return tcp_client_.StopRSI();
-}
+Status Robot::CancelRsiProgram() { return tcp_client_.StopRSI(); }
 
-Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension) {
+Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension)
+{
   return tcp_client_.RegisterEventHandlerExtension(std::move(extension));
 }
 
-Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler) {
+Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
+{
   return tcp_client_.RegisterStatusResponseHandler(std::move(handler));
 }
 
-Status Robot::TurnOnDrives() {
-  return tcp_client_.TurnOnDrives();
-}
+Status Robot::TurnOnDrives() { return tcp_client_.TurnOnDrives(); }
 
-Status Robot::TurnOffDrives() {
-  return tcp_client_.TurnOffDrives();
-}
+Status Robot::TurnOffDrives() { return tcp_client_.TurnOffDrives(); }
 
-Status Robot::SetCycleTime(CycleTime cycle_time) {
-  return tcp_client_.SetCycleTime(cycle_time);
-}
+Status Robot::SetCycleTime(CycleTime cycle_time) { return tcp_client_.SetCycleTime(cycle_time); }
 
-};  // namespace kuka::external::control::kss
+};  // namespace kuka::external::control::kss::eki

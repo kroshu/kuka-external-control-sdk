@@ -22,51 +22,62 @@
 
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class SecureSocket : public Socket {
- public:  //<types>
+class SecureSocket : public Socket
+{
+public:  //<types>
   typedef Socket::ErrorCode ErrorCode;
-  enum class Mode { client, expect_client, server, accepted };
+  enum class Mode
+  {
+    client,
+    expect_client,
+    server,
+    accepted
+  };
 
- public:  //<ctor>
+public:  //<ctor>
   SecureSocket(Mode mode);
-  SecureSocket(Mode mode, const std::string &certificate_path, const std::string &private_key_path);
+  SecureSocket(
+    Mode mode, const std::string & certificate_path, const std::string & private_key_path);
   virtual ~SecureSocket();
 
- public:  //<Socket>
+public:  //<Socket>
   virtual int Map(int flags = 0) override;
   virtual int DoHandshake() override;
 
-  virtual int Send(const unsigned char *raw_data, int raw_data_size, int flags = 0) override;
-  virtual int SendTo(const SocketAddress &remote_address, const unsigned char *raw_data,
-                     int raw_data_size, int flags = 0) override;
-  virtual int Receive(unsigned char *buffer, int buffer_size, int flags = 0) override;
-  virtual int ReceiveFrom(SocketAddress &incoming_remote_address, unsigned char *buffer,
-                          int buffer_size, int flags = 0) override;
+  virtual int Send(const unsigned char * raw_data, int raw_data_size, int flags = 0) override;
+  virtual int SendTo(
+    const SocketAddress & remote_address, const unsigned char * raw_data, int raw_data_size,
+    int flags = 0) override;
+  virtual int Receive(unsigned char * buffer, int buffer_size, int flags = 0) override;
+  virtual int ReceiveFrom(
+    SocketAddress & incoming_remote_address, unsigned char * buffer, int buffer_size,
+    int flags = 0) override;
   virtual int Close() override;
   virtual std::string GetLastErrorText() const override;
 
- protected:  //<Socket>
+protected:  //<Socket>
   virtual int SetError(ErrorCode code, int err_no = 0) override;
 
- public:  //<operations>
+public:  //<operations>
   std::unique_ptr<SecureSocket> Accept();
 
- protected:  //<operations>
-  std::unique_ptr<SecureSocket> CreateAcceptedSocket(SSL_CTX *ssl_ctx, SSL *ssl_obj,
-                                                     const struct sockaddr_in *remote);
+protected:  //<operations>
+  std::unique_ptr<SecureSocket> CreateAcceptedSocket(
+    SSL_CTX * ssl_ctx, SSL * ssl_obj, const struct sockaddr_in * remote);
   std::string GetSSLErrorText() const;
 
- protected:
+protected:
   Mode mode_;
   std::optional<std::string> certificate_path_;
   std::optional<std::string> private_key_path_;
 
- protected:
+protected:
   bool ssl_up_ = false;
-  SSL_CTX *ssl_context_ = nullptr;
-  SSL *ssl_obj_ = nullptr;
+  SSL_CTX * ssl_context_ = nullptr;
+  SSL * ssl_obj_ = nullptr;
 };
 
 }  // namespace os::core::udp::communication

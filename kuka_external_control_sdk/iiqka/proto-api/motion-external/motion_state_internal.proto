@@ -26,7 +26,8 @@ option java_outer_classname = "MotionStateInternalProto";
 option java_package = "com.kuka.motion.external";
 
 // Internal message for SharedMem Communication between ecs and external sampler
-message MotionStateInternal {
+message MotionStateInternal
+{
   // Flag indicating whether the command handling has stopped
   bool ipo_stopped = 1;
   // Currently used control mode

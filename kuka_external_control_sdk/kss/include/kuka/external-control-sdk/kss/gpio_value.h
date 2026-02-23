@@ -15,24 +15,26 @@
 #ifndef KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
 #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
 
+#include <memory>
 #include "gpio_config.h"
 #include "kuka/external-control-sdk/common/gpio_value.h"
-#include <memory>
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
-class GPIOValue : public BaseGPIOValue {
+class GPIOValue : public BaseGPIOValue
+{
 public:
   GPIOValue() : BaseGPIOValue(){};
-  GPIOValue(std::unique_ptr<GPIOConfig> gpio_config)
-      : BaseGPIOValue(std::move(gpio_config)) {}
+  GPIOValue(std::unique_ptr<GPIOConfig> gpio_config) : BaseGPIOValue(std::move(gpio_config)) {}
   GPIOValue(std::unique_ptr<GPIOConfig> gpio_config, double value)
-      : BaseGPIOValue(std::move(gpio_config)) {
+  : BaseGPIOValue(std::move(gpio_config))
+  {
     this->SetValue(value);
   }
   ~GPIOValue() = default;
 };
 
-} // namespace kuka::external::control::kss
+}  // namespace kuka::external::control::kss
 
-#endif // #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
+#endif  // #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_

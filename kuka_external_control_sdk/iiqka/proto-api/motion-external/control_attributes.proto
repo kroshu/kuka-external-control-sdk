@@ -22,9 +22,9 @@ option java_multiple_files = true;
 option java_outer_classname = "ControlSignalInternalProto";
 option java_package = "com.kuka.motion.external";
 
-
 // Type to describe the attributes specific to the joint impedance control mode.
-message JointImpedanceControlAttributes{
+message JointImpedanceControlAttributes
+{
   // Joint stiffness values
   repeated double stiffness = 1;
   // Joint damping values
@@ -32,7 +32,8 @@ message JointImpedanceControlAttributes{
 }
 
 // Type to describe the attributes specific to the cartesian impedance control mode.
-message CartesianImpedanceControlAttributes{
+message CartesianImpedanceControlAttributes
+{
   // Cartesian stiffness values (xyzabc)
   repeated double stiffness = 1;
   // Cartesian damping values (xyzabc)

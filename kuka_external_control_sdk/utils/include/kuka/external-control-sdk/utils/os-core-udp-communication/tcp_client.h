@@ -18,35 +18,39 @@
 #include "dissector.h"
 #include "socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class TCPClientSocket : public Socket {
- public:
+class TCPClientSocket : public Socket
+{
+public:
   /* creates a new socket with the given `flags`, and returns the underlying
    * socket identifier */
   virtual int Map(int flags = 0) override;
 };
 
-class TCPClient : public Dissector {
- public:
+class TCPClient : public Dissector
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:
-  TCPClient(size_t buffer_size, const SocketAddress &remote_addr, int flags = 0,
-            const std::optional<SocketAddress> &local_addr = std::nullopt);
+public:
+  TCPClient(
+    size_t buffer_size, const SocketAddress & remote_addr, int flags = 0,
+    const std::optional<SocketAddress> & local_addr = std::nullopt);
   ~TCPClient() = default;
 
   ErrorCode Setup();
 
-  int Send(unsigned char *buffer, size_t buffer_len) { return socket_->Send(buffer, buffer_len); }
-  bool Receive(unsigned char *recv_data, std::chrono::microseconds timeout);
+  int Send(unsigned char * buffer, size_t buffer_len) { return socket_->Send(buffer, buffer_len); }
+  bool Receive(unsigned char * recv_data, std::chrono::microseconds timeout);
 
- private:
+private:
   SocketAddress remote_addr_;
   int flags_;
   std::optional<SocketAddress> local_addr_;
 };
 
-} // namespace os::core::udp::communication
+}  // namespace os::core::udp::communication
 
-#endif // OS_CORE_COMM_TCP_CLIENT_H
+#endif  // OS_CORE_COMM_TCP_CLIENT_H

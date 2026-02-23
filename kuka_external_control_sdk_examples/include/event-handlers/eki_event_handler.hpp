@@ -22,18 +22,23 @@
 
 using kuka::external::control::kss::IEventHandlerExtension;
 using kuka::external::control::kss::InitializationData;
-using kuka::external::control::kss::eki::EKIInitializationData;
 using kuka::external::control::kss::IStatusUpdateHandler;
 using kuka::external::control::kss::StatusUpdate;
+using kuka::external::control::kss::eki::EKIInitializationData;
 
-namespace external_control_sdk_example {
-class EventHandlerExtension : public IEventHandlerExtension {
- public:
-  void OnConnected(const InitializationData& init_data) override {
+namespace external_control_sdk_example
+{
+class EventHandlerExtension : public IEventHandlerExtension
+{
+public:
+  void OnConnected(const InitializationData & init_data) override
+  {
     std::cout << "Established connection to KRC:" << std::endl;
     std::cout << "  Number of axes: " << init_data.num_axes << std::endl;
     std::cout << "  Number of external axes: " << init_data.num_external_axes << std::endl;
-    if (const EKIInitializationData* eki_init_data = dynamic_cast<const EKIInitializationData*>(&init_data))
+    if (
+      const EKIInitializationData * eki_init_data =
+        dynamic_cast<const EKIInitializationData *>(&init_data))
     {
       std::cout << "  Semantic version: " << eki_init_data->semantic_version << std::endl;
       std::cout << "  Model name: " << eki_init_data->model_name << std::endl;
@@ -42,9 +47,11 @@ class EventHandlerExtension : public IEventHandlerExtension {
   }
 };
 
-class StatusUpdateHandler : public IStatusUpdateHandler {
- public:
-  void OnStatusUpdateReceived(const StatusUpdate& status) override {
+class StatusUpdateHandler : public IStatusUpdateHandler
+{
+public:
+  void OnStatusUpdateReceived(const StatusUpdate & status) override
+  {
     std::cout << "Received status update from KRC:" << std::endl;
     std::cout << "  Control mode: " << static_cast<int>(status.control_mode_) << std::endl;
     std::cout << "  Cycle time: " << static_cast<int>(status.cycle_time_) << std::endl;

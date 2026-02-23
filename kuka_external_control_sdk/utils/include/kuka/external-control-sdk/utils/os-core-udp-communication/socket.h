@@ -21,39 +21,43 @@
 #include <optional>
 #include <string>
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class SocketAddress {
- public:
+class SocketAddress
+{
+public:
   SocketAddress();
-  SocketAddress(const std::string &ip, int port);
-  SocketAddress(const std::string &ip);
+  SocketAddress(const std::string & ip, int port);
+  SocketAddress(const std::string & ip);
   SocketAddress(int port);
-  SocketAddress(const struct sockaddr_in *raw_address);
+  SocketAddress(const struct sockaddr_in * raw_address);
 
-  static std::optional<SocketAddress> SafeConstruct(const std::string &ip, int port = 0);
+  static std::optional<SocketAddress> SafeConstruct(const std::string & ip, int port = 0);
 
- public:
-  struct sockaddr *RawAddr();
-  const struct sockaddr *RawAddr() const;
-  struct sockaddr_in *RawInetAddr();
-  const struct sockaddr_in *RawInetAddr() const;
+public:
+  struct sockaddr * RawAddr();
+  const struct sockaddr * RawAddr() const;
+  struct sockaddr_in * RawInetAddr();
+  const struct sockaddr_in * RawInetAddr() const;
   size_t Size() const;
   const std::string Ip() const;
   uint16_t Port() const;
 
- public:
+public:
   static const std::string kAnyAddress;
 
- protected:
+protected:
   struct sockaddr_in sockaddr_;
   char ip_[INET_ADDRSTRLEN];
   uint16_t port_;
 };
 
-class Socket {
- public:
-  enum ErrorCode {
+class Socket
+{
+public:
+  enum ErrorCode
+  {
     kSuccess = 0,
     kSocketError = -1,
     kNotActive = -2,
@@ -69,33 +73,35 @@ class Socket {
 
   static constexpr int kBlockingTimeout = -1;
 
- public:
+public:
   virtual ~Socket();
 
- public:
+public:
   /* creates a new socket with the given `flags`, and returns the underlying
    * socket identifier */
   virtual int Map(int flags = 0);
 
   /*sets generic socket option*/
-  int SetSocketOption(int level, int optname, const void *optval, socklen_t optlen);
+  int SetSocketOption(int level, int optname, const void * optval, socklen_t optlen);
 
   /* sets a given `timeout` (in ms) for *send* operation to wait if there was
    * no packet send */
-  int SetSendTimeout(const std::chrono::microseconds &timeout);
+  int SetSendTimeout(const std::chrono::microseconds & timeout);
 
   /* sets a given `timeout` (in ms) for *receive* operation to wait if there
    * was no packet receive*/
-  int SetReceiveTimeout(const std::chrono::microseconds &timeout);
+  int SetReceiveTimeout(const std::chrono::microseconds & timeout);
 
   /* join a multicast group with the given `multicast_address` to able receive
    * the packets*/
-  int JoinMulticastGroup(const SocketAddress &multicast_address,
-                         const SocketAddress &interface_address = SocketAddress());
+  int JoinMulticastGroup(
+    const SocketAddress & multicast_address,
+    const SocketAddress & interface_address = SocketAddress());
 
   /* leave a multicast group with the given `multicast_address`*/
-  int LeaveMulticastGroup(const SocketAddress &multicast_address,
-                          const SocketAddress &interface_address = SocketAddress());
+  int LeaveMulticastGroup(
+    const SocketAddress & multicast_address,
+    const SocketAddress & interface_address = SocketAddress());
 
   /* sets the given `ttl`for multicast sending (IP packet property) */
   int SetTTLForMulticast(int ttl = 1);
@@ -110,10 +116,10 @@ class Socket {
   int SetReceiveBufferSize(int size);
 
   /* binds the socket to the given `local_address` */
-  virtual int Bind(const SocketAddress &local_address);
+  virtual int Bind(const SocketAddress & local_address);
 
   /* connects the socket to the given `remote_address` */
-  virtual int Connect(const SocketAddress &remote_address);
+  virtual int Connect(const SocketAddress & remote_address);
 
   /* do handshake - TODO: maybe enough on securesocket*/
   virtual int DoHandshake() { return ErrorCode::kSuccess; }
@@ -122,35 +128,41 @@ class Socket {
   int Select(std::chrono::microseconds timeout, bool read = true);
 
   /* sends the given `raw_data` to the previously connected remote address */
-  virtual int Send(const unsigned char *raw_data, int raw_data_size, int flags = 0);
+  virtual int Send(const unsigned char * raw_data, int raw_data_size, int flags = 0);
 
   /* sends the given `raw_data` to the given `remote_address` */
-  virtual int SendTo(const SocketAddress &remote_address, const unsigned char *raw_data,
-                     int raw_data_size, int flags = 0);
+  virtual int SendTo(
+    const SocketAddress & remote_address, const unsigned char * raw_data, int raw_data_size,
+    int flags = 0);
 
   /* receives a packet on the previously bind address into the given `buffer`
    */
-  virtual int Receive(unsigned char *buffer, int buffer_size, int flags = 0);
+  virtual int Receive(unsigned char * buffer, int buffer_size, int flags = 0);
 
   /* receives a packet on the previously bind address into the given `buffer`
    * or timeout after the given `timeout` */
-  virtual int ReceiveOrTimeout(const std::chrono::microseconds &timeout, unsigned char *buffer,
-                               int buffer_size, int flags = 0);
+  virtual int ReceiveOrTimeout(
+    const std::chrono::microseconds & timeout, unsigned char * buffer, int buffer_size,
+    int flags = 0);
 
   /* receives a packet on the previously bind address into the given `buffer`,
    * extracting the remote address to `incoming_remote_address` */
-  virtual int ReceiveFrom(SocketAddress &incoming_remote_address, unsigned char *buffer,
-                          int buffer_size, int flags = 0);
+  virtual int ReceiveFrom(
+    SocketAddress & incoming_remote_address, unsigned char * buffer, int buffer_size,
+    int flags = 0);
 
   /* receives a packet on the previously bind address into the given `buffer`,
    * extracting the remote address to `incoming_remote_address` or timeout
    * after the given `timeout` */
-  virtual int ReceiveFromOrTimeout(const std::chrono::microseconds &timeout,
-                                   SocketAddress &incoming_remote_address, unsigned char *buffer,
-                                   int buffer_size, int flags = 0);
+  virtual int ReceiveFromOrTimeout(
+    const std::chrono::microseconds & timeout, SocketAddress & incoming_remote_address,
+    unsigned char * buffer, int buffer_size, int flags = 0);
 
-  /* receives all packets present on the previously bound address, puts last into the given `buffer` */
-  virtual int ReceiveAllWithTimeout(const std::chrono::microseconds &timeout, unsigned char *buffer, int buffer_size, int flags = 0);
+  /* receives all packets present on the previously bound address, puts last into the given `buffer`
+   */
+  virtual int ReceiveAllWithTimeout(
+    const std::chrono::microseconds & timeout, unsigned char * buffer, int buffer_size,
+    int flags = 0);
 
   /* freeing up the socket */
   virtual int Close();
@@ -158,7 +170,7 @@ class Socket {
   /* shutting down both incoming and outgoing communication of the socket */
   virtual int Shutdown();
 
- public:
+public:
   int GetSocketFd() const;
   bool IsActive() const;
   virtual std::string GetLastErrorText() const;
@@ -166,10 +178,10 @@ class Socket {
   std::pair<ErrorCode, int> GetLastSocketError() const;
   bool IsDGRAM() const;
 
- protected:
+protected:
   virtual int SetError(ErrorCode code, int err_no = 0);
 
- protected:
+protected:
   int socket_fd_ = -1;
   std::optional<SocketAddress> local_address_;
   std::optional<SocketAddress> remote_address_;
