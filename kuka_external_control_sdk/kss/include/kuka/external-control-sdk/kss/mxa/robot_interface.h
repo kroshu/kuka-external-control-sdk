@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__ROBOT_INTERFACE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__ROBOT_INTERFACE_H_
 
+#include <memory>
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/mxa/client.h"
@@ -26,7 +27,7 @@ namespace kuka::external::control::kss::mxa
 class Robot : public kuka::external::control::kss::rsi::Robot
 {
 public:
-  Robot(Configuration);
+  explicit Robot(Configuration);
 
   Status Setup() override;
 
@@ -62,4 +63,4 @@ private:
 
 }  // namespace kuka::external::control::kss::mxa
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_ROBOT_INTERFACE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__ROBOT_INTERFACE_H_

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_EKI_INITIALIZATION_DATA_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_EKI_INITIALIZATION_DATA_H_
-
-#include <string>
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__INITIALIZATION_DATA_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__INITIALIZATION_DATA_H_
 
 #include <tinyxml2.h>
+
+#include <string>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
@@ -70,4 +70,4 @@ struct EKIInitializationData : public kuka::external::control::kss::Initializati
 };
 
 }  // namespace kuka::external::control::kss::eki
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_EKI_INITIALIZATION_DATA_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__INITIALIZATION_DATA_H_

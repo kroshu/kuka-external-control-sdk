@@ -78,7 +78,7 @@ TEST_F(TestMotionState, TestAddPositionsEqualDof)
   for (int i = 0; i < 6; ++i)
   {
     ms_with_positions.mutable_motion_state()->mutable_measured_positions()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredPositions()[0]), true);
@@ -101,7 +101,7 @@ TEST_F(TestMotionState, TestAddPositionsProtobufMSHasSmallerDof)
   for (int i = 0; i < 4; ++i)
   {
     ms_with_positions.mutable_motion_state()->mutable_measured_positions()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredPositions()[0]), true);
@@ -128,7 +128,7 @@ TEST_F(TestMotionState, TestAddPositionsProtobufMSHasGreaterDof)
   for (int i = 0; i < 15; ++i)
   {
     ms_with_positions.mutable_motion_state()->mutable_measured_positions()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredPositions()[0]), true);
@@ -156,7 +156,7 @@ TEST_F(TestMotionState, TestAddTorquesEqualDof)
   for (int i = 0; i < 6; ++i)
   {
     ms_with_torques.mutable_motion_state()->mutable_measured_torques()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredTorques()[0]), true);
@@ -179,7 +179,7 @@ TEST_F(TestMotionState, TestAddTorquesProtobufMSHasSmallerDof)
   for (int i = 0; i < 4; ++i)
   {
     ms_with_torques.mutable_motion_state()->mutable_measured_torques()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredTorques()[0]), true);
@@ -199,7 +199,7 @@ TEST_F(TestMotionState, TestAddTorquesProtobufMSHasGreaterDof)
   for (int i = 0; i < 15; ++i)
   {
     ms_with_torques.mutable_motion_state()->mutable_measured_torques()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(std::isnan(initial_motion_state.GetMeasuredTorques()[0]), true);
@@ -226,9 +226,10 @@ TEST_F(TestMotionState, TestAddEverythingEqualDof)
 
   for (int i = 0; i < 6; ++i)
   {
-    ms_with_torques.mutable_motion_state()->mutable_measured_positions()->add_values(0 + (double)i);
+    ms_with_torques.mutable_motion_state()->mutable_measured_positions()->add_values(
+      0 + static_cast<double>(i));
     ms_with_torques.mutable_motion_state()->mutable_measured_torques()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(initial_motion_state.GetMeasuredVelocities().size(), 0);
@@ -251,13 +252,14 @@ TEST_F(TestMotionState, TestAddEverythingNotEqualDof)
 
   for (int i = 0; i < 6; ++i)
   {
-    ms_with_torques.mutable_motion_state()->mutable_measured_positions()->add_values(0 + (double)i);
+    ms_with_torques.mutable_motion_state()->mutable_measured_positions()->add_values(
+      0 + static_cast<double>(i));
   }
 
   for (int i = 0; i < 4; ++i)
   {
     ms_with_torques.mutable_motion_state()->mutable_measured_torques()->add_values(
-      12.0 + (double)i);
+      12.0 + static_cast<double>(i));
   }
 
   EXPECT_EQ(initial_motion_state.GetMeasuredVelocities().size(), 0);
@@ -369,7 +371,8 @@ TEST_F(TestControlSignal, TestAddPositions)
 
   for (int i = 0; i < 6; ++i)
   {
-    EXPECT_NEAR(result.control_signal().joint_command().values(i), 12 + (double)i, D_TOLERANCE);
+    EXPECT_NEAR(
+      result.control_signal().joint_command().values(i), 12 + static_cast<double>(i), D_TOLERANCE);
   }
 }
 
@@ -406,7 +409,8 @@ TEST_F(TestControlSignal, TestAddPositionsArray)
 
   for (int i = 0; i < 6; ++i)
   {
-    EXPECT_NEAR(result.control_signal().joint_command().values(i), 12 + (double)i, D_TOLERANCE);
+    EXPECT_NEAR(
+      result.control_signal().joint_command().values(i), 12 + static_cast<double>(i), D_TOLERANCE);
   }
 }
 
@@ -446,7 +450,8 @@ TEST_F(TestControlSignal, TestAddPositionsMap)
 
   for (int i = 0; i < 6; ++i)
   {
-    EXPECT_NEAR(result.control_signal().joint_command().values(i), 12 + (double)i, D_TOLERANCE);
+    EXPECT_NEAR(
+      result.control_signal().joint_command().values(i), 12 + static_cast<double>(i), D_TOLERANCE);
   }
 }
 
@@ -674,7 +679,8 @@ TEST_F(TestControlSignal, TestAddTorques)
   for (int i = 0; i < 6; ++i)
   {
     EXPECT_NEAR(
-      result.control_signal().joint_torque_command().values(i), 12 + (double)i, D_TOLERANCE);
+      result.control_signal().joint_torque_command().values(i), 12 + static_cast<double>(i),
+      D_TOLERANCE);
   }
 }
 
@@ -714,7 +720,8 @@ TEST_F(TestControlSignal, TestAddTorquesMap)
   for (int i = 0; i < 6; ++i)
   {
     EXPECT_NEAR(
-      result.control_signal().joint_torque_command().values(i), 12 + (double)i, D_TOLERANCE);
+      result.control_signal().joint_torque_command().values(i), 12 + static_cast<double>(i),
+      D_TOLERANCE);
   }
 }
 
@@ -945,6 +952,7 @@ TEST_F(TestControlSignal, TestOverridePreviousPositions)
 
   for (int i = 0; i < 6; ++i)
   {
-    EXPECT_NEAR(result.control_signal().joint_command().values(i), 12 + (double)i, D_TOLERANCE);
+    EXPECT_NEAR(
+      result.control_signal().joint_command().values(i), 12 + static_cast<double>(i), D_TOLERANCE);
   }
 }

@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_REQUESTER_H
-#define OS_CORE_COMM_UDP_REQUESTER_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REQUESTER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REQUESTER_H_
 
 #include <chrono>
 #include <memory>
+#include <utility>
 
-#include "socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -27,8 +28,8 @@ class Requester
 public:
   typedef Socket::ErrorCode ErrorCode;
 
-public:  //<ctor>
-  Requester(const SocketAddress & local_address, const SocketAddress & replier_address);
+public:  // <ctor>
+  explicit Requester(const SocketAddress & local_address, const SocketAddress & replier_address);
   virtual ~Requester() = default;
 
   template <typename SocketType, class... Args>
@@ -40,7 +41,7 @@ public:  //<ctor>
   ErrorCode Setup();
   virtual void Reset();
 
-public:  //<operations>
+public:  // <operations>
   ErrorCode SendRequest(uint8_t * req_msg_data, size_t req_msg_size);
   virtual ErrorCode SendRequestOrTimeout(
     uint8_t * req_msg_data, size_t req_msg_size, std::chrono::microseconds send_timeout);
@@ -51,10 +52,10 @@ public:  //<operations>
   ErrorCode ReceiveReplyAll();
   virtual ErrorCode ReceiveReplyAllOrTimeout(std::chrono::microseconds recv_timeout);
 
-public:  //<properties>
+public:  // <properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   bool IsRequestActive() const { return active_request_; }
-  virtual std::pair<const uint8_t *, size_t> GetReplyMessage() const;
+  std::pair<const uint8_t *, size_t> GetReplyMessage() const;
   const SocketAddress & LocalAddress() const { return local_address_; }
   const SocketAddress & ReplierAddress() const { return replier_address_; }
 
@@ -78,4 +79,4 @@ protected:
 };
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_REQUESTER_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REQUESTER_H_

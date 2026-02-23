@@ -27,7 +27,7 @@ Dissector::Dissector(std::shared_ptr<Socket> socket, size_t buffer_size)
 
 Socket::ErrorCode Dissector::Receive(raw_message_t & message, int flags)
 {
-  const static std::chrono::microseconds blocking_time(Socket::kBlockingTimeout);
+  static const std::chrono::microseconds blocking_time(Socket::kBlockingTimeout);
   return ReceiveOrTimeout(blocking_time, message, flags);
 }
 
@@ -56,7 +56,8 @@ Socket::ErrorCode Dissector::ReceiveOrTimeout(
       int result = socket_->ReceiveOrTimeout(
         current_timeout, (unsigned char *)recv_cursor, maximum_buffer_size_ - data_length_, flags);
 
-      // TODO: according some logic move back data to pos#0, maybe at message processing
+      // TODO(Svastits): according some logic move back data to pos#0, maybe at message
+      // processing
       if (result <= 0)
       {
         data_cursor_ = 0;

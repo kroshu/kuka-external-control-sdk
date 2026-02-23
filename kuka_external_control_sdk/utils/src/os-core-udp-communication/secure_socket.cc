@@ -26,19 +26,19 @@ namespace os::core::udp::communication
 
 int dtls_verify_callback(int /*ok*/, X509_STORE_CTX * /*ctx*/) { return 1; }
 
-const std::string MY_COOKIE = "MySuperSecureAndSecretCookie;)";
+const char MY_COOKIE[] = "MySuperSecureAndSecretCookie;)";
 
 int dtls_cookie_generate_callback(SSL * /*ssl*/, unsigned char * cookie, unsigned int * cookie_len)
 {
-  memcpy(cookie, MY_COOKIE.c_str(), MY_COOKIE.size());
-  *cookie_len = MY_COOKIE.size();
+  memcpy(cookie, MY_COOKIE, sizeof(MY_COOKIE) - 1);
+  *cookie_len = sizeof(MY_COOKIE) - 1;
   return 1;
 }
 
 int dtls_cookie_verify_callback(
   SSL * /*ssl*/, const unsigned char * cookie, unsigned int cookie_len)
 {
-  return memcmp(cookie, MY_COOKIE.c_str(), cookie_len) == 0 ? 1 : 0;
+  return memcmp(cookie, MY_COOKIE, cookie_len) == 0 ? 1 : 0;
 }
 
 SecureSocket::SecureSocket(Mode mode) : mode_(mode) {}
@@ -293,7 +293,7 @@ std::unique_ptr<SecureSocket> SecureSocket::Accept()
   memset(&client_addr, 0, sizeof(struct sockaddr_in));
 
   int ret = 0;
-  if ((ret = DTLSv1_listen(new_ssl, (BIO_ADDR *)&client_addr)) > 0)
+  if ((ret = DTLSv1_listen(new_ssl, reinterpret_cast<BIO_ADDR *>(&client_addr))) > 0)
   {
     SocketAddress addr(&client_addr);
     auto accepted = CreateAcceptedSocket(ssl_context_, new_ssl, &client_addr);

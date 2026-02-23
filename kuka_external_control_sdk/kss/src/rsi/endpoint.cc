@@ -19,7 +19,7 @@
 namespace kuka::external::control::kss::rsi
 {
 
-bool Endpoint::Setup(const std::string & local_ip, unsigned short local_udp_port)
+bool Endpoint::Setup(const std::string & local_ip, uint16_t local_udp_port)
 {
   os::core::udp::communication::SocketAddress replier_address(local_ip, local_udp_port);
 
@@ -49,7 +49,7 @@ bool Endpoint::MessageSend(std::string_view send_msg)
 {
   bool sendOK;
   std::size_t bytesSent;
-  return replier_socket_->SendReply((uint8_t *)send_msg.begin(), send_msg.length()) ==
+  return replier_socket_->SendReply((uint8_t *)send_msg.begin(), send_msg.length()) ==  // NOLINT
          os::core::udp::communication::Replier::ErrorCode::kSuccess;
 }
 

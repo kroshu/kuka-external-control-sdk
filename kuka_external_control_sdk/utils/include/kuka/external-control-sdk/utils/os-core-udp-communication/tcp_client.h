@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_TCP_CLIENT_H
-#define OS_CORE_COMM_TCP_CLIENT_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__TCP_CLIENT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__TCP_CLIENT_H_
 
-#include "dissector.h"
-#include "socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/dissector.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -26,7 +26,7 @@ class TCPClientSocket : public Socket
 public:
   /* creates a new socket with the given `flags`, and returns the underlying
    * socket identifier */
-  virtual int Map(int flags = 0) override;
+  int Map(int flags = 0) override;
 };
 
 class TCPClient : public Dissector
@@ -53,4 +53,4 @@ private:
 
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_TCP_CLIENT_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__TCP_CLIENT_H_

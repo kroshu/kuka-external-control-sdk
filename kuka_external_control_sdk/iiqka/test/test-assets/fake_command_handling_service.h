@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__IIQKA_FAKE_COMMAND_HANDLING_SERVICE_H_
-#define KUKA_EXTERNAL_CONTROL__IIQKA_FAKE_COMMAND_HANDLING_SERVICE_H_
+#ifndef TEST_ASSETS__FAKE_COMMAND_HANDLING_SERVICE_H_
+#define TEST_ASSETS__FAKE_COMMAND_HANDLING_SERVICE_H_
 
 #include <atomic>
 #include <memory>
+#include <string>
 #include <thread>
 
 #include "grpc/grpc.h"
@@ -39,23 +40,23 @@ public:
 
   void Setup(const std::string & service_ip);
 
-  virtual ::grpc::Status OpenControlChannel(
+  ::grpc::Status OpenControlChannel(
     ::grpc::ServerContext * context, const ::kuka::ecs::v1::OpenControlChannelRequest * request,
     ::kuka::ecs::v1::OpenControlChannelResponse * response) override;
 
-  virtual ::grpc::Status StartMonitoring(
+  ::grpc::Status StartMonitoring(
     ::grpc::ServerContext * context, const ::kuka::ecs::v1::StartMonitoringRequest *,
     ::kuka::ecs::v1::StartMonitoringResponse *) override;
 
-  virtual ::grpc::Status StopMonitoring(
+  ::grpc::Status StopMonitoring(
     ::grpc::ServerContext * context, const ::kuka::ecs::v1::StopMonitoringRequest *,
     ::kuka::ecs::v1::StopMonitoringResponse *) override;
 
-  virtual ::grpc::Status ObserveControlState(
+  ::grpc::Status ObserveControlState(
     ::grpc::ServerContext * context, const ::kuka::ecs::v1::ObserveControlStateRequest * request,
     ::grpc::ServerWriter<::kuka::ecs::v1::CommandState> * writer) override;
 
-  virtual ::grpc::Status SetQoSProfile(
+  ::grpc::Status SetQoSProfile(
     ::grpc::ServerContext * context, const ::kuka::ecs::v1::SetQoSProfileRequest *,
     ::kuka::ecs::v1::SetQoSProfileResponse *) override;
 
@@ -149,4 +150,4 @@ private:
 };
 }  // namespace kuka::external::control::test
 
-#endif  // KUKA_EXTERNAL_CONTROL__IIQKA_FAKE_COMMAND_HANDLING_SERVICE_H_
+#endif  // TEST_ASSETS__FAKE_COMMAND_HANDLING_SERVICE_H_

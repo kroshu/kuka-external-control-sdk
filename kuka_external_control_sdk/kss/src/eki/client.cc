@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <array>
-#include <cstring>
-
 #include <tinyxml2.h>
+
+#include <array>
+#include <cstdint>
+#include <cstring>
 #include <optional>
 
 #include "kuka/external-control-sdk/kss/eki/client.h"
@@ -25,8 +26,7 @@
 namespace kuka::external::control::kss::eki
 {
 
-Client::Client(
-  const std::string & server_address, unsigned short server_port, unsigned short client_port)
+Client::Client(const std::string & server_address, uint16_t server_port, uint16_t client_port)
 : os::core::udp::communication::TCPClient(
     kRecvBuffSize, os::core::udp::communication::SocketAddress(server_address, server_port), 0,
     (client_port == 0) ? std::optional<os::core::udp::communication::SocketAddress>()
@@ -109,22 +109,25 @@ Status Client::SendMessageAndWait()
 
 Status Client::SendCommand(const CommandType cmd_type)
 {
-  sprintf(
-    reinterpret_cast<char *>(send_buff_), general_req_format, static_cast<int>(cmd_type), 0, 0);
+  snprintf(
+    reinterpret_cast<char *>(send_buff_), kSendBuffSize, general_req_format,
+    static_cast<int>(cmd_type), 0, 0);
   return SendMessageAndWait();
 }
 
 Status Client::SendControlModeChange(kuka::external::control::ControlMode control_mode)
 {
-  sprintf(
-    reinterpret_cast<char *>(send_buff_), general_req_format, 4, 0, static_cast<int>(control_mode));
+  snprintf(
+    reinterpret_cast<char *>(send_buff_), kSendBuffSize, general_req_format, 4, 0,
+    static_cast<int>(control_mode));
   return SendMessageAndWait();
 }
 
 Status Client::SendCycleTimeChange(CycleTime cycle_time)
 {
   int cycle_time_int = static_cast<int>(cycle_time);
-  sprintf(reinterpret_cast<char *>(send_buff_), general_req_format, 8, cycle_time_int, 0);
+  snprintf(
+    reinterpret_cast<char *>(send_buff_), kSendBuffSize, general_req_format, 8, cycle_time_int, 0);
   return SendMessageAndWait();
 }
 
@@ -200,7 +203,7 @@ bool Client::Receive(std::chrono::microseconds timeout)
 
 int Client::Dissect(char * cursor_ptr, std::size_t available_bytes)
 {
-  // TODO somehow propagate error causes in the different cases
+  // TODO(svastits) somehow propagate error causes in the different cases
 
   // Check opening tag (might be unnecessary) - return with failed if not found
   const char * opening_tag = "<Robot>";
@@ -266,7 +269,7 @@ bool Client::ParseInitMessage(char * data_to_parse)
     {
       TearDownConnection();
       event_response_.event_type = EventType::ERROR;
-      sprintf(
+      sprintf(  // NOLINT
         event_response_.message, "The server (%s) and client (%s) versions are not compatible",
         init_data_.semantic_version.c_str(), kSemanticVersion);
     }

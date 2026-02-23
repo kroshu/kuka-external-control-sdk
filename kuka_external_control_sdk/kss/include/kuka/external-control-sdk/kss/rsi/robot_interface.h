@@ -12,8 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ROBOT_INTERFACE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ROBOT_INTERFACE_H_
+
+#include <functional>
+#include <memory>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
@@ -29,50 +32,50 @@ class Robot : public IRobot
 {
   // Special methods
 public:
-  Robot(Configuration);
+  explicit Robot(Configuration);
 
   // Interface implementation
 public:
-  virtual Status Setup() override;
+  Status Setup() override;
 
-  virtual Status StartControlling(kuka::external::control::ControlMode) override;
-  virtual Status StartMonitoring() override;
+  Status StartControlling(kuka::external::control::ControlMode) override;
+  Status StartMonitoring() override;
 
-  virtual Status StopControlling() override;
-  virtual Status StopMonitoring() override;
+  Status StopControlling() override;
+  Status StopMonitoring() override;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
-  virtual Status CancelMonitoringSubscription() override;
+  Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
+  Status CancelMonitoringSubscription() override;
 
-  virtual bool HasMonitoringSubscription() override;
+  bool HasMonitoringSubscription() override;
 
-  virtual Status SendControlSignal() override;
-  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
+  Status SendControlSignal() override;
+  Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
-  virtual BaseControlSignal & GetControlSignal() override;
-  virtual BaseMotionState & GetLastMotionState() override;
+  BaseControlSignal & GetControlSignal() override;
+  BaseMotionState & GetLastMotionState() override;
 
-  // TODO add to documentation that other commands could come in between the Stop and Start call
-  // here, also evaluate dispatcher mode
-  virtual Status SwitchControlMode(ControlMode control_mode) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
+  // TODO(Svastits) add to documentation that other commands could come in between the Stop and
+  // Start call here, also evaluate dispatcher mode
+  Status SwitchControlMode(ControlMode control_mode) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
   // Extension methods not supported by plain RSI
-  virtual Status CancelRsiProgram() { return {ReturnCode::UNSUPPORTED, error_text}; };
-  virtual Status TurnOnDrives() { return {ReturnCode::UNSUPPORTED, error_text}; };
-  virtual Status TurnOffDrives() { return {ReturnCode::UNSUPPORTED, error_text}; };
+  virtual Status CancelRsiProgram() { return {ReturnCode::UNSUPPORTED, error_text}; }
+  virtual Status TurnOnDrives() { return {ReturnCode::UNSUPPORTED, error_text}; }
+  virtual Status TurnOffDrives() { return {ReturnCode::UNSUPPORTED, error_text}; }
   virtual Status SetCycleTime(CycleTime cycle_time)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
-  };
+  }
   virtual Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
-  };
-  virtual Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
+  }
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
-  };
+  }
 
 protected:
   MotionState last_motion_state_;
@@ -95,4 +98,4 @@ private:
 
 }  // namespace kuka::external::control::kss::rsi
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_RSI_ROBOT_INTERFACE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ROBOT_INTERFACE_H_

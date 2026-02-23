@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_CONTROL_SDK__IIQKA_ROBOT_INTERFACE_H_
-#define EXTERNAL_CONTROL_SDK__IIQKA_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ROBOT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ROBOT_H_
 
 #include <atomic>
 #include <condition_variable>
@@ -21,13 +21,13 @@
 #include <mutex>
 #include <variant>
 
-#include "arena_wrapper.h"
-#include "configuration.h"
 #include "kuka/external-control-sdk/common/irobot.h"
+#include "kuka/external-control-sdk/iiqka/arena_wrapper.h"
+#include "kuka/external-control-sdk/iiqka/configuration.h"
+#include "kuka/external-control-sdk/iiqka/message_builder.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
-#include "message_builder.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "proto-api/motion-services-ecs/motion_services_ecs.grpc.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
@@ -39,8 +39,8 @@ class Robot : public IRobot
 {
   // Special methods
 public:
-  Robot(Configuration);
-  virtual ~Robot() override { Reset(); }
+  explicit Robot(Configuration);
+  ~Robot() override { Reset(); }
 
   // delete copy constructor and copy assignment operator
   Robot(const Robot &) = delete;
@@ -52,7 +52,7 @@ public:
 
   // Interface implementation
 public:
-  virtual Status Setup() override;
+  Status Setup() override;
 
   /** Start controlling with the specified control mode
    *  At the present, the following control modes are supported:
@@ -60,25 +60,25 @@ public:
    *  2 - Joint impedance control
    *  4 - Joint torque control
    */
-  virtual Status StartControlling(ControlMode control_mode) override;
-  virtual Status StartMonitoring() override;
+  Status StartControlling(ControlMode control_mode) override;
+  Status StartMonitoring() override;
 
-  virtual Status StopControlling() override;
-  virtual Status StopMonitoring() override;
+  Status StopControlling() override;
+  Status StopMonitoring() override;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
-  virtual Status CancelMonitoringSubscription() override;
+  Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
+  Status CancelMonitoringSubscription() override;
 
-  virtual bool HasMonitoringSubscription() override;
+  bool HasMonitoringSubscription() override;
 
-  virtual Status SendControlSignal() override;
-  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
+  Status SendControlSignal() override;
+  Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
-  virtual BaseControlSignal & GetControlSignal() override;
-  virtual BaseMotionState & GetLastMotionState() override;
+  BaseControlSignal & GetControlSignal() override;
+  BaseMotionState & GetLastMotionState() override;
 
-  virtual Status SwitchControlMode(ControlMode control_mode) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
+  Status SwitchControlMode(ControlMode control_mode) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
   // ECI-specific features
 public:
@@ -134,4 +134,4 @@ private:
 };
 
 }  // namespace kuka::external::control::iiqka
-#endif  // EXTERNAL_CONTROL_SDK__IIQKA_ROBOT_INTERFACE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ROBOT_H_

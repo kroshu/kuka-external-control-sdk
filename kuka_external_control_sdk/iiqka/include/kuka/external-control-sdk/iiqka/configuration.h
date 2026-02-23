@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__IIQKA_CONFIGURATION_H_
-#define KUKA_EXTERNAL_CONTROL__IIQKA_CONFIGURATION_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__IIQKA__CONFIGURATION_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__IIQKA__CONFIGURATION_H_
 
 #include <chrono>
+#include <cstdint>
 #include <string>
 
 #include "kuka/external-control-sdk/common/irobot.h"
@@ -52,9 +53,9 @@ struct Configuration
   uint32_t monitoring_timeout = 6;
 
   // Ports open on the KRC to enable external control. These values are fixed.
-  static const unsigned short udp_replier_port{44444};
-  static const unsigned short ecs_grpc_port{49335};
-  static const unsigned short udp_subscriber_port{44446};
+  static const uint16_t udp_replier_port{44444};
+  static const uint16_t ecs_grpc_port{49335};
+  static const uint16_t udp_subscriber_port{44446};
 
   // Multicast address to which packets get published in monitoring mode.
   const std::string udp_subscriber_multicast_address = "239.255.123.250";
@@ -73,4 +74,4 @@ struct QoS_Configuration
 
 }  // namespace kuka::external::control::iiqka
 
-#endif  // KUKA_EXTERNAL_CONTROL__IIQKA_CONFIGURATION_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__IIQKA__CONFIGURATION_H_

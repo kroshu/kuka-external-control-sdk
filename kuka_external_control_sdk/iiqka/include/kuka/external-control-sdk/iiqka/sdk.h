@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
-#define EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__IIQKA__SDK_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__IIQKA__SDK_H_
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/common/message_builder.h"
@@ -22,4 +22,4 @@
 #include "kuka/external-control-sdk/iiqka/message_builder.h"
 #include "kuka/external-control-sdk/iiqka/robot.h"
 
-#endif  // EXTERNAL_CONTROL_SDK__IIQKA_SDK_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__IIQKA__SDK_H_

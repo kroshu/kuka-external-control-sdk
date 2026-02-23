@@ -19,9 +19,6 @@
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/secure_socket.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 
-using namespace std::chrono_literals;
-using namespace kuka::external::control;
-
 namespace kuka::external::control::iiqka
 {
 
@@ -361,8 +358,8 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
   return ConvertStatus(recv_ret);
 }
 
-BaseControlSignal & Robot::GetControlSignal() { return control_signal_; };
-BaseMotionState & Robot::GetLastMotionState() { return last_motion_state_; };
+BaseControlSignal & Robot::GetControlSignal() { return control_signal_; }
+BaseMotionState & Robot::GetLastMotionState() { return last_motion_state_; }
 
 Status Robot::SwitchControlMode(ControlMode control_mode)
 {
@@ -423,48 +420,49 @@ Status Robot::ConvertStatus(grpc::Status grpc_status)
     default:
       op_status.return_code = ReturnCode::ERROR;
   }
-  strcpy(op_status.message, grpc_status.error_message().c_str());
+  std::snprintf(
+    op_status.message, sizeof(op_status.message), "%s", grpc_status.error_message().c_str());
   return op_status;
 }
 
 Status Robot::ConvertStatus(os::core::udp::communication::Socket::ErrorCode code)
 {
-  using namespace os::core::udp::communication;
   Status op_status;
-
-  char errno_msg[256] = "Socket error: ";
 
   switch (code)
   {
-    case Socket::ErrorCode::kSuccess:
+    case os::core::udp::communication::Socket::ErrorCode::kSuccess:
       op_status.return_code = ReturnCode::OK;
       break;
-    case Socket::ErrorCode::kTimeout:
-      strcpy(op_status.message, "Timeout: operation did not finish in time.");
+    case os::core::udp::communication::Socket::ErrorCode::kTimeout:
+      std::snprintf(
+        op_status.message, sizeof(op_status.message), "Timeout: operation did not finish in time.");
       op_status.return_code = ReturnCode::TIMEOUT;
       break;
-    case Socket::ErrorCode::kSocketError:
-      strcpy(op_status.message, strcat(errno_msg, std::strerror(errno)));
+    case os::core::udp::communication::Socket::ErrorCode::kSocketError:
+      std::snprintf(
+        op_status.message, sizeof(op_status.message), "Socket error: %s", std::strerror(errno));
       op_status.return_code = ReturnCode::ERROR;
       break;
-    case Socket::ErrorCode::kAlreadyActive:
-      strcpy(op_status.message, "Error: socket already active.");
+    case os::core::udp::communication::Socket::ErrorCode::kAlreadyActive:
+      std::snprintf(op_status.message, sizeof(op_status.message), "Error: socket already active.");
       op_status.return_code = ReturnCode::ERROR;
       break;
-    case Socket::ErrorCode::kNotBound:
-      strcpy(op_status.message, "Error: socket not bound.");
+    case os::core::udp::communication::Socket::ErrorCode::kNotBound:
+      std::snprintf(op_status.message, sizeof(op_status.message), "Error: socket not bound.");
       op_status.return_code = ReturnCode::ERROR;
       break;
-    case Socket::ErrorCode::kNotConnected:
-      strcpy(op_status.message, "Error: socket not connected.");
+    case os::core::udp::communication::Socket::ErrorCode::kNotConnected:
+      std::snprintf(op_status.message, sizeof(op_status.message), "Error: socket not connected.");
       op_status.return_code = ReturnCode::ERROR;
       break;
-    case Socket::ErrorCode::kClosed:
-      strcpy(op_status.message, "Error: socket closed.");
+    case os::core::udp::communication::Socket::ErrorCode::kClosed:
+      std::snprintf(op_status.message, sizeof(op_status.message), "Error: socket closed.");
       op_status.return_code = ReturnCode::ERROR;
       break;
     default:
-      strcpy(op_status.message, "Request - Reply pattern broken.");
+      std::snprintf(
+        op_status.message, sizeof(op_status.message), "Request - Reply pattern broken.");
       op_status.return_code = ReturnCode::ERROR;
   }
 

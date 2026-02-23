@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__CLIENT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__CLIENT_H_
 
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <cstdint>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <thread>
 
 #include "kuka/external-control-sdk/common/irobot.h"
@@ -124,4 +127,4 @@ private:
 
 }  // namespace kuka::external::control::kss::mxa
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_COMM_CLIENT_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__CLIENT_H_

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__IIQKA_ARENA_WRAPPER_H_
-#define KUKA_EXTERNAL_CONTROL__IIQKA_ARENA_WRAPPER_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ARENA_WRAPPER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ARENA_WRAPPER_H_
 
 #include <google/protobuf/arena.h>
 
@@ -95,4 +95,4 @@ private:
 
 }  // namespace kuka::external::control::iiqka
 
-#endif  // KUKA_EXTERNAL_CONTROL__IIQKA_ARENA_WRAPPER_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__IIQKA__ARENA_WRAPPER_H_

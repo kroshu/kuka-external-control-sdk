@@ -121,7 +121,7 @@ SecureReplier::ErrorCode SecureReplier::ReceiveRequestOrTimeout(
     }
     else
     {
-      last_active_socket_ = (SecureSocket *)event.data.ptr;
+      last_active_socket_ = reinterpret_cast<SecureSocket *>(event.data.ptr);
       auto recv_bytes = last_active_socket_->Receive(server_buffer_, kMaxBufferSize);
       if (recv_bytes >= 0)
       {

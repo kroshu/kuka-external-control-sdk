@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_REPLIER_H
-#define OS_CORE_COMM_UDP_REPLIER_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REPLIER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REPLIER_H_
 
 #include <chrono>
+#include <utility>
 
-#include "socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -27,19 +28,19 @@ class Replier
 public:
   typedef Socket::ErrorCode ErrorCode;
 
-public:  //<ctor>
-  Replier(const SocketAddress & local_address);
+public:  // <ctor>
+  explicit Replier(const SocketAddress & local_address);
   virtual ~Replier() = default;
   virtual ErrorCode Setup();
   virtual void Reset();
 
-public:  //<operations>
+public:  // <operations>
   virtual ErrorCode ReceiveRequest();
   virtual ErrorCode ReceiveRequestOrTimeout(std::chrono::microseconds recv_timeout);
   virtual ErrorCode EmptyBuffer();
   virtual ErrorCode SendReply(uint8_t * reply_msg_data, size_t reply_msg_size);
 
-public:  //<properties>
+public:  // <properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   bool IsRequestActive() const { return active_request_; }
   std::pair<const uint8_t *, size_t> GetRequestMessage() const;
@@ -60,4 +61,4 @@ protected:
 };
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_REPLIER_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__REPLIER_H_

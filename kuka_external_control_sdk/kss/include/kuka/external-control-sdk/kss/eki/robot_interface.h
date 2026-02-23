@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_
 
+#include <memory>
 #include <mutex>
 
 #include "kuka/external-control-sdk/kss/configuration.h"
@@ -30,23 +31,23 @@ class Robot : public kuka::external::control::kss::rsi::Robot
 {
   // Special methods
 public:
-  Robot(Configuration);
+  explicit Robot(Configuration);
 
   // Interface implementation
 public:
-  virtual Status Setup() override;
+  Status Setup() override;
 
   // Call EKI service
-  virtual Status StartControlling(kuka::external::control::ControlMode) override;
+  Status StartControlling(kuka::external::control::ControlMode) override;
 
   // Set stop flag + send
-  virtual Status StopControlling() override;
+  Status StopControlling() override;
 
   // Call EKI service, only in inactive
-  virtual Status SwitchControlMode(ControlMode control_mode) override;
+  Status SwitchControlMode(ControlMode control_mode) override;
 
   // EKI response / new EKI client-server with external the service
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
   Status CancelRsiProgram() override;
 
@@ -70,4 +71,4 @@ private:
 };
 
 }  // namespace kuka::external::control::kss::eki
-#endif  // KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_

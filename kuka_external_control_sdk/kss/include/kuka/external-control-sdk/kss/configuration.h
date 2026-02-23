@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
 
 #include <chrono>
 #include <string>
+#include <vector>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 
@@ -52,7 +53,7 @@ struct GPIOConfiguration
   //  Type of the GPIO value (BOOL, DOUBLE, LONG)
   GPIOValueType value_type = GPIOValueType::UNSPECIFIED;
   // (Optional) Initial value for the GPIO
-  // TODO (Komaromi): Make it type specific
+  // TODO(Komaromi): Make it type specific
   double initial_value = 0;
   // (Optional) Enable limits for the GPIO value
   // If true, min_value and max_value must be set
@@ -115,13 +116,13 @@ struct Configuration
   std::string client_ip = "0.0.0.0";
 
   // Port number of the client application for real-time communication via UDP.
-  unsigned short client_port = 59152;
+  uint16_t client_port = 59152;
 
   // Port number of the client application for receiving mxAutomation messages via UDP.
-  unsigned short mxa_client_port = 1337;
+  uint16_t mxa_client_port = 1337;
 
   // Port number of the client application for receiving and sending EKI messages via TCP.
-  unsigned short eki_client_port = 54601;
+  uint16_t eki_client_port = 54601;
 
   // Degree of freedom.
   std::size_t dof = 6;
@@ -157,4 +158,4 @@ struct Configuration
 
 }  // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_CONFIGURATION_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_

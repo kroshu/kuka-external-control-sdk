@@ -12,14 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_DISSECTOR_H
-#define OS_CORE_COMM_DISSECTOR_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__DISSECTOR_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__DISSECTOR_H_
 
+#include <chrono>
 #include <functional>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include "socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -42,7 +45,7 @@ public:
   Dissector(std::shared_ptr<Socket> socket, size_t buffer_size);
   virtual ~Dissector() = default;
 
-public:  //<socket operations>
+public:  // <socket operations>
   virtual Socket::ErrorCode Receive(raw_message_t & message, int flags = 0);
   virtual Socket::ErrorCode ReceiveOrTimeout(
     const std::chrono::microseconds & timeout, raw_message_t & message, int flags = 0);
@@ -50,8 +53,8 @@ public:  //<socket operations>
 protected:
   virtual int Dissect(char * /*cursor_ptr*/, size_t available_bytes) { return available_bytes; }
 
-public:  //<properties>
-  std::string GetLastErrorText() const { return socket_->GetLastErrorText(); };
+public:  // <properties>
+  std::string GetLastErrorText() const { return socket_->GetLastErrorText(); }
   std::pair<Socket::ErrorCode, int> GetLastSocketError() const
   {
     return socket_->GetLastSocketError();
@@ -86,7 +89,7 @@ public:
   DynamicDissector(
     std::shared_ptr<Socket> socket, size_t buffer_size, std::function<dissector_fn_t> dissector_fn);
 
-protected:  //<Dissector>
+protected:  // <Dissector>
   virtual int Dissect(char * cursor_ptr, size_t available_bytes)
   {
     return message_dissector_fn_(cursor_ptr, available_bytes);
@@ -98,4 +101,4 @@ public:
 
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_DISSECTOR_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__DISSECTOR_H_

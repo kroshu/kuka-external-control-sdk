@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "fake_command_handling_service.h"
+#include "test-assets/fake_command_handling_service.h"
 
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
+#include <string>
 
 #include <thread>
 

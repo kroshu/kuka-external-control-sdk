@@ -22,7 +22,7 @@ namespace kuka::external::control
 Status::Status(ReturnCode param_return_code, const char * param_message)
 {
   return_code = param_return_code;
-  strcpy(&message[0], param_message);
+  strcpy(&message[0], param_message);  // NOLINT
 }
 
 }  // namespace kuka::external::control

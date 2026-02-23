@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__STATUS_H_
-#define KUKA_EXTERNAL_CONTROL__STATUS_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__STATUS_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__STATUS_H_
 
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
@@ -32,7 +32,7 @@ enum class ReturnCode
 struct Status
 {
   Status() = default;
-  Status(ReturnCode, const char * = "\0");
+  Status(ReturnCode, const char * = "\0");  // NOLINT
 
   ReturnCode return_code = ReturnCode::UNSPECIFIED;
   char message[256] = {};
@@ -40,4 +40,4 @@ struct Status
 
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__STATUS_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__STATUS_H_

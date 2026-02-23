@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
-#define KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_
 
 #include <string>
+#include <utility>
 #include <variant>
 
 namespace kuka::external::control
@@ -64,4 +65,4 @@ protected:
 };
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_

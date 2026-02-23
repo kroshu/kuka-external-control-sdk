@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_
 
 #include <array>
 #include "mxAutomation.h"
@@ -31,9 +31,9 @@ enum class BLOCKSTATE
 
 struct BLOCKRESULT
 {
-  BLOCKRESULT() : block_state(BLOCKSTATE::ACTIVE){};
-  BLOCKRESULT(BLOCKSTATE state) : block_state(state){};
-  BLOCKRESULT(int err_code) : block_state(BLOCKSTATE::ERROR), error_code(err_code){};
+  BLOCKRESULT() : block_state(BLOCKSTATE::ACTIVE) {}
+  explicit BLOCKRESULT(BLOCKSTATE state) : block_state(state) {}
+  explicit BLOCKRESULT(int err_code) : block_state(BLOCKSTATE::ERROR), error_code(err_code) {}
 
   BLOCKSTATE block_state;
   int error_code = 0;
@@ -297,4 +297,5 @@ private:
   static constexpr int DEFAULT_AXISGROUP_ID = 1;
 };
 }  // namespace kuka::external::control::kss::mxa
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
+
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_

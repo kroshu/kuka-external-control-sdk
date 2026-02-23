@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_VALUE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_VALUE_H_
 
 #include <memory>
-#include "gpio_config.h"
+#include <utility>
 #include "kuka/external-control-sdk/common/gpio_value.h"
+#include "kuka/external-control-sdk/kss/gpio_config.h"
 
 namespace kuka::external::control::kss
 {
@@ -25,8 +26,11 @@ namespace kuka::external::control::kss
 class GPIOValue : public BaseGPIOValue
 {
 public:
-  GPIOValue() : BaseGPIOValue(){};
-  GPIOValue(std::unique_ptr<GPIOConfig> gpio_config) : BaseGPIOValue(std::move(gpio_config)) {}
+  GPIOValue() : BaseGPIOValue() {}
+  explicit GPIOValue(std::unique_ptr<GPIOConfig> gpio_config)
+  : BaseGPIOValue(std::move(gpio_config))
+  {
+  }
   GPIOValue(std::unique_ptr<GPIOConfig> gpio_config, double value)
   : BaseGPIOValue(std::move(gpio_config))
   {
@@ -37,4 +41,4 @@ public:
 
 }  // namespace kuka::external::control::kss
 
-#endif  // #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_VALUE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_VALUE_H_

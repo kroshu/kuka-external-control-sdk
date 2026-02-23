@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_STATUS_UPDATE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_STATUS_UPDATE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__STATUS_UPDATE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__STATUS_UPDATE_H_
 
 #include <string>
 
@@ -69,4 +69,4 @@ public:
 };
 
 }  // namespace kuka::external::control::kss
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_STATUS_UPDATE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__STATUS_UPDATE_H_

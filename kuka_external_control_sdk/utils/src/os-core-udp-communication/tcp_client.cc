@@ -41,7 +41,7 @@ TCPClient::TCPClient(
   flags_(flags),
   local_addr_(local_addr)
 {
-  // TODO check whether we need to try to reconnect multiple times
+  // TODO(Svastits) check whether we need to try to reconnect multiple times
 }
 
 TCPClient::ErrorCode TCPClient::Setup()
@@ -87,7 +87,7 @@ bool TCPClient::Receive(unsigned char * recv_data, std::chrono::microseconds tim
     (receive_state == os::core::udp::communication::Socket::ErrorCode::kSuccess &&
      received_bytes == 0))
   {
-    // TODO handle different errors
+    // TODO(Svastits) handle different errors
     return false;
   }
 

@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
-#define KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include "gpio_config.h"
+#include <utility>
+#include "kuka/external-control-sdk/common/gpio_config.h"
 
 namespace kuka::external::control
 {
@@ -25,7 +26,8 @@ class BaseGPIOValue
 {
 public:
   BaseGPIOValue() = default;
-  BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config) : gpio_config_(std::move(gpio_config))
+  explicit BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
+  : gpio_config_(std::move(gpio_config))
   {
     if (gpio_config_)
     {
@@ -156,4 +158,4 @@ private:
 };
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_

@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
-#define KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
-
-#include "gpio_value.h"
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_
 
 #include <iterator>
 #include <map>
+#include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
+
+#include "kuka/external-control-sdk/common/gpio_value.h"
 
 namespace kuka::external::control
 {
@@ -28,7 +30,7 @@ namespace kuka::external::control
 class BaseMotionState
 {
 public:
-  BaseMotionState(std::size_t dof) : dof_(dof) {}
+  explicit BaseMotionState(std::size_t dof) : dof_(dof) {}
 
   std::vector<double> const & GetMeasuredPositions() const { return measured_positions_; }
 
@@ -64,7 +66,7 @@ protected:
 class BaseControlSignal
 {
 public:
-  BaseControlSignal(std::size_t dof) : dof_(dof) {}
+  explicit BaseControlSignal(std::size_t dof) : dof_(dof) {}
 
   template <typename InputIt>
   void AddJointPositionValues(InputIt first, InputIt last)
@@ -174,4 +176,4 @@ private:
 };
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_

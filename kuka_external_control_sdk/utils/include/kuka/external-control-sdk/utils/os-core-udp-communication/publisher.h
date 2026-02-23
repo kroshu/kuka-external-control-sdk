@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_PUBLISHER_H
-#define OS_CORE_COMM_UDP_PUBLISHER_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_
 
-#include "socket.h"
+#include <cstdint>
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -46,4 +47,4 @@ protected:
 };
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_PUBLISHER_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_

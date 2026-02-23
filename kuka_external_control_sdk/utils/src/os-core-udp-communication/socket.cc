@@ -27,7 +27,7 @@
 namespace os::core::udp::communication
 {
 
-const std::string SocketAddress::kAnyAddress = "0.0.0.0";
+const char SocketAddress::kAnyAddress[] = "0.0.0.0";
 
 // Possible features:
 // - IPv6
@@ -41,7 +41,7 @@ SocketAddress::SocketAddress()
   sockaddr_.sin_port = htons(0);
   port_ = 0;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, kAnyAddress.c_str(), kAnyAddress.size());
+  memcpy(ip_, kAnyAddress, strlen(kAnyAddress));
 }
 
 SocketAddress::SocketAddress(const std::string & ip, int port)
@@ -74,7 +74,7 @@ SocketAddress::SocketAddress(int port)
   sockaddr_.sin_port = htons(port);
   port_ = port;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, kAnyAddress.c_str(), kAnyAddress.size());
+  memcpy(ip_, kAnyAddress, strlen(kAnyAddress));
 }
 
 SocketAddress::SocketAddress(const struct sockaddr_in * raw_address)
@@ -156,7 +156,8 @@ int Socket::SetReuseAddress(int flag)
   {
     return SetError(ErrorCode::kNotActive);
   }
-  return setsockopt(socket_fd_, SOL_SOCKET, SO_REUSEADDR, (char *)&flag, sizeof(flag));
+  return setsockopt(
+    socket_fd_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&flag), sizeof(flag));
 }
 
 int Socket::SetReceiveBufferSize(int size)
@@ -177,7 +178,8 @@ int Socket::SetSendTimeout(const std::chrono::microseconds & timeout)
   struct timeval time;
   time.tv_sec = timeout.count() / kMicroToSec;
   time.tv_usec = timeout.count() % kMicroToSec;
-  return setsockopt(socket_fd_, SOL_SOCKET, SO_SNDTIMEO, (char *)&time, sizeof(struct timeval));
+  return setsockopt(
+    socket_fd_, SOL_SOCKET, SO_SNDTIMEO, reinterpret_cast<char *>(&time), sizeof(struct timeval));
 }
 
 int Socket::SetReceiveTimeout(const std::chrono::microseconds & timeout)
@@ -189,7 +191,8 @@ int Socket::SetReceiveTimeout(const std::chrono::microseconds & timeout)
   struct timeval time;
   time.tv_sec = timeout.count() / kMicroToSec;
   time.tv_usec = timeout.count() % kMicroToSec;
-  return setsockopt(socket_fd_, SOL_SOCKET, SO_RCVTIMEO, (char *)&time, sizeof(struct timeval));
+  return setsockopt(
+    socket_fd_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char *>(&time), sizeof(struct timeval));
 }
 
 int Socket::JoinMulticastGroup(
@@ -202,7 +205,8 @@ int Socket::JoinMulticastGroup(
   struct ip_mreq mreq;
   mreq.imr_multiaddr.s_addr = multicast_address.RawInetAddr()->sin_addr.s_addr;
   mreq.imr_interface.s_addr = interface_address.RawInetAddr()->sin_addr.s_addr;
-  return setsockopt(socket_fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+  return setsockopt(
+    socket_fd_, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char *>(&mreq), sizeof(mreq));
 }
 
 int Socket::LeaveMulticastGroup(
@@ -215,7 +219,8 @@ int Socket::LeaveMulticastGroup(
   struct ip_mreq mreq;
   mreq.imr_multiaddr.s_addr = multicast_address.RawInetAddr()->sin_addr.s_addr;
   mreq.imr_interface.s_addr = interface_address.RawInetAddr()->sin_addr.s_addr;
-  return setsockopt(socket_fd_, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char *)&mreq, sizeof(mreq));
+  return setsockopt(
+    socket_fd_, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char *>(&mreq), sizeof(mreq));
 }
 
 int Socket::SetTTLForMulticast(int ttl)

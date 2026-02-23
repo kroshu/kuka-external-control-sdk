@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
-#define KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_
 
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "message_builder.h"
-#include "status.h"
+#include "kuka/external-control-sdk/common/message_builder.h"
+#include "kuka/external-control-sdk/common/status.h"
 
 namespace kuka::external::control
 {
@@ -88,4 +89,4 @@ public:
 
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_

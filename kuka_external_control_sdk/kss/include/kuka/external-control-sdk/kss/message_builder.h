@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__MESSAGE_BUILDER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__MESSAGE_BUILDER_H_
 
 #include <algorithm>
 #include <array>
 #include <cstring>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "kuka/external-control-sdk/common/message_builder.h"
 #include "kuka/external-control-sdk/kss/gpio_value.h"
@@ -119,14 +122,14 @@ private:
 
   int first_cartesian_position_index_ = 0;
 
-  long ipoc_ = 0;
-  long delay_ = 0;
+  uint64_t ipoc_ = 0;
+  uint64_t delay_ = 0;
 
   std::vector<JointConfiguration> joint_configs_;
   std::size_t num_internal_axes_ = -1;
   std::size_t num_external_axes_ = -1;
 
-  static constexpr short kFixSixAxes = 6;
+  static constexpr uint8_t kFixSixAxes = 6;
   static constexpr int kPrecision = 6;
 };
 
@@ -221,4 +224,4 @@ private:
 };
 }  // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_MESSAGE_BUILDER_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__MESSAGE_BUILDER_H_

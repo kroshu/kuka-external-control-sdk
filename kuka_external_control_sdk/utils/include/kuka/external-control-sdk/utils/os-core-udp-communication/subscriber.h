@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_SUBSCRIBER_H
-#define OS_CORE_COMM_UDP_SUBSCRIBER_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SUBSCRIBER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SUBSCRIBER_H_
 
 #include <chrono>
+#include <utility>
 
-#include "socket.h"
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
 namespace os::core::udp::communication
 {
@@ -27,20 +28,20 @@ class Subscriber
 public:
   typedef Socket::ErrorCode ErrorCode;
 
-public:  //<ctor>
-  Subscriber(
+public:  // <ctor>
+  explicit Subscriber(
     const SocketAddress & sub_address, const SocketAddress & interface_address, bool is_multicast);
   virtual ~Subscriber() = default;
   ErrorCode Setup();
 
-public:  //<operations>
+public:  // <operations>
   ErrorCode Receive();
   ErrorCode ReceiveAllArrived();
   ErrorCode WaitForAndReceive(std::chrono::microseconds timeout);
   ErrorCode WaitForAndReceiveAllArrived(std::chrono::microseconds timeout);
   std::pair<const uint8_t *, size_t> GetMessage() const;
 
-public:  //<properties>
+public:  // <properties>
   static constexpr uint16_t kMaxBufferSize = 65500;
   static constexpr int kRecvBufferSize = 1024 * kMaxBufferSize;
   const SocketAddress & Address() const { return sub_address_; }
@@ -57,4 +58,4 @@ protected:
 };
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_SUBSCRIBER_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SUBSCRIBER_H_

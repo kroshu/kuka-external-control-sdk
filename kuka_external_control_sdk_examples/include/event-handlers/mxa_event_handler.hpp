@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXTERNAL_CONTROL_SDK_EXAMPLE__MXA_EVENT_HANDLER_H_
-#define EXTERNAL_CONTROL_SDK_EXAMPLE__MXA_EVENT_HANDLER_H_
+#ifndef EVENT_HANDLERS__MXA_EVENT_HANDLER_HPP_
+#define EVENT_HANDLERS__MXA_EVENT_HANDLER_HPP_
 
 #include <iostream>
 
@@ -56,4 +56,4 @@ public:
 };
 }  // namespace external_control_sdk_example
 
-#endif  // EXTERNAL_CONTROL_SDK_EXAMPLE__MXA_EVENT_HANDLER_H_
+#endif  // EVENT_HANDLERS__MXA_EVENT_HANDLER_HPP_

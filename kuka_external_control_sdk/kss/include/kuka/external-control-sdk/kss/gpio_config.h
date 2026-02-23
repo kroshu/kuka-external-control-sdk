@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_GPIO_CONFIG_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_GPIO_CONFIG_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_CONFIG_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_CONFIG_H_
 
+#include <string>
 #include "kuka/external-control-sdk/common/gpio_config.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
 
@@ -24,16 +25,20 @@ namespace kuka::external::control::kss
 class GPIOConfig : public BaseGPIOConfig
 {
 public:
-  GPIOConfig() : BaseGPIOConfig(){};
+  GPIOConfig() : BaseGPIOConfig() {}
   GPIOConfig(const GPIOConfig & other) = default;
-  GPIOConfig(
+  explicit GPIOConfig(
     std::string name, GPIOValueType value_type, double initial_value = 0.0,
     bool enable_limits = false, double min_value = 0.0, double max_value = 0.0)
-  : BaseGPIOConfig(name, value_type, initial_value, enable_limits, min_value, max_value){};
-  GPIOConfig(GPIOConfiguration config)
+  : BaseGPIOConfig(name, value_type, initial_value, enable_limits, min_value, max_value)
+  {
+  }
+  explicit GPIOConfig(GPIOConfiguration config)
   : BaseGPIOConfig(
       config.name, config.value_type, config.initial_value, config.enable_limits, config.min_value,
-      config.max_value){};
+      config.max_value)
+  {
+  }
 
   ~GPIOConfig() = default;
   // Add RSI specific methods
@@ -41,4 +46,4 @@ public:
 
 }  // namespace kuka::external::control::kss
 
-#endif  // #define KUKA_EXTERNAL_CONTROL__KSS_GPIO_CONFIG_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__GPIO_CONFIG_H_

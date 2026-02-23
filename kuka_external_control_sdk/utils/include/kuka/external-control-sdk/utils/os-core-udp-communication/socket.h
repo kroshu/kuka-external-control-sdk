@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_SOCKET_H
-#define OS_CORE_COMM_UDP_SOCKET_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SOCKET_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SOCKET_H_
 
 #include <netinet/in.h>
 
 #include <chrono>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace os::core::udp::communication
 {
@@ -28,10 +29,10 @@ class SocketAddress
 {
 public:
   SocketAddress();
-  SocketAddress(const std::string & ip, int port);
-  SocketAddress(const std::string & ip);
-  SocketAddress(int port);
-  SocketAddress(const struct sockaddr_in * raw_address);
+  explicit SocketAddress(const std::string & ip, int port);
+  explicit SocketAddress(const std::string & ip);
+  explicit SocketAddress(int port);
+  explicit SocketAddress(const struct sockaddr_in * raw_address);
 
   static std::optional<SocketAddress> SafeConstruct(const std::string & ip, int port = 0);
 
@@ -45,7 +46,7 @@ public:
   uint16_t Port() const;
 
 public:
-  static const std::string kAnyAddress;
+  static const char kAnyAddress[];
 
 protected:
   struct sockaddr_in sockaddr_;
@@ -194,4 +195,4 @@ protected:
 
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_SOCKET_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__SOCKET_H_

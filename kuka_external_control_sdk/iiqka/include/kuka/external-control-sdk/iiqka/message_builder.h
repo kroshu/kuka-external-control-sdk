@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
-#define KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__IIQKA__MESSAGE_BUILDER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__IIQKA__MESSAGE_BUILDER_H_
 
+#include <algorithm>
 #include <limits>
+#include <utility>
 
-#include "arena_wrapper.h"
 #include "kuka/external-control-sdk/common/message_builder.h"
+#include "kuka/external-control-sdk/iiqka/arena_wrapper.h"
 #include "proto-api/motion-services-ecs/control_signal_external.pb.h"
 #include "proto-api/motion-services-ecs/motion_state_external.pb.h"
 
@@ -29,7 +31,7 @@ class MotionState : public BaseMotionState
 {
 public:
   // Measured velocities are not provided by the controller, vector should remain empty
-  MotionState(std::size_t dof) : BaseMotionState(dof)
+  explicit MotionState(std::size_t dof) : BaseMotionState(dof)
   {
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
@@ -185,4 +187,4 @@ private:
 
 }  // namespace kuka::external::control::iiqka
 
-#endif  // KUKA_EXTERNAL_CONTROL__IIQKA_MESSAGE_BUILDER_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__IIQKA__MESSAGE_BUILDER_H_

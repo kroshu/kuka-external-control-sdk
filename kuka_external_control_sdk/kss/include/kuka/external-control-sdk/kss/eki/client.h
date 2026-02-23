@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_EKI_COMM_CLIENT_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_EKI_COMM_CLIENT_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__CLIENT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__CLIENT_H_
 
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <thread>
 
 #include "kuka/external-control-sdk/common/irobot.h"
@@ -46,9 +49,9 @@ enum class CommandType : std::uint8_t
 class Client : public os::core::udp::communication::TCPClient
 {
 public:
-  Client(
-    const std::string & server_address, unsigned short server_port, unsigned short client_port = 0);
-  virtual ~Client() override;
+  explicit Client(
+    const std::string & server_address, uint16_t server_port, uint16_t client_port = 0);
+  ~Client() override;
 
   // Initiates EKI connection
   Status Start();
@@ -65,7 +68,7 @@ public:
 
   Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler);
 
-  // TODO implement functions to get certain data of the returned status
+  // TODO(Svastits) implement functions to get certain data of the returned status
   // Specific to the needs of the application e.g. get error message
 
   Status TurnOnDrives();
@@ -173,4 +176,4 @@ private:
 
 }  // namespace kuka::external::control::kss::eki
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_EKI_COMM_CLIENT_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__CLIENT_H_

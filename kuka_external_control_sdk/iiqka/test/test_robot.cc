@@ -28,7 +28,7 @@ protected:
   std::unique_ptr<kuka::external::control::iiqka::Robot> robot_;
   std::unique_ptr<kuka::external::control::test::FakeCommandHandlingService> service_;
 
-  iiQKARobot(){};
+  iiQKARobot();
 
   virtual ~iiQKARobot() = default;
 
