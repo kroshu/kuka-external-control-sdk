@@ -164,7 +164,6 @@ install(FILES
     ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-iiqka-client-libraryConfig.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library
 )
-  )
 
 install(DIRECTORY ${iiqka_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
