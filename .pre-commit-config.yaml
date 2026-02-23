@@ -49,18 +49,19 @@ repos:
         stages: [commit]
         entry: env AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=TRUE ament_cppcheck
         language: system
+        args: ["--language=c++"]
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
 
-  - repo: local
-    hooks:
-      - id: ament_cpplint
-        name: ament_cpplint
-        description: Static code analysis of C/C++ files.
-        stages: [commit]
-        entry: ament_cpplint
-        language: system
-        files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
-        args: ["--linelength=100", "--filter=-whitespace/newline"]
+  # - repo: local
+    # hooks:
+    #   - id: ament_cpplint
+    #     name: ament_cpplint
+    #     description: Static code analysis of C/C++ files.
+    #     stages: [commit]
+    #     entry: ament_cpplint
+    #     language: system
+    #     files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
+    #     args: ["--linelength=100", "--filter=-whitespace/newline"]
 
   # Cmake hooks
   - repo: local

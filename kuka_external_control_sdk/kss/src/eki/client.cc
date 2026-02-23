@@ -177,14 +177,14 @@ int Client::Dissect(char* cursor_ptr, std::size_t available_bytes) {
 
   // Check opening tag (might be unnecessary) - return with failed if not found
   const char* opening_tag = "<Robot>";
-  if (std::memcmp(cursor_ptr, opening_tag, strlen(opening_tag) != 0)) {
+  if (std::memcmp(cursor_ptr, opening_tag, std::strlen(opening_tag)) != 0) {
     return -1;
   }
 
   // Check whether closing tag is there - if not it's still a partial message
   const char* closing_tag = "</Robot>";
-  char* start_ptr = cursor_ptr + available_bytes - strlen(closing_tag);
-  if (std::memcmp(start_ptr, closing_tag, strlen(closing_tag) != 0)) {
+  char* start_ptr = cursor_ptr + available_bytes - std::strlen(closing_tag);
+  if (std::memcmp(start_ptr, closing_tag, std::strlen(closing_tag)) != 0) {
     return available_bytes + 1;
   }
 
