@@ -12,39 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_
 
+#include <memory>
 #include <mutex>
 
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/eki/client.h"
+#include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
-#include "kuka/external-control-sdk/kss/message_builder.h"
 
-namespace kuka::external::control::kss::eki {
+namespace kuka::external::control::kss::eki
+{
 
-class Robot : public kuka::external::control::kss::rsi::Robot {
+class Robot : public kuka::external::control::kss::rsi::Robot
+{
   // Special methods
- public:
-  Robot(Configuration);
+public:
+  explicit Robot(Configuration);
 
   // Interface implementation
- public:
-  virtual Status Setup() override;
+public:
+  Status Setup() override;
 
   // Call EKI service
-  virtual Status StartControlling(kuka::external::control::ControlMode) override;
+  Status StartControlling(kuka::external::control::ControlMode) override;
 
   // Set stop flag + send
-  virtual Status StopControlling() override;
+  Status StopControlling() override;
 
   // Call EKI service, only in inactive
-  virtual Status SwitchControlMode(ControlMode control_mode) override;
+  Status SwitchControlMode(ControlMode control_mode) override;
 
   // EKI response / new EKI client-server with external the service
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
   Status CancelRsiProgram() override;
 
@@ -54,17 +57,18 @@ class Robot : public kuka::external::control::kss::rsi::Robot {
 
   Status SetCycleTime(CycleTime cycle_time) override;
 
-  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension>&& extension);
+  Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension);
 
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler>&& handler);
+  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler);
 
   // Members and methods necessary for network configuration and error handling.
- private:
+private:
   Configuration config_;
   Client tcp_client_;
 
-  static constexpr int kEKIServerPort = 54600;  // Port on which the controller listens for EKI messages
+  static constexpr int kEKIServerPort =
+    54600;  // Port on which the controller listens for EKI messages
 };
 
-}  // namespace kuka::external::control::kss
-#endif  // KUKA_EXTERNAL_CONTROL__EKI_ROBOT_INTERFACE_H_
+}  // namespace kuka::external::control::kss::eki
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__EKI__ROBOT_INTERFACE_H_

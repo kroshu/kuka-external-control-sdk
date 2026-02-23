@@ -22,32 +22,35 @@ option java_multiple_files = true;
 option java_outer_classname = "MotionStateInternalProto";
 option java_package = "com.kuka.motion.external";
 
-
 // An array of joint positions for a given kinematic structure.
-message JointPositions {
+message JointPositions
+{
   repeated double values = 1;
 }
 
-
 // An array of joint velocities for a given kinematic structure.
-message JointVelocities {
+message JointVelocities
+{
   repeated double values = 1;
 }
 
 // An array of joint torques for a given kinematic structure.
-message JointTorques {
+message JointTorques
+{
   repeated double values = 1;
 }
 
 // Represents a vector in 3D space.
-message Vector {
+message Vector
+{
   double x = 1;
   double y = 2;
   double z = 3;
 }
 
 // Represents a quaternion in 3D space.
-message Quaternion {
+message Quaternion
+{
   double x = 1;
   double y = 2;
   double z = 3;
@@ -55,7 +58,8 @@ message Quaternion {
 }
 
 // Represents a velocity in 3D space.
-message Twist {
+message Twist
+{
   // The linear part of the velocity.
   Vector linear = 1;
 
@@ -64,7 +68,8 @@ message Twist {
 }
 
 // Represents force in 3D space.
-message Wrench {
+message Wrench
+{
   // The linear components.
   Vector force = 1;
 
@@ -73,7 +78,8 @@ message Wrench {
 }
 
 // Represents a transform between two coordinate frames in 3D space.
-message Transform {
+message Transform
+{
   // The translational component.
   Vector translation = 1;
 

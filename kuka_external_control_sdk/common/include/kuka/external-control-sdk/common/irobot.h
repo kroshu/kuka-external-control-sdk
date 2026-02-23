@@ -12,30 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
-#define KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_
 
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "message_builder.h"
-#include "status.h"
+#include "kuka/external-control-sdk/common/message_builder.h"
+#include "kuka/external-control-sdk/common/status.h"
 
-namespace kuka::external::control {
+namespace kuka::external::control
+{
 
-class EventHandler {
- public:
+class EventHandler
+{
+public:
   virtual ~EventHandler() = default;
 
   virtual void OnSampling() {}
-  virtual void OnControlModeSwitch(const std::string& reason) {}
-  virtual void OnStopped(const std::string& reason) {}
-  virtual void OnError(const std::string& reason) {}
+  virtual void OnControlModeSwitch(const std::string & reason) {}
+  virtual void OnStopped(const std::string & reason) {}
+  virtual void OnError(const std::string & reason) {}
 };
 
-enum class ControlMode : uint8_t {
+enum class ControlMode : uint8_t
+{
   UNSPECIFIED = 0,
   JOINT_POSITION_CONTROL = 1,
   JOINT_IMPEDANCE_CONTROL = 2,
@@ -47,7 +51,8 @@ enum class ControlMode : uint8_t {
   WRENCH_CONTROL = 8
 };
 
-enum class OperationMode : uint8_t {
+enum class OperationMode : uint8_t
+{
   UNSPECIFIED = 0,
   T1 = 1,
   T2 = 2,
@@ -55,8 +60,9 @@ enum class OperationMode : uint8_t {
   EXT = 4
 };
 
-class IRobot {
- public:
+class IRobot
+{
+public:
   virtual ~IRobot() = default;
 
   virtual Status Setup() = 0;
@@ -64,7 +70,7 @@ class IRobot {
   virtual Status StartControlling(ControlMode control_mode) = 0;
   virtual Status StartMonitoring() = 0;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) = 0;
+  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) = 0;
   virtual Status CancelMonitoringSubscription() = 0;
   virtual bool HasMonitoringSubscription() = 0;
 
@@ -74,13 +80,13 @@ class IRobot {
   virtual Status SendControlSignal() = 0;
   virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
 
-  virtual BaseControlSignal& GetControlSignal() = 0;
-  virtual BaseMotionState& GetLastMotionState() = 0;
+  virtual BaseControlSignal & GetControlSignal() = 0;
+  virtual BaseMotionState & GetLastMotionState() = 0;
 
   virtual Status SwitchControlMode(ControlMode control_mode) = 0;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) = 0;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) = 0;
 };
 
 }  // namespace kuka::external::control
 
-#endif  // KUKA_EXTERNAL_CONTROL__I_ROBOT_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_

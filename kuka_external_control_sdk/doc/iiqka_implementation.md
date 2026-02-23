@@ -94,7 +94,7 @@ The extra method of the Robot class providing the specific interface:
 
 - _SetQoSProfile(qos configuration)_ : Sets the Quality of Service (QoS) configuration for external control on the controller. If successful, the next session will be started with this configuration.
 
-With this _SetQoSProfile_ function the user can set the QoS coniguration, which is detailed later.
+With this _SetQoSProfile_ function the user can set the QoS configuration, which is detailed later.
 
 #### Configuration
 

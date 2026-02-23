@@ -27,7 +27,8 @@ option java_outer_classname = "ControlSignalInternalProto";
 option java_package = "com.kuka.motion.external";
 
 // Proto definition for external RT commands for internal usage on shared memory
-message ControlSignalInternal {
+message ControlSignalInternal
+{
   // Flag for stopping external command handling through RT-channel
   bool stop_ipo = 1;
   // The externally calculated joint position command of a joint group.
@@ -49,4 +50,3 @@ message ControlSignalInternal {
   // The control mode for the command sent
   ExternalControlMode control_mode = 10;
 }
-

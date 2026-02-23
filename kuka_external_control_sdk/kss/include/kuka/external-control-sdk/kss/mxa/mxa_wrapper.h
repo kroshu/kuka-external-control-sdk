@@ -12,30 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_
 
-#include "mxAutomation.h"
 #include <array>
+#include "mxAutomation.h"
 
-namespace kuka::external::control::kss::mxa {
+namespace kuka::external::control::kss::mxa
+{
 
-enum class BLOCKSTATE { ACTIVE = -1, DONE = 0, ABORTED = 1, ERROR = 2 };
+enum class BLOCKSTATE
+{
+  ACTIVE = -1,
+  DONE = 0,
+  ABORTED = 1,
+  ERROR = 2
+};
 
-struct BLOCKRESULT {
-  BLOCKRESULT() : block_state(BLOCKSTATE::ACTIVE){};
-  BLOCKRESULT(BLOCKSTATE state) : block_state(state){};
-  BLOCKRESULT(int err_code)
-      : block_state(BLOCKSTATE::ERROR), error_code(err_code){};
+struct BLOCKRESULT
+{
+  BLOCKRESULT() : block_state(BLOCKSTATE::ACTIVE) {}
+  explicit BLOCKRESULT(BLOCKSTATE state) : block_state(state) {}
+  explicit BLOCKRESULT(int err_code) : block_state(BLOCKSTATE::ERROR), error_code(err_code) {}
 
   BLOCKSTATE block_state;
   int error_code = 0;
 };
 
-class mxAWrapper {
+class mxAWrapper
+{
 public:
-  mxAWrapper() {
-    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++) {
+  mxAWrapper()
+  {
+    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++)
+    {
       int_array_[i] = 0;
       real_array_[i] = 0.0;
       bool_array_[i] = false;
@@ -76,22 +86,32 @@ public:
     mxa_tech_function_m_.PARAMETERCOUNT = 2;
   }
 
-void getmxAOutput(unsigned char *read_buffer) {
-    if (read_buffer == nullptr) return;
+  void getmxAOutput(unsigned char * read_buffer)
+  {
+    if (read_buffer == nullptr)
+    {
+      return;
+    }
     krc_read_.KRC4_INPUT = read_buffer;
     krc_read_.OnCycle();
   }
 
-  void setmxAInput(unsigned char *write_buffer) {
-    if (write_buffer == nullptr) return;
+  void setmxAInput(unsigned char * write_buffer)
+  {
+    if (write_buffer == nullptr)
+    {
+      return;
+    }
     krc_write_.KRC4_OUTPUT = write_buffer;
     krc_write_.OnCycle();
   }
 
-  int mxACycle() {
+  int mxACycle()
+  {
     mxa_init_.OnCycle();
 
-    if (!mxa_aut_ext_.PERI_RDY) {
+    if (!mxa_aut_ext_.PERI_RDY)
+    {
       mxa_aut_ext_.DRIVES_OFF = true;
     }
     mxa_aut_ext_.OnCycle();
@@ -107,23 +127,28 @@ void getmxAOutput(unsigned char *read_buffer) {
   }
 
   // Start robot interpreter of mxA
-  BLOCKRESULT startMxAServer() {
+  BLOCKRESULT startMxAServer()
+  {
     mxa_aut_ext_.MOVE_ENABLE = true;
 
     // Reset execute flag for every new sever start, as after cancel it might
     // not get reset
     mxa_tech_function_m_.EXECUTECMD = false;
     mxa_tech_function_m_.OnCycle();
-    if (mxa_auto_start_.RESETVALID) {
+    if (mxa_auto_start_.RESETVALID)
+    {
       mxa_auto_start_.EXECUTERESET = true;
     }
     mxa_auto_start_.OnCycle();
 
-    if (mxa_auto_start_.ERROR) {
+    if (mxa_auto_start_.ERROR)
+    {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(mxa_auto_start_.ERRORID));
-    } else if (mxa_auto_start_.DONE) {
+    }
+    else if (mxa_auto_start_.DONE)
+    {
       mxa_auto_start_.EXECUTERESET = false;
       mxa_auto_start_.OnCycle();
       // Reset message reset flag after successful server start to avoid getting
@@ -136,20 +161,24 @@ void getmxAOutput(unsigned char *read_buffer) {
   }
 
   // Only works with Techfunction extension
-  BLOCKRESULT cancelProgram() {
+  BLOCKRESULT cancelProgram()
+  {
     mxa_tech_function_s_.TECHFUNCTIONID = 3;
     mxa_tech_function_s_.INT_DATA[1] = 0;
     mxa_tech_function_s_.INT_DATA[2] = 0;
-    mxa_tech_function_s_.PARAMETERCOUNT = 1; // must be >= 1, though not used
+    mxa_tech_function_s_.PARAMETERCOUNT = 1;  // must be >= 1, though not used
     mxa_tech_function_s_.BUFFERMODE = 0;
     mxa_tech_function_s_.EXECUTECMD = true;
     mxa_tech_function_s_.OnCycle();
 
-    if (mxa_tech_function_s_.ERROR) {
+    if (mxa_tech_function_s_.ERROR)
+    {
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
-    } else if (mxa_tech_function_s_.DONE) {
+    }
+    else if (mxa_tech_function_s_.DONE)
+    {
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
@@ -157,13 +186,15 @@ void getmxAOutput(unsigned char *read_buffer) {
     return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
   }
 
-  void resetErrors() {
+  void resetErrors()
+  {
     krc_error_.MESSAGERESET = true;
     krc_error_.OnCycle();
   }
 
   // Only works with Techfunction extension
-  BLOCKRESULT processRSI(int control_mode, int cycle_time) {
+  BLOCKRESULT processRSI(int control_mode, int cycle_time)
+  {
     mxa_tech_function_m_.INT_DATA[1] = control_mode;
     mxa_tech_function_m_.INT_DATA[2] = cycle_time;
     mxa_tech_function_m_.BUFFERMODE = 2;
@@ -171,11 +202,14 @@ void getmxAOutput(unsigned char *read_buffer) {
     mxa_tech_function_m_.EXECUTECMD = true;
     mxa_tech_function_m_.OnCycle();
 
-    if (mxa_tech_function_m_.ERROR) {
+    if (mxa_tech_function_m_.ERROR)
+    {
       mxa_tech_function_m_.EXECUTECMD = false;
       mxa_tech_function_m_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_m_.ERRORID));
-    } else if (mxa_tech_function_m_.DONE) {
+    }
+    else if (mxa_tech_function_m_.DONE)
+    {
       mxa_tech_function_m_.EXECUTECMD = false;
       mxa_tech_function_m_.OnCycle();
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
@@ -197,16 +231,26 @@ void getmxAOutput(unsigned char *read_buffer) {
 
   bool robotStopped() const { return mxa_aut_ext_.ROB_STOPPED; }
 
-  int getOpMode() const {
-    if (mxa_aut_ext_.T1) {
+  int getOpMode() const
+  {
+    if (mxa_aut_ext_.T1)
+    {
       return 1;
-    } else if (mxa_aut_ext_.T2) {
+    }
+    else if (mxa_aut_ext_.T2)
+    {
       return 2;
-    } else if (mxa_aut_ext_.AUT) {
+    }
+    else if (mxa_aut_ext_.AUT)
+    {
       return 3;
-    } else if (mxa_aut_ext_.EXT) {
+    }
+    else if (mxa_aut_ext_.EXT)
+    {
       return 4;
-    } else {
+    }
+    else
+    {
       return 0;
     }
   }
@@ -219,12 +263,14 @@ void getmxAOutput(unsigned char *read_buffer) {
 
   void moveDisable() { mxa_aut_ext_.MOVE_ENABLE = false; }
 
-  void drivesOff() {
+  void drivesOff()
+  {
     mxa_aut_ext_.DRIVES_ON = false;
     mxa_aut_ext_.DRIVES_OFF = false;
   }
 
-  void drivesOn() {
+  void drivesOn()
+  {
     mxa_aut_ext_.DRIVES_ON = true;
     mxa_aut_ext_.DRIVES_OFF = true;
   }
@@ -250,5 +296,6 @@ private:
 
   static constexpr int DEFAULT_AXISGROUP_ID = 1;
 };
-} // namespace kuka::external::control::kss::mxa
-#endif // KUKA_EXTERNAL_CONTROL__KSS_MXA_MXA_WRAPPER_H_
+}  // namespace kuka::external::control::kss::mxa
+
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__MXA_WRAPPER_H_

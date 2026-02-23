@@ -1889,7 +1889,7 @@ public:
 
          // Library was modified here to allow compatibility with multiple versions of mxA
          KRC_AXISGROUPREFARR[AXISGROUPIDX].INITIALIZED = (PLCIEC::BOOL)TRUE;
-         
+
       };
       _DONE = MXA_EXECUTECOMMAND_1.DONE;
       if ((_ERRORID == (PLCIEC::DINT)0))
@@ -2141,7 +2141,7 @@ public:
       TON_1_PCOS.IN = ENABLETONPCOS;
       TON_1_PCOS.PT = HEARTBEATTO;
       TON_1_PCOS.OnCycle();
- 
+
       M_HEARTBEATLAST = KRC_AXISGROUPREFARR[AXISGROUPIDX].KRCSTATE.HEARTBEAT;
       M_HEARTBEATLASTPCOS = KRC_AXISGROUPREFARR[AXISGROUPIDX].KRCSTATE.HEARTBEATPCOS;
       if (TON_1_SUBMIT.Q || TON_1_PCOS.Q)

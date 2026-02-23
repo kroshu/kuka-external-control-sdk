@@ -16,40 +16,50 @@
 
 #include <cstring>
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-Publisher::Publisher(const SocketAddress& pub_address, const SocketAddress& interface_address,
-                     bool is_multicast)
-    : pub_address_(pub_address)
-    , interface_address_(interface_address)
-    , is_multicast_(is_multicast) {}
+Publisher::Publisher(
+  const SocketAddress & pub_address, const SocketAddress & interface_address, bool is_multicast)
+: pub_address_(pub_address), interface_address_(interface_address), is_multicast_(is_multicast)
+{
+}
 
-Publisher::ErrorCode Publisher::Setup() {
-  if (socket_.IsActive()) {
+Publisher::ErrorCode Publisher::Setup()
+{
+  if (socket_.IsActive())
+  {
     return Publisher::ErrorCode::kAlreadyActive;
   }
   int result = socket_.Map(0);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Publisher::ErrorCode::kSocketError;
   }
   result = socket_.Bind(interface_address_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Publisher::ErrorCode::kSocketError;
   }
   return Publisher::ErrorCode::kSuccess;
 }
 
-Publisher::ErrorCode Publisher::Send(const uint8_t* msg_data, uint16_t msg_size) {
+Publisher::ErrorCode Publisher::Send(const uint8_t * msg_data, uint16_t msg_size)
+{
   int sent_bytes = socket_.SendTo(pub_address_, msg_data, msg_size);
 
-  if (sent_bytes >= 0) {
+  if (sent_bytes >= 0)
+  {
     return Publisher::ErrorCode::kSuccess;
-  } else {
+  }
+  else
+  {
     return Publisher::ErrorCode::kSocketError;
   }
 }
 
-bool Publisher::SetTTL(int ttl) {
+bool Publisher::SetTTL(int ttl)
+{
   return is_multicast_ ? socket_.SetTTLForMulticast(ttl) == 0 : socket_.SetTTLForUnicast(ttl) == 0;
 }
 

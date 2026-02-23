@@ -12,43 +12,57 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
-#define KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_
 
 #include <string>
+#include <utility>
 #include <variant>
 
-namespace kuka::external::control {
-enum class GPIOValueType { UNSPECIFIED = 0, BOOL = 1, DOUBLE = 2, LONG = 3 };
+namespace kuka::external::control
+{
+enum class GPIOValueType
+{
+  UNSPECIFIED = 0,
+  BOOL = 1,
+  DOUBLE = 2,
+  LONG = 3
+};
 
-class BaseGPIOConfig {
+class BaseGPIOConfig
+{
 public:
   BaseGPIOConfig() = default;
-  BaseGPIOConfig(std::string name, GPIOValueType value_type,
-                 double initial_value = 0.0, bool enable_limits = false,
-                 double min_value = 0.0, double max_value = 0.0)
-      : name_(std::move(name)), value_type_(value_type),
-        initial_value_(initial_value), enable_limits_(enable_limits),
-        min_value_(min_value), max_value_(max_value) {}
+  BaseGPIOConfig(
+    std::string name, GPIOValueType value_type, double initial_value = 0.0,
+    bool enable_limits = false, double min_value = 0.0, double max_value = 0.0)
+  : name_(std::move(name)),
+    value_type_(value_type),
+    initial_value_(initial_value),
+    enable_limits_(enable_limits),
+    min_value_(min_value),
+    max_value_(max_value)
+  {
+  }
   ~BaseGPIOConfig() = default;
 
-  std::string const &GetName() const { return name_; }
-  GPIOValueType const &GetValueType() const { return value_type_; }
-  double const &GetInitialValue() const { return initial_value_; }
-  double const &GetMinValue() const { return min_value_; }
-  double const &GetMaxValue() const { return max_value_; }
-  bool const &GetEnableLimits() const { return enable_limits_; }
+  std::string const & GetName() const { return name_; }
+  GPIOValueType const & GetValueType() const { return value_type_; }
+  double const & GetInitialValue() const { return initial_value_; }
+  double const & GetMinValue() const { return min_value_; }
+  double const & GetMaxValue() const { return max_value_; }
+  bool const & GetEnableLimits() const { return enable_limits_; }
 
 protected:
   std::string name_;
   GPIOValueType value_type_ = GPIOValueType::UNSPECIFIED;
   // This might be useful in cases with only gpio command interfaces
   // std::variant<bool, double, int64_t> initial_value_;
-  double initial_value_ = 0.0; // Initial value for the GPIO
+  double initial_value_ = 0.0;  // Initial value for the GPIO
   double min_value_ = 0.0;
   double max_value_ = 0.0;
   bool enable_limits_ = false;
 };
-} // namespace kuka::external::control
+}  // namespace kuka::external::control
 
-#endif // KUKA_EXTERNAL_CONTROL__GPIO_CONFIG_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_CONFIG_H_

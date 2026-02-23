@@ -14,96 +14,109 @@
 
 #include "kuka/external-control-sdk/kss/mxa/robot_interface.h"
 
-namespace kuka::external::control::kss::mxa {
+namespace kuka::external::control::kss::mxa
+{
 
 Robot::Robot(Configuration config)
-    : kuka::external::control::kss::rsi::Robot(config),
-      client_(config.kli_ip_address, config.mxa_client_port),
-      cycle_time_(CycleTime::UNSPECIFIED) {}
+: kuka::external::control::kss::rsi::Robot(config),
+  client_(config.kli_ip_address, config.mxa_client_port),
+  cycle_time_(CycleTime::UNSPECIFIED)
+{
+}
 
-Status Robot::Setup() {
+Status Robot::Setup()
+{
   Status setup_ret = client_.Setup();
-  if (setup_ret.return_code != ReturnCode::OK) {
+  if (setup_ret.return_code != ReturnCode::OK)
+  {
     return {ReturnCode::ERROR, setup_ret.message};
   }
 
   return kuka::external::control::kss::rsi::Robot::Setup();
 }
 
-Status
-Robot::StartControlling(kuka::external::control::ControlMode control_mode) {
+Status Robot::StartControlling(kuka::external::control::ControlMode control_mode)
+{
   Status start_rsi_ret = client_.StartRSI(control_mode, cycle_time_);
-  if (start_rsi_ret.return_code == ReturnCode::OK ||
-      start_rsi_ret.return_code == ReturnCode::WARN) {
+  if (start_rsi_ret.return_code == ReturnCode::OK || start_rsi_ret.return_code == ReturnCode::WARN)
+  {
     rsi_running_ = true;
   }
   return start_rsi_ret;
 }
 
-Status Robot::StopControlling() {
-  if (!rsi_running_) {
+Status Robot::StopControlling()
+{
+  if (!rsi_running_)
+  {
     return {ReturnCode::WARN, "Control already stopped"};
   }
 
-  Status rsi_stop_ret =
-      kuka::external::control::kss::rsi::Robot::StopControlling();
+  Status rsi_stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
   CancelRsiProgram();
 
   return rsi_stop_ret.return_code == ReturnCode::OK
-             ? Status{ReturnCode::OK, "RSI stopped"}
-             : Status{ReturnCode::WARN, rsi_stop_ret.message};
+           ? Status{ReturnCode::OK, "RSI stopped"}
+           : Status{ReturnCode::WARN, rsi_stop_ret.message};
 }
 
-Status Robot::CancelRsiProgram() {
+Status Robot::CancelRsiProgram()
+{
   Status cancel_rsi_ret = client_.CancelRSI();
-  if (cancel_rsi_ret.return_code == ReturnCode::OK) {
+  if (cancel_rsi_ret.return_code == ReturnCode::OK)
+  {
     rsi_running_ = false;
   }
   return cancel_rsi_ret;
 }
 
-Status Robot::SendControlSignal() {
+Status Robot::SendControlSignal()
+{
   return kuka::external::control::kss::rsi::Robot::SendControlSignal();
 }
 
-Status Robot::SwitchControlMode(ControlMode control_mode) {
+Status Robot::SwitchControlMode(ControlMode control_mode)
+{
   Status stop_ret = StopControlling();
-  if (stop_ret.return_code != ReturnCode::OK &&
-      stop_ret.return_code != ReturnCode::WARN) {
+  if (stop_ret.return_code != ReturnCode::OK && stop_ret.return_code != ReturnCode::WARN)
+  {
     return stop_ret;
   }
 
   return StartControlling(control_mode);
 }
 
-Status
-Robot::RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) {
+Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler)
+{
   return client_.RegisterEventHandler(std::move(event_handler));
 }
 
-Status Robot::TurnOnDrives() {
+Status Robot::TurnOnDrives()
+{
   client_.TurnOnDrives();
   return {ReturnCode::OK};
 }
 
-Status Robot::TurnOffDrives() {
+Status Robot::TurnOffDrives()
+{
   client_.TurnOffDrives();
   return {ReturnCode::OK};
 }
 
-Status Robot::SetCycleTime(CycleTime cycle_time) {
+Status Robot::SetCycleTime(CycleTime cycle_time)
+{
   cycle_time_ = cycle_time;
   return {ReturnCode::OK, "Cycle time set"};
 }
 
-Status Robot::RegisterEventHandlerExtension(
-    std::unique_ptr<IEventHandlerExtension> &&extension) {
+Status Robot::RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension)
+{
   return client_.RegisterEventHandlerExtension(std::move(extension));
 }
 
-Status Robot::RegisterStatusResponseHandler(
-    std::unique_ptr<IStatusUpdateHandler> &&handler) {
+Status Robot::RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
+{
   return client_.RegisterStatusUpdateHandler(std::move(handler));
 }
 
-}; // namespace kuka::external::control::kss::mxa
+};  // namespace kuka::external::control::kss::mxa

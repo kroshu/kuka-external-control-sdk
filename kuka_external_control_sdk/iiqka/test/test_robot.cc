@@ -21,17 +21,19 @@ using ::testing::Test;
 
 // Note that while the control signal / motion state values are expected to be filled by radians,
 // the tests may not follow this rule
-class iiQKARobot : public ::testing::Test {
- protected:
+class iiQKARobot : public ::testing::Test
+{
+protected:
   kuka::external::control::iiqka::Configuration eci_config_;
   std::unique_ptr<kuka::external::control::iiqka::Robot> robot_;
   std::unique_ptr<kuka::external::control::test::FakeCommandHandlingService> service_;
 
-  iiQKARobot(){};
+  iiQKARobot() = default;
 
   virtual ~iiQKARobot() = default;
 
-  virtual void SetUp() {
+  virtual void SetUp()
+  {
     eci_config_.client_ip_address = "127.0.0.1";
     eci_config_.koni_ip_address = "127.0.0.3";
     robot_ = std::make_unique<kuka::external::control::iiqka::Robot>(eci_config_);
@@ -39,7 +41,8 @@ class iiQKARobot : public ::testing::Test {
     service_->Setup(eci_config_.koni_ip_address);
   }
 
-  virtual void TearDown() {
+  virtual void TearDown()
+  {
     robot_.reset();
     service_.reset();
   }
@@ -48,7 +51,8 @@ class iiQKARobot : public ::testing::Test {
 };
 
 // Test Setup with invalid IP
-TEST_F(iiQKARobot, TestSetupInvalidIP) {
+TEST_F(iiQKARobot, TestSetupInvalidIP)
+{
   eci_config_.client_ip_address = "Invalid client IP";
   robot_ = std::make_unique<kuka::external::control::iiqka::Robot>(eci_config_);
 
@@ -56,7 +60,8 @@ TEST_F(iiQKARobot, TestSetupInvalidIP) {
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::ERROR);
 }
 
-TEST_F(iiQKARobot, TestSetupValidIP) {
+TEST_F(iiQKARobot, TestSetupValidIP)
+{
   eci_config_.client_ip_address = "127.0.0.3";
   robot_ = std::make_unique<kuka::external::control::iiqka::Robot>(eci_config_);
 
@@ -64,7 +69,8 @@ TEST_F(iiQKARobot, TestSetupValidIP) {
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 }
 
-TEST_F(iiQKARobot, TestEmptyQoS) {
+TEST_F(iiQKARobot, TestEmptyQoS)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
@@ -73,28 +79,31 @@ TEST_F(iiQKARobot, TestEmptyQoS) {
   grpc::ClientContext context;
 
   std::unique_ptr<kuka::ecs::v1::ExternalControlService::Stub> stub =
-      kuka::ecs::v1::ExternalControlService::NewStub(
-          grpc::CreateChannel("127.0.0.3:49335", grpc::InsecureChannelCredentials()));
+    kuka::ecs::v1::ExternalControlService::NewStub(
+      grpc::CreateChannel("127.0.0.3:49335", grpc::InsecureChannelCredentials()));
 
   EXPECT_TRUE(!stub->SetQoSProfile(&context, request, &response).ok());
 }
 
-TEST_F(iiQKARobot, TestSendReplyNotInitialized) {
+TEST_F(iiQKARobot, TestSendReplyNotInitialized)
+{
   kuka::external::control::ReturnCode start_control =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_EQ(start_control, kuka::external::control::ReturnCode::ERROR);
 
   kuka::external::control::ReturnCode send_ret = robot_->SendControlSignal().return_code;
   EXPECT_EQ(send_ret, kuka::external::control::ReturnCode::ERROR);
 }
 
-TEST_F(iiQKARobot, TestMonitoringNotInitialized) {
+TEST_F(iiQKARobot, TestMonitoringNotInitialized)
+{
   kuka::external::control::ReturnCode start_monitoring = robot_->StartMonitoring().return_code;
   EXPECT_EQ(start_monitoring, kuka::external::control::ReturnCode::ERROR);
 }
 
-TEST_F(iiQKARobot, TestMonitoring) {
+TEST_F(iiQKARobot, TestMonitoring)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
@@ -105,15 +114,16 @@ TEST_F(iiQKARobot, TestMonitoring) {
   std::vector<double> measured_torques(6, 0);
 
   kuka::external::control::ReturnCode create_sub =
-      robot_
-          ->CreateMonitoringSubscription(
-              [&](kuka::external::control::BaseMotionState& incoming_motion_state) {
-                std::copy_n(incoming_motion_state.GetMeasuredPositions().begin(), 6,
-                            measured_positions.begin());
-                std::copy_n(incoming_motion_state.GetMeasuredTorques().begin(), 6,
-                            measured_torques.begin());
-              })
-          .return_code;
+    robot_
+      ->CreateMonitoringSubscription(
+        [&](kuka::external::control::BaseMotionState & incoming_motion_state)
+        {
+          std::copy_n(
+            incoming_motion_state.GetMeasuredPositions().begin(), 6, measured_positions.begin());
+          std::copy_n(
+            incoming_motion_state.GetMeasuredTorques().begin(), 6, measured_torques.begin());
+        })
+      .return_code;
 
   EXPECT_EQ(create_sub, kuka::external::control::ReturnCode::OK);
   std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -128,13 +138,14 @@ TEST_F(iiQKARobot, TestMonitoring) {
   EXPECT_EQ(stop_monitoring, kuka::external::control::ReturnCode::OK);
 }
 
-TEST_F(iiQKARobot, StopControllingWithoutPreviousRequest) {
+TEST_F(iiQKARobot, StopControllingWithoutPreviousRequest)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   // StopControlling now also receives if necessary
@@ -142,70 +153,75 @@ TEST_F(iiQKARobot, StopControllingWithoutPreviousRequest) {
   EXPECT_EQ(stop_controlling, kuka::external::control::ReturnCode::OK);
 }
 
-TEST_F(iiQKARobot, StopControllingWithPreviousRequestReceived) {
+TEST_F(iiQKARobot, StopControllingWithPreviousRequestReceived)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode stop_controlling = robot_->StopControlling().return_code;
   EXPECT_EQ(stop_controlling, kuka::external::control::ReturnCode::OK);
 }
 
-TEST_F(iiQKARobot, StartControllingTwice) {
+TEST_F(iiQKARobot, StartControllingTwice)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   // Waiting to timeout
   start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_EQ(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   kuka::external::control::ReturnCode stop_controlling = robot_->StopControlling().return_code;
   EXPECT_EQ(stop_controlling, kuka::external::control::ReturnCode::OK);
 }
 
-TEST_F(iiQKARobot, TestControllingLoop) {
+TEST_F(iiQKARobot, TestControllingLoop)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(8)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
-  auto& last_motion_state = robot_->GetLastMotionState();
-  EXPECT_EQ(last_motion_state.GetMeasuredPositions(),
-            std::vector<double>({0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
+  auto & last_motion_state = robot_->GetLastMotionState();
+  EXPECT_EQ(
+    last_motion_state.GetMeasuredPositions(), std::vector<double>({0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
 
   EXPECT_EQ(last_motion_state.GetMeasuredTorques(), std::vector<double>({12, 12, 12, 12, 12, 12}));
 
   std::vector<double> send_positions(6, 0);
 
-  for (int i = 0; i < 15; ++i) {
-    EXPECT_EQ(robot_->GetLastMotionState().GetMeasuredPositions(),
-              std::vector<double>({0.0 + i * 3., 0, 0, 0, 0, 0}));
+  for (int i = 0; i < 15; ++i)
+  {
+    EXPECT_EQ(
+      robot_->GetLastMotionState().GetMeasuredPositions(),
+      std::vector<double>({0.0 + i * 3., 0, 0, 0, 0, 0}));
 
     send_positions[0] = last_motion_state.GetMeasuredPositions()[0] + 3.0;
 
@@ -223,24 +239,26 @@ TEST_F(iiQKARobot, TestControllingLoop) {
 }
 
 // Velocity values should be ignored
-TEST_F(iiQKARobot, TestAddVelocity) {
+TEST_F(iiQKARobot, TestAddVelocity)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_VELOCITY_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_VELOCITY_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_velocities;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_velocities =
-      robot_->GetLastMotionState().GetMeasuredVelocities();
-  for (int i = 0; i < motion_state_velocities.size(); ++i) {
+    robot_->GetLastMotionState().GetMeasuredVelocities();
+  for (int i = 0; i < motion_state_velocities.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_velocities[i], 0.0, D_TOLERANCE);
   }
 
@@ -253,31 +271,34 @@ TEST_F(iiQKARobot, TestAddVelocity) {
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   motion_state_velocities = robot_->GetLastMotionState().GetMeasuredVelocities();
-  for (int i = 0; i < motion_state_velocities.size(); ++i) {
+  for (int i = 0; i < motion_state_velocities.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_velocities[i], 0.0, D_TOLERANCE);
   }
 
   robot_->StopControlling();
 }
 
-TEST_F(iiQKARobot, TestAddVelocityInPositionControl) {
+TEST_F(iiQKARobot, TestAddVelocityInPositionControl)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_POSITION_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_velocities;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_velocities =
-      robot_->GetLastMotionState().GetMeasuredVelocities();
-  for (int i = 0; i < motion_state_velocities.size(); ++i) {
+    robot_->GetLastMotionState().GetMeasuredVelocities();
+  for (int i = 0; i < motion_state_velocities.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_velocities[i], 0.0, D_TOLERANCE);
   }
 
@@ -290,30 +311,33 @@ TEST_F(iiQKARobot, TestAddVelocityInPositionControl) {
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   motion_state_velocities = robot_->GetLastMotionState().GetMeasuredVelocities();
-  for (int i = 0; i < motion_state_velocities.size(); ++i) {
+  for (int i = 0; i < motion_state_velocities.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_velocities[i], 0.0, D_TOLERANCE);
   }
 
   robot_->StopControlling();
 }
 
-TEST_F(iiQKARobot, TestAddPositions) {
+TEST_F(iiQKARobot, TestAddPositions)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_positions;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 
@@ -326,30 +350,33 @@ TEST_F(iiQKARobot, TestAddPositions) {
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 7.0, D_TOLERANCE);
   }
 
   robot_->StopControlling();
 }
 
-TEST_F(iiQKARobot, TestAddPositionsWithOversizedVector) {
+TEST_F(iiQKARobot, TestAddPositionsWithOversizedVector)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_positions;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 
@@ -362,30 +389,33 @@ TEST_F(iiQKARobot, TestAddPositionsWithOversizedVector) {
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 7.0, D_TOLERANCE);
   }
 
   robot_->StopControlling();
 }
 
-TEST_F(iiQKARobot, TestAddPositionsWithUndersizedVector) {
+TEST_F(iiQKARobot, TestAddPositionsWithUndersizedVector)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_positions;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 
@@ -401,30 +431,33 @@ TEST_F(iiQKARobot, TestAddPositionsWithUndersizedVector) {
   EXPECT_NEAR(motion_state_positions[0], 1.0, 0.1);
   EXPECT_NEAR(motion_state_positions[1], 2.3, 0.1);
   EXPECT_NEAR(motion_state_positions[2], 5.7, 0.1);
-  for (int i = 3; i < motion_state_positions.size(); ++i) {
+  for (int i = 3; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 
   robot_->StopControlling();
 }
 
-TEST_F(iiQKARobot, TestAddPositionsWithEmptydVector) {
+TEST_F(iiQKARobot, TestAddPositionsWithEmptydVector)
+{
   kuka::external::control::ReturnCode setup_ret = robot_->Setup().return_code;
   EXPECT_EQ(setup_ret, kuka::external::control::ReturnCode::OK);
 
   kuka::external::control::ReturnCode start_controlling =
-      robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
-          .return_code;
+    robot_->StartControlling(kuka::external::control::ControlMode::JOINT_IMPEDANCE_CONTROL)
+      .return_code;
   EXPECT_NE(start_controlling, kuka::external::control::ReturnCode::ERROR);
 
   std::vector<double> send_positions;
 
   kuka::external::control::ReturnCode receive_motion_state =
-      robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
+    robot_->ReceiveMotionState(std::chrono::seconds(3)).return_code;
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   std::vector<double> motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 
@@ -436,7 +469,8 @@ TEST_F(iiQKARobot, TestAddPositionsWithEmptydVector) {
   EXPECT_EQ(receive_motion_state, kuka::external::control::ReturnCode::OK);
 
   motion_state_positions = robot_->GetLastMotionState().GetMeasuredPositions();
-  for (int i = 0; i < motion_state_positions.size(); ++i) {
+  for (int i = 0; i < motion_state_positions.size(); ++i)
+  {
     EXPECT_NEAR(motion_state_positions[i], 0.0, D_TOLERANCE);
   }
 

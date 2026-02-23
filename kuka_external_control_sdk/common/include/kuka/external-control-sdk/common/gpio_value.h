@@ -12,102 +12,124 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
-#define KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
-#include "gpio_config.h"
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <utility>
+#include "kuka/external-control-sdk/common/gpio_config.h"
 
-namespace kuka::external::control {
-class BaseGPIOValue {
+namespace kuka::external::control
+{
+class BaseGPIOValue
+{
 public:
   BaseGPIOValue() = default;
-  BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
-      : gpio_config_(std::move(gpio_config)) {
-    if (gpio_config_) {
+  explicit BaseGPIOValue(std::unique_ptr<BaseGPIOConfig> gpio_config)
+  : gpio_config_(std::move(gpio_config))
+  {
+    if (gpio_config_)
+    {
       SetValue(gpio_config_->GetInitialValue());
     }
   }
   ~BaseGPIOValue() = default;
 
-  std::unique_ptr<BaseGPIOConfig> const &GetGPIOConfig() const {
-    return gpio_config_;
-  }
-  std::optional<double> GetValue() const {
-    switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOL:
-      return static_cast<double>(value_.bool_value_);
-    case GPIOValueType::DOUBLE:
-      return value_.double_value_;
-    case GPIOValueType::LONG:
-      return static_cast<double>(value_.long_value_);
-    case GPIOValueType::UNSPECIFIED:
-    default:
-      return std::nullopt;
+  std::unique_ptr<BaseGPIOConfig> const & GetGPIOConfig() const { return gpio_config_; }
+  std::optional<double> GetValue() const
+  {
+    switch (gpio_config_->GetValueType())
+    {
+      case GPIOValueType::BOOL:
+        return static_cast<double>(value_.bool_value_);
+      case GPIOValueType::DOUBLE:
+        return value_.double_value_;
+      case GPIOValueType::LONG:
+        return static_cast<double>(value_.long_value_);
+      case GPIOValueType::UNSPECIFIED:
+      default:
+        return std::nullopt;
     }
   }
-  std::optional<bool> GetBoolValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::BOOL) {
+  std::optional<bool> GetBoolValue() const
+  {
+    if (gpio_config_->GetValueType() == GPIOValueType::BOOL)
+    {
       return value_.bool_value_;
     }
     return std::nullopt;
   }
-  std::optional<double> GetDoubleValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::DOUBLE) {
+  std::optional<double> GetDoubleValue() const
+  {
+    if (gpio_config_->GetValueType() == GPIOValueType::DOUBLE)
+    {
       return value_.double_value_;
     }
     return std::nullopt;
   }
-  std::optional<int64_t> GetLongValue() const {
-    if (gpio_config_->GetValueType() == GPIOValueType::LONG) {
+  std::optional<int64_t> GetLongValue() const
+  {
+    if (gpio_config_->GetValueType() == GPIOValueType::LONG)
+    {
       return value_.long_value_;
     }
     return std::nullopt;
   }
 
-  bool SetValue(double value) {
-    switch (gpio_config_->GetValueType()) {
-    case GPIOValueType::BOOL:
-      return this->SetBoolValue(static_cast<bool>(value));
-    case GPIOValueType::DOUBLE:
-      return this->SetDoubleValue(value);
-    case GPIOValueType::LONG:
-      return this->SetLongValue(static_cast<int64_t>(value));
-    case GPIOValueType::UNSPECIFIED:
-    default:
-      return false;
+  bool SetValue(double value)
+  {
+    switch (gpio_config_->GetValueType())
+    {
+      case GPIOValueType::BOOL:
+        return this->SetBoolValue(static_cast<bool>(value));
+      case GPIOValueType::DOUBLE:
+        return this->SetDoubleValue(value);
+      case GPIOValueType::LONG:
+        return this->SetLongValue(static_cast<int64_t>(value));
+      case GPIOValueType::UNSPECIFIED:
+      default:
+        return false;
     }
   }
-  BaseGPIOValue &operator=(double value) {
+  BaseGPIOValue & operator=(double value)
+  {
     this->SetValue(value);
     return *this;
   }
 
-  bool SetBoolValue(bool value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::BOOL) {
+  bool SetBoolValue(bool value)
+  {
+    if (gpio_config_->GetValueType() != GPIOValueType::BOOL)
+    {
       return false;
     }
     value_.bool_value_ = value;
     return true;
   }
 
-  bool SetDoubleValue(double value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::DOUBLE) {
+  bool SetDoubleValue(double value)
+  {
+    if (gpio_config_->GetValueType() != GPIOValueType::DOUBLE)
+    {
       return false;
     }
-    if (!check_limits<double>(value)) {
+    if (!check_limits<double>(value))
+    {
       return false;
     }
     value_.double_value_ = value;
     return true;
   }
 
-  bool SetLongValue(int64_t value) {
-    if (gpio_config_->GetValueType() != GPIOValueType::LONG) {
+  bool SetLongValue(int64_t value)
+  {
+    if (gpio_config_->GetValueType() != GPIOValueType::LONG)
+    {
       return false;
     }
-    if (!check_limits<int64_t>(value)) {
+    if (!check_limits<int64_t>(value))
+    {
       return false;
     }
     value_.long_value_ = value;
@@ -116,21 +138,24 @@ public:
 
 protected:
   std::unique_ptr<BaseGPIOConfig> gpio_config_;
-  union {
+  union
+  {
     bool bool_value_;
     double double_value_;
     int64_t long_value_;
   } value_;
 
 private:
-  template <typename T> bool check_limits(T value) const {
-    if (gpio_config_->GetEnableLimits()) {
-      return value >= gpio_config_->GetMinValue() &&
-             value <= gpio_config_->GetMaxValue();
+  template <typename T>
+  bool check_limits(T value) const
+  {
+    if (gpio_config_->GetEnableLimits())
+    {
+      return value >= gpio_config_->GetMinValue() && value <= gpio_config_->GetMaxValue();
     }
     return true;
   }
 };
-} // namespace kuka::external::control
+}  // namespace kuka::external::control
 
-#endif // KUKA_EXTERNAL_CONTROL__GPIO_VALUE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__GPIO_VALUE_H_

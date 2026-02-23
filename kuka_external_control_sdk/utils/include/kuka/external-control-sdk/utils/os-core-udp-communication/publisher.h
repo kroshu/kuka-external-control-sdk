@@ -12,31 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OS_CORE_COMM_UDP_PUBLISHER_H
-#define OS_CORE_COMM_UDP_PUBLISHER_H
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_
 
-#include "socket.h"
+#include <cstdint>
+#include "kuka/external-control-sdk/utils/os-core-udp-communication/socket.h"
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-class Publisher {
- public:
+class Publisher
+{
+public:
   typedef Socket::ErrorCode ErrorCode;
 
- public:
-  Publisher(const SocketAddress& pub_address, const SocketAddress& interface_address,
-            bool is_multicast);
+public:
+  Publisher(
+    const SocketAddress & pub_address, const SocketAddress & interface_address, bool is_multicast);
   virtual ~Publisher() = default;
   ErrorCode Setup();
 
-  ErrorCode Send(const uint8_t* msg_data, uint16_t msg_size);
+  ErrorCode Send(const uint8_t * msg_data, uint16_t msg_size);
   bool SetTTL(int ttl);
 
- public:
-  const SocketAddress& Address() const { return pub_address_; }
+public:
+  const SocketAddress & Address() const { return pub_address_; }
   bool IsMulticast() const { return is_multicast_; }
 
- protected:
+protected:
   Socket socket_;
   SocketAddress pub_address_;
   SocketAddress interface_address_;
@@ -44,4 +47,4 @@ class Publisher {
 };
 }  // namespace os::core::udp::communication
 
-#endif  // OS_CORE_COMM_UDP_PUBLISHER_H
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__UTILS__OS_CORE_UDP_COMMUNICATION__PUBLISHER_H_

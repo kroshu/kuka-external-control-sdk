@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__ROBOT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__ROBOT_H_
 
 #include <atomic>
 #include <condition_variable>
@@ -26,43 +26,45 @@
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
-namespace kuka::external::control::kss {
+namespace kuka::external::control::kss
+{
 
-class Robot : public IRobot {
+class Robot : public IRobot
+{
   // Special methods
- public:
-  Robot(Configuration);
+public:
+  explicit Robot(Configuration);
 
   // Interface implementation
- public:
-  virtual Status Setup() override;
+public:
+  Status Setup() override;
 
-  virtual Status StartControlling(kuka::external::control::ControlMode) override;
-  virtual Status StartMonitoring() override;
+  Status StartControlling(kuka::external::control::ControlMode) override;
+  Status StartMonitoring() override;
 
-  virtual Status StopControlling() override;
-  virtual Status StopMonitoring() override;
+  Status StopControlling() override;
+  Status StopMonitoring() override;
 
-  virtual Status CreateMonitoringSubscription(std::function<void(BaseMotionState&)>) override;
-  virtual Status CancelMonitoringSubscription() override;
+  Status CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) override;
+  Status CancelMonitoringSubscription() override;
 
-  virtual bool HasMonitoringSubscription() override;
+  bool HasMonitoringSubscription() override;
 
-  virtual Status SendControlSignal() override;
-  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
+  Status SendControlSignal() override;
+  Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
-  BaseControlSignal& GetControlSignal() override;
-  BaseMotionState& GetLastMotionState() override;
+  BaseControlSignal & GetControlSignal() override;
+  BaseMotionState & GetLastMotionState() override;
 
-  // TODO add to documentation that other commands could come in between the Stop and Start call
-  // here, also evaluate dispatcher mode
-  virtual Status SwitchControlMode(ControlMode control_mode) override;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler>&& event_handler) override;
+  // TODO(Svastits) add to documentation that other commands could come in between the Stop and
+  // Start call here, also evaluate dispatcher mode
+  Status SwitchControlMode(ControlMode control_mode) override;
+  Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) override;
 
- private:
+private:
   std::unique_ptr<IRobot> installed_interface_ = nullptr;
 };
 
 }  // namespace kuka::external::control::kss
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_ROBOT_INTERFACE_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__ROBOT_H_

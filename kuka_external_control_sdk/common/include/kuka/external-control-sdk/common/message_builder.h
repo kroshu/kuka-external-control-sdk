@@ -12,39 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
-#define KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
-
-#include "gpio_value.h"
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_
 
 #include <iterator>
 #include <map>
+#include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
-namespace kuka::external::control {
+#include "kuka/external-control-sdk/common/gpio_value.h"
 
-class BaseMotionState {
+namespace kuka::external::control
+{
+
+class BaseMotionState
+{
 public:
-  BaseMotionState(std::size_t dof) : dof_(dof) {}
+  explicit BaseMotionState(std::size_t dof) : dof_(dof) {}
 
-  std::vector<double> const &GetMeasuredPositions() const {
-    return measured_positions_;
-  }
+  std::vector<double> const & GetMeasuredPositions() const { return measured_positions_; }
 
-  std::vector<double> const &GetMeasuredTorques() const {
-    return measured_torques_;
-  }
+  std::vector<double> const & GetMeasuredTorques() const { return measured_torques_; }
 
-  std::vector<double> const &GetMeasuredVelocities() const {
-    return measured_velocities_;
-  }
+  std::vector<double> const & GetMeasuredVelocities() const { return measured_velocities_; }
 
-  std::vector<double> const &GetMeasuredCartesianPositions() const {
+  std::vector<double> const & GetMeasuredCartesianPositions() const
+  {
     return measured_cartesian_positions_;
   }
 
-  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
+  std::vector<std::unique_ptr<BaseGPIOValue>> const & GetGPIOValues() const
+  {
     return measured_gpio_values_;
   }
 
@@ -63,69 +63,81 @@ protected:
   std::size_t dof_;
 };
 
-class BaseControlSignal {
+class BaseControlSignal
+{
 public:
-  BaseControlSignal(std::size_t dof) : dof_(dof) {}
+  explicit BaseControlSignal(std::size_t dof) : dof_(dof) {}
 
   template <typename InputIt>
-  void AddJointPositionValues(InputIt first, InputIt last) {
-    if (first != last) {
+  void AddJointPositionValues(InputIt first, InputIt last)
+  {
+    if (first != last)
+    {
       has_positions_ = true;
       AddValues(joint_position_values_, first, last);
     }
   }
 
   template <typename InputIt>
-  void AddTorqueValues(InputIt first, InputIt last) {
-    if (first != last) {
+  void AddTorqueValues(InputIt first, InputIt last)
+  {
+    if (first != last)
+    {
       has_torques_ = true;
       AddValues(joint_torque_values_, first, last);
     }
   }
 
   template <typename InputIt>
-  void AddVelocityValues(InputIt first, InputIt last) {
-    if (first != last) {
+  void AddVelocityValues(InputIt first, InputIt last)
+  {
+    if (first != last)
+    {
       has_velocities_ = true;
       AddValues(joint_velocity_values_, first, last);
     }
   }
 
   template <typename InputIt>
-  void
-  AddStiffnessAndDampingValues(InputIt first_stiffness, InputIt last_stiffness,
-                               InputIt first_damping, InputIt last_damping) {
-    if (first_damping != last_damping) {
+  void AddStiffnessAndDampingValues(
+    InputIt first_stiffness, InputIt last_stiffness, InputIt first_damping, InputIt last_damping)
+  {
+    if (first_damping != last_damping)
+    {
       has_stiffness_and_damping_ = true;
-      AddValues(joint_impedance_stiffness_values_, first_stiffness,
-                last_stiffness);
+      AddValues(joint_impedance_stiffness_values_, first_stiffness, last_stiffness);
     }
-    if (first_stiffness != last_stiffness) {
+    if (first_stiffness != last_stiffness)
+    {
       has_stiffness_and_damping_ = true;
       AddValues(joint_impedance_damping_values_, first_damping, last_damping);
     }
   }
 
   template <typename InputIt>
-  void AddCartesianPositionValues(InputIt first, InputIt last) {
-    if (first != last) {
+  void AddCartesianPositionValues(InputIt first, InputIt last)
+  {
+    if (first != last)
+    {
       has_cartesian_positions_ = true;
       AddValues(cartesian_position_values_, first, last);
     }
   }
 
-  template <typename InputIt> bool AddGPIOValues(InputIt first, InputIt last) {
-    for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first) {
-      if(!gpio_values_.at(i)->SetValue(*first)) {
+  template <typename InputIt>
+  bool AddGPIOValues(InputIt first, InputIt last)
+  {
+    for (size_t i = 0; i < gpio_values_.size() && first != last; i++, ++first)
+    {
+      if (!gpio_values_.at(i)->SetValue(*first))
+      {
         return false;
       }
     }
     return true;
   }
 
-  std::vector<std::unique_ptr<BaseGPIOValue>> const &GetGPIOValues() const {
-    return gpio_values_;
-  }
+  std::vector<std::unique_ptr<BaseGPIOValue>> const & GetGPIOValues() const { return gpio_values_; }
 
 protected:
   bool has_positions_ = false;
@@ -146,20 +158,22 @@ protected:
 
 private:
   template <typename InputIt>
-  void AddValues(std::vector<double> &output, InputIt first, InputIt last) {
-    for (size_t i = 0; i < dof_ && first != last; ++i, ++first) {
+  void AddValues(std::vector<double> & output, InputIt first, InputIt last)
+  {
+    for (size_t i = 0; i < dof_ && first != last; ++i, ++first)
+    {
       AddToVector(output[i], *first);
     }
   }
 
-  void AddToVector(double &vector_pos, double value) { vector_pos = value; }
+  void AddToVector(double & vector_pos, double value) { vector_pos = value; }
 
   template <typename KeyType>
-  void AddToVector(double &vector_pos,
-                   const std::pair<const KeyType, double> &pair) {
+  void AddToVector(double & vector_pos, const std::pair<const KeyType, double> & pair)
+  {
     vector_pos = pair.second;
   }
 };
-} // namespace kuka::external::control
+}  // namespace kuka::external::control
 
-#endif // KUKA_EXTERNAL_CONTROL__MESSAGE_BUILDER_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__MESSAGE_BUILDER_H_

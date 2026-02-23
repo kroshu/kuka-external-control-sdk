@@ -16,63 +16,78 @@
 
 #include <cstring>
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-int TCPClientSocket::Map(int flags) {
-  if (IsActive()) {
+int TCPClientSocket::Map(int flags)
+{
+  if (IsActive())
+  {
     return SetError(ErrorCode::kAlreadyActive);
   }
   socket_fd_ = socket(AF_INET, SOCK_STREAM, flags);
-  if (socket_fd_ < 0) {
+  if (socket_fd_ < 0)
+  {
     SetError(kSocketError);
   }
   return socket_fd_;
 }
 
-TCPClient::TCPClient(size_t buffer_size,
-                     const os::core::udp::communication::SocketAddress& remote_addr, int flags,
-                     const std::optional<os::core::udp::communication::SocketAddress>& local_addr)
-    : Dissector(std::make_shared<TCPClientSocket>(), buffer_size)
-    , remote_addr_(remote_addr)
-    , flags_(flags)
-    , local_addr_(local_addr) {
-  // TODO check whether we need to try to reconnect multiple times
+TCPClient::TCPClient(
+  size_t buffer_size, const os::core::udp::communication::SocketAddress & remote_addr, int flags,
+  const std::optional<os::core::udp::communication::SocketAddress> & local_addr)
+: Dissector(std::make_shared<TCPClientSocket>(), buffer_size),
+  remote_addr_(remote_addr),
+  flags_(flags),
+  local_addr_(local_addr)
+{
+  // TODO(Svastits) check whether we need to try to reconnect multiple times
 }
 
-TCPClient::ErrorCode TCPClient::Setup() {
-  if (socket_->IsActive()) {
+TCPClient::ErrorCode TCPClient::Setup()
+{
+  if (socket_->IsActive())
+  {
     return TCPClient::ErrorCode::kAlreadyActive;
   }
   int result = socket_->Map(flags_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return TCPClient::ErrorCode::kSocketError;
   }
   result = socket_->SetReuseAddress();
-  if (result < 0) {
+  if (result < 0)
+  {
     return TCPClient::ErrorCode::kSocketError;
   }
-  if (local_addr_.has_value()) {
+  if (local_addr_.has_value())
+  {
     result = socket_->Bind(*local_addr_);
-    if (result < 0) {
+    if (result < 0)
+    {
       return TCPClient::ErrorCode::kSocketError;
     }
   }
   result = socket_->Connect(remote_addr_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return TCPClient::ErrorCode::kSocketError;
   }
   return TCPClient::ErrorCode::kSuccess;
 }
 
-bool TCPClient::Receive(unsigned char* recv_data, std::chrono::microseconds timeout) {
+bool TCPClient::Receive(unsigned char * recv_data, std::chrono::microseconds timeout)
+{
   raw_message_t message;
   int receive_state = ReceiveOrTimeout(timeout, message);
   int received_bytes = message.second;
 
-  if (receive_state < 0 ||
-      (receive_state == os::core::udp::communication::Socket::ErrorCode::kSuccess &&
-       received_bytes == 0)) {
-    // TODO handle different errors
+  if (
+    receive_state < 0 ||
+    (receive_state == os::core::udp::communication::Socket::ErrorCode::kSuccess &&
+     received_bytes == 0))
+  {
+    // TODO(Svastits) handle different errors
     return false;
   }
 

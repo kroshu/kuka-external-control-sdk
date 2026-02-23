@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef KUKA_EXTERNAL_CONTROL__KSS_RSI_COMM_ENDPOINT_H_
-#define KUKA_EXTERNAL_CONTROL__KSS_RSI_COMM_ENDPOINT_H_
+#ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ENDPOINT_H_
+#define KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ENDPOINT_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -22,16 +23,18 @@
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/replier.h"
 #include "kuka/external-control-sdk/utils/os-core-udp-communication/subscriber.h"
 
-namespace kuka::external::control::kss::rsi {
+namespace kuka::external::control::kss::rsi
+{
 
 // Class for communicating with the KRC via RSI
-class Endpoint {
- public:
+class Endpoint
+{
+public:
   // Set up necessary prerequsities for a successful RSI communication
-  bool Setup(const std::string& local_ip, unsigned short local_udp_port);
-  
+  bool Setup(const std::string & local_ip, uint16_t local_udp_port);
+
   // endpoint.cpp
-  bool Setup(unsigned short local_udp_port) { return Setup("0.0.0.0", local_udp_port); }
+  bool Setup(uint16_t local_udp_port) { return Setup("0.0.0.0", local_udp_port); }
 
   // Try to receive RSI message from the KRC for a given timeout
   bool ReceiveOrTimeout(std::chrono::milliseconds receive_request_timeout);
@@ -46,7 +49,7 @@ class Endpoint {
 
   void Reset();
 
- private:
+private:
   void EmptyBuffer();
 
   std::unique_ptr<os::core::udp::communication::Replier> replier_socket_{nullptr};
@@ -55,6 +58,6 @@ class Endpoint {
   char recv_msg_[kBufferSize];
 };
 
-}  // namespace kuka::external::control::kss
+}  // namespace kuka::external::control::kss::rsi
 
-#endif  // KUKA_EXTERNAL_CONTROL__KSS_RSI_COMM_ENDPOINT_H_
+#endif  // KUKA__EXTERNAL_CONTROL_SDK__KSS__RSI__ENDPOINT_H_

@@ -16,86 +16,114 @@
 
 #include <cstring>
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-Replier::Replier(const SocketAddress& local_address) : local_address_(local_address) {
+Replier::Replier(const SocketAddress & local_address) : local_address_(local_address)
+{
   memset(server_buffer_, 0, kMaxBufferSize);
 }
 
-Replier::ErrorCode Replier::Setup() {
-  if (socket_.IsActive()) {
+Replier::ErrorCode Replier::Setup()
+{
+  if (socket_.IsActive())
+  {
     return Replier::ErrorCode::kAlreadyActive;
   }
   int result = socket_.Map(0);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Replier::ErrorCode::kSocketError;
   }
   result = socket_.SetReuseAddress();
-  if (result < 0) {
+  if (result < 0)
+  {
     return Replier::ErrorCode::kSocketError;
   }
   result = socket_.Bind(local_address_);
-  if (result < 0) {
+  if (result < 0)
+  {
     return Replier::ErrorCode::kSocketError;
   }
   return Replier::ErrorCode::kSuccess;
 }
 
-void Replier::Reset() {
+void Replier::Reset()
+{
   active_request_ = false;
   last_request_size_ = 0;
 }
 
-Replier::ErrorCode Replier::ReceiveRequest() {
+Replier::ErrorCode Replier::ReceiveRequest()
+{
   return ReceiveRequestOrTimeout(std::chrono::microseconds(0));
 }
 
-Replier::ErrorCode Replier::ReceiveRequestOrTimeout(std::chrono::microseconds recv_timeout) {
-  if (active_request_) {
+Replier::ErrorCode Replier::ReceiveRequestOrTimeout(std::chrono::microseconds recv_timeout)
+{
+  if (active_request_)
+  {
     return Replier::ErrorCode::kError;
   }
   int recv_bytes = 0;
-  if (recv_timeout.count() == 0) {
+  if (recv_timeout.count() == 0)
+  {
     recv_bytes = socket_.ReceiveFrom(last_remote_address_, server_buffer_, kMaxBufferSize);
-  } else {
-    recv_bytes = socket_.ReceiveFromOrTimeout(recv_timeout, last_remote_address_, server_buffer_,
-                                              kMaxBufferSize);
+  }
+  else
+  {
+    recv_bytes = socket_.ReceiveFromOrTimeout(
+      recv_timeout, last_remote_address_, server_buffer_, kMaxBufferSize);
   }
 
-  if (recv_bytes >= 0) {
+  if (recv_bytes >= 0)
+  {
     last_request_size_ = recv_bytes;
     active_request_ = true;
     return Replier::ErrorCode::kSuccess;
-  } else if (recv_bytes == Replier::ErrorCode::kTimeout) {
+  }
+  else if (recv_bytes == Replier::ErrorCode::kTimeout)
+  {
     active_request_ = false;
     return Replier::ErrorCode::kTimeout;
-  } else {
+  }
+  else
+  {
     active_request_ = false;
     return Replier::ErrorCode::kSocketError;
   }
 }
 
-Replier::ErrorCode Replier::EmptyBuffer(){
-  int recv_ret = socket_.ReceiveAllWithTimeout(std::chrono::milliseconds(kEmtyBufferRecvTimeoutMs), server_buffer_, kMaxBufferSize);
-  return recv_ret == Replier::ErrorCode::kSuccess ? Replier::ErrorCode::kSuccess : Replier::ErrorCode::kSocketError;
+Replier::ErrorCode Replier::EmptyBuffer()
+{
+  int recv_ret = socket_.ReceiveAllWithTimeout(
+    std::chrono::milliseconds(kEmtyBufferRecvTimeoutMs), server_buffer_, kMaxBufferSize);
+  return recv_ret == Replier::ErrorCode::kSuccess ? Replier::ErrorCode::kSuccess
+                                                  : Replier::ErrorCode::kSocketError;
 }
 
-Replier::ErrorCode Replier::SendReply(uint8_t* reply_msg_data, size_t reply_msg_size) {
-  if (!active_request_) {
+Replier::ErrorCode Replier::SendReply(uint8_t * reply_msg_data, size_t reply_msg_size)
+{
+  if (!active_request_)
+  {
     return Replier::ErrorCode::kError;
   }
 
   int ret = socket_.SendTo(last_remote_address_, reply_msg_data, reply_msg_size);
 
-  if (ret > 0) {
+  if (ret > 0)
+  {
     active_request_ = false;
     return Replier::ErrorCode::kSuccess;
-  } else {
+  }
+  else
+  {
     return Replier::ErrorCode::kSocketError;
   }
 }
 
-std::pair<const uint8_t*, size_t> Replier::GetRequestMessage() const {
+std::pair<const uint8_t *, size_t> Replier::GetRequestMessage() const
+{
   return {server_buffer_, last_request_size_};
 }
 

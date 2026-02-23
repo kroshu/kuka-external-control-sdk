@@ -26,9 +26,9 @@ option java_multiple_files = true;
 option java_outer_classname = "ControlSignalExternalProto";
 option java_package = "com.kuka.ecs.v1";
 
-
 // Proto definition for external RT commands
-message ControlSignalExternal {
+message ControlSignalExternal
+{
   // Message Header
   ExternalHeader header = 1;
   // Internal control signal

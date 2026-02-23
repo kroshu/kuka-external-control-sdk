@@ -15,50 +15,56 @@
 #include "kuka/external-control-sdk/kss/rsi/robot_interface.h"
 #include <cmath>
 
-namespace kuka::external::control::kss::rsi {
+namespace kuka::external::control::kss::rsi
+{
 
 Robot::Robot(Configuration config)
-    : config_(config),
-      last_motion_state_(config.dof, config.gpio_state_configs, config.joint_configs),
-      initial_motion_state_(config.dof, config.gpio_state_configs, config.joint_configs),
-      control_signal_(config.dof, config.gpio_command_configs, config.joint_configs) {}
+: config_(config),
+  last_motion_state_(config.dof, config.gpio_state_configs, config.joint_configs),
+  initial_motion_state_(config.dof, config.gpio_state_configs, config.joint_configs),
+  control_signal_(config.dof, config.gpio_command_configs, config.joint_configs)
+{
+}
 
-Status Robot::Setup() {
-  if (!endpoint_.Setup(config_.client_ip, config_.client_port)) {
+Status Robot::Setup()
+{
+  if (!endpoint_.Setup(config_.client_ip, config_.client_port))
+  {
     return {ReturnCode::ERROR, "Setup of RSI UDP endpoint failed"};
   }
 
   return {ReturnCode::OK, "Necessary network setup succeeded"};
 }
 
-Status Robot::StartControlling(kuka::external::control::ControlMode) {
+Status Robot::StartControlling(kuka::external::control::ControlMode)
+{
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::StartMonitoring() {
-  return {ReturnCode::UNSUPPORTED, error_text};
-}
+Status Robot::StartMonitoring() { return {ReturnCode::UNSUPPORTED, error_text}; }
 
-Status Robot::StopControlling() {
+Status Robot::StopControlling()
+{
   Status result = {ReturnCode::OK, ""};
 
-  if (!endpoint_.IsRequestActive()) {
-    auto ret =
-        ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs));
-    if (ret.return_code != kuka::external::control::ReturnCode::OK) {
-      return {ReturnCode::ERROR,
-              "Failed to receive before sending stop signal"};
+  if (!endpoint_.IsRequestActive())
+  {
+    auto ret = ReceiveMotionState(std::chrono::milliseconds(kStopReceiveTimeoutMs));
+    if (ret.return_code != kuka::external::control::ReturnCode::OK)
+    {
+      return {ReturnCode::ERROR, "Failed to receive before sending stop signal"};
     }
   }
 
   auto stop_send_str_view = control_signal_.CreateXMLString(last_ipoc_, true);
 
-  if (!stop_send_str_view.has_value()) {
-    result = {ReturnCode::ERROR,
-              "Parsing last control signal to proper XML format failed"};
-  } else if (!endpoint_.MessageSend(stop_send_str_view.value())) {
-    result = {ReturnCode::ERROR,
-              "Sending last RSI stop command failed - cancelling RSI program"};
+  if (!stop_send_str_view.has_value())
+  {
+    result = {ReturnCode::ERROR, "Parsing last control signal to proper XML format failed"};
+  }
+  else if (!endpoint_.MessageSend(stop_send_str_view.value()))
+  {
+    result = {ReturnCode::ERROR, "Sending last RSI stop command failed - cancelling RSI program"};
   }
 
   endpoint_.Reset();
@@ -68,50 +74,57 @@ Status Robot::StopControlling() {
 
 Status Robot::StopMonitoring() { return {ReturnCode::UNSUPPORTED, error_text}; }
 
-Status
-Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState &)>) {
+Status Robot::CreateMonitoringSubscription(std::function<void(BaseMotionState &)>)
+{
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::CancelMonitoringSubscription() {
-  return {ReturnCode::UNSUPPORTED, error_text};
-}
+Status Robot::CancelMonitoringSubscription() { return {ReturnCode::UNSUPPORTED, error_text}; }
 
 bool Robot::HasMonitoringSubscription() { return false; }
 
-Status Robot::SwitchControlMode(ControlMode control_mode) {
+Status Robot::SwitchControlMode(ControlMode control_mode)
+{
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler> &&) {
+Status Robot::RegisterEventHandler(std::unique_ptr<EventHandler> &&)
+{
   return {ReturnCode::UNSUPPORTED, error_text};
 }
 
-Status Robot::SendControlSignal() {
-  if (!control_signal_.InitialPositionsSet()) {
-    return {ReturnCode::ERROR, "Control signal not initialized, please call "
-                               "ReceiveMotionState() first"};
+Status Robot::SendControlSignal()
+{
+  if (!control_signal_.InitialPositionsSet())
+  {
+    return {
+      ReturnCode::ERROR,
+      "Control signal not initialized, please call "
+      "ReceiveMotionState() first"};
   }
 
   auto ctr_signal_xml = control_signal_.CreateXMLString(last_ipoc_, false);
-  if (!ctr_signal_xml.has_value()) {
-    return {ReturnCode::ERROR,
-            "Parsing control signal to proper XML format failed"};
+  if (!ctr_signal_xml.has_value())
+  {
+    return {ReturnCode::ERROR, "Parsing control signal to proper XML format failed"};
   }
 
-  if (!endpoint_.MessageSend(ctr_signal_xml.value())) {
+  if (!endpoint_.MessageSend(ctr_signal_xml.value()))
+  {
     return {ReturnCode::ERROR, "Sending RSI control signal failed"};
   }
   return {ReturnCode::OK, "Sent RSI control signal"};
 }
 
-Status
-Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
-  if (!endpoint_.ReceiveOrTimeout(receive_request_timeout)) {
+Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout)
+{
+  if (!endpoint_.ReceiveOrTimeout(receive_request_timeout))
+  {
     return {ReturnCode::ERROR, "Receiving RSI state failed"};
   }
 
-  if (!control_signal_.InitialPositionsSet()) {
+  if (!control_signal_.InitialPositionsSet())
+  {
     initial_motion_state_.CreateFromXML(endpoint_.GetReceivedMessage().data());
     control_signal_.SetInitialPositions(initial_motion_state_);
   }
@@ -119,14 +132,15 @@ Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) {
   return UpdateMotionState(endpoint_.GetReceivedMessage());
 }
 
-BaseControlSignal &Robot::GetControlSignal() { return control_signal_; }
+BaseControlSignal & Robot::GetControlSignal() { return control_signal_; }
 
-BaseMotionState &Robot::GetLastMotionState() { return last_motion_state_; }
+BaseMotionState & Robot::GetLastMotionState() { return last_motion_state_; }
 
-Status Robot::UpdateMotionState(std::string_view xml_str) {
+Status Robot::UpdateMotionState(std::string_view xml_str)
+{
   last_motion_state_.CreateFromXML(xml_str.data());
   last_ipoc_ = last_motion_state_.GetIpoc();
   return {ReturnCode::OK, "Parsed incoming RSI server message"};
 }
 
-}; // namespace kuka::external::control::kss::rsi
+};  // namespace kuka::external::control::kss::rsi

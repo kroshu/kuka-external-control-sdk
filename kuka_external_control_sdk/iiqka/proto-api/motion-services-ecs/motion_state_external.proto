@@ -26,9 +26,9 @@ option java_multiple_files = true;
 option java_outer_classname = "MotionStateExternalProto";
 option java_package = "com.kuka.ecs.v1";
 
-
 // External motion state
-message MotionStateExternal {
+message MotionStateExternal
+{
   // Header containing ID and checksum
   ExternalHeader header = 1;
   // The measured joint position of the current cycle

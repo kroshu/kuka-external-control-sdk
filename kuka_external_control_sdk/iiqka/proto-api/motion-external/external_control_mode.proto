@@ -23,7 +23,8 @@ option java_outer_classname = "ExternalControlServiceProto";
 option java_package = "com.kuka.motion.external";
 
 // Available external control modes
-enum ExternalControlMode {
+enum ExternalControlMode
+{
   EXTERNAL_CONTROL_MODE_UNSPECIFIED = 0;
   JOINT_POSITION_CONTROL = 1;
   JOINT_IMPEDANCE_CONTROL = 2;

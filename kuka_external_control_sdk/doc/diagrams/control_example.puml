@@ -51,13 +51,13 @@ loop until stop requested
 		autoactivate off
 		app -> app: execute calculations based on motion state
 		autoactivate on
-		
+
 		app -> robot: GetControlSignal()
 		robot --> app: control signal: BaseControlSignal&
 		autoactivate off
 		app -> app: fill control signal based on calculations with motion state
 		autoactivate on
-		
+
 		alt normal execution
 			app -> robot: SendControlSignal()
 			robot -> ctrl: send control signal
@@ -82,8 +82,8 @@ loop until stop requested
 			ctrl --> robot: changed to STOPPED state
 			robot --> app: call OnStopped callback of event handler
 		end
-		
-	else error occured on controller
+
+	else error occurred on controller
 		ctrl --> robot: changed to ERROR state
 		robot --> app: call OnError callback of event handler
 	end

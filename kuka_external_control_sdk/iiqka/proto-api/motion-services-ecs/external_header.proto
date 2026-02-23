@@ -22,9 +22,9 @@ option java_multiple_files = true;
 option java_outer_classname = "ExternalHeaderProto";
 option java_package = "com.kuka.ecs.v1";
 
-
 // Proto definition for external RT commands
-message ExternalHeader {
+message ExternalHeader
+{
   // Message Id
   uint32 message_id = 1;
   // Interpolator message identifier

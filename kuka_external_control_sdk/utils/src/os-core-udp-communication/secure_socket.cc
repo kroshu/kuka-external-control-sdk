@@ -21,67 +21,81 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-namespace os::core::udp::communication {
+namespace os::core::udp::communication
+{
 
-int dtls_verify_callback(int /*ok*/, X509_STORE_CTX* /*ctx*/) { return 1; }
+int dtls_verify_callback(int /*ok*/, X509_STORE_CTX * /*ctx*/) { return 1; }
 
-const std::string MY_COOKIE = "MySuperSecureAndSecretCookie;)";
+const char MY_COOKIE[] = "MySuperSecureAndSecretCookie;)";
 
-int dtls_cookie_generate_callback(SSL* /*ssl*/, unsigned char* cookie, unsigned int* cookie_len) {
-  memcpy(cookie, MY_COOKIE.c_str(), MY_COOKIE.size());
-  *cookie_len = MY_COOKIE.size();
+int dtls_cookie_generate_callback(SSL * /*ssl*/, unsigned char * cookie, unsigned int * cookie_len)
+{
+  memcpy(cookie, MY_COOKIE, sizeof(MY_COOKIE) - 1);
+  *cookie_len = sizeof(MY_COOKIE) - 1;
   return 1;
 }
 
-int dtls_cookie_verify_callback(SSL* /*ssl*/, const unsigned char* cookie,
-                                unsigned int cookie_len) {
-  return memcmp(cookie, MY_COOKIE.c_str(), cookie_len) == 0 ? 1 : 0;
+int dtls_cookie_verify_callback(
+  SSL * /*ssl*/, const unsigned char * cookie, unsigned int cookie_len)
+{
+  return memcmp(cookie, MY_COOKIE, cookie_len) == 0 ? 1 : 0;
 }
 
 SecureSocket::SecureSocket(Mode mode) : mode_(mode) {}
 
-SecureSocket::SecureSocket(Mode mode, const std::string& certificate_path,
-                           const std::string& private_key_path)
-    : mode_(mode)
-    , certificate_path_(std::make_optional(certificate_path))
-    , private_key_path_(std::make_optional(private_key_path)) {}
+SecureSocket::SecureSocket(
+  Mode mode, const std::string & certificate_path, const std::string & private_key_path)
+: mode_(mode),
+  certificate_path_(std::make_optional(certificate_path)),
+  private_key_path_(std::make_optional(private_key_path))
+{
+}
 
 SecureSocket::~SecureSocket() { Close(); }
 
-int SecureSocket::Map(int flags) {
-  if (IsActive()) {
+int SecureSocket::Map(int flags)
+{
+  if (IsActive())
+  {
     return SetError(ErrorCode::kAlreadyActive);
   }
 
   // create SSL context
-  if (mode_ != Mode::accepted) {
+  if (mode_ != Mode::accepted)
+  {
     ssl_context_ = SSL_CTX_new(DTLS_method());
-    if (ssl_context_ == nullptr) {
+    if (ssl_context_ == nullptr)
+    {
       return SetError(ErrorCode::kSecureLayerError, 0);
     }
 
-    SSL_CTX_set_verify(ssl_context_, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE,
-                       dtls_verify_callback);
+    SSL_CTX_set_verify(
+      ssl_context_, SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE, dtls_verify_callback);
     SSL_CTX_set_session_cache_mode(ssl_context_, SSL_SESS_CACHE_OFF);
     SSL_CTX_set_cookie_generate_cb(ssl_context_, &dtls_cookie_generate_callback);
     SSL_CTX_set_cookie_verify_cb(ssl_context_, &dtls_cookie_verify_callback);
 
-    if (certificate_path_.has_value()) {
-      if (!SSL_CTX_use_certificate_file(ssl_context_, certificate_path_.value().c_str(),
-                                        SSL_FILETYPE_PEM)) {
+    if (certificate_path_.has_value())
+    {
+      if (!SSL_CTX_use_certificate_file(
+            ssl_context_, certificate_path_.value().c_str(), SSL_FILETYPE_PEM))
+      {
         SSL_CTX_free(ssl_context_);
         ssl_context_ = nullptr;
         return SetError(ErrorCode::kSecureLayerError, 0);
       }
     }
-    if (private_key_path_.has_value()) {
-      if (!SSL_CTX_use_PrivateKey_file(ssl_context_, private_key_path_.value().c_str(),
-                                       SSL_FILETYPE_PEM)) {
+    if (private_key_path_.has_value())
+    {
+      if (!SSL_CTX_use_PrivateKey_file(
+            ssl_context_, private_key_path_.value().c_str(), SSL_FILETYPE_PEM))
+      {
         SSL_CTX_free(ssl_context_);
         ssl_context_ = nullptr;
         return SetError(ErrorCode::kSecureLayerError, 0);
       }
-      if (!SSL_CTX_check_private_key(ssl_context_)) {
+      if (!SSL_CTX_check_private_key(ssl_context_))
+      {
         SSL_CTX_free(ssl_context_);
         ssl_context_ = nullptr;
         return SetError(ErrorCode::kSecureLayerError, 0);
@@ -89,16 +103,19 @@ int SecureSocket::Map(int flags) {
     }
   }
 
-  if (Socket::Map(flags) < 0) {
+  if (Socket::Map(flags) < 0)
+  {
     SSL_CTX_free(ssl_context_);
     ssl_context_ = nullptr;
     return SetError(ErrorCode::kSocketError);
   }
 
-  if (!ssl_obj_ && mode_ != Mode::server) {
+  if (!ssl_obj_ && mode_ != Mode::server)
+  {
     // create SSL object
     ssl_obj_ = SSL_new(ssl_context_);
-    if (ssl_obj_ == nullptr) {
+    if (ssl_obj_ == nullptr)
+    {
       SSL_CTX_free(ssl_context_);
       ssl_context_ = nullptr;
       return SetError(ErrorCode::kSecureLayerError, 0);
@@ -109,90 +126,121 @@ int SecureSocket::Map(int flags) {
   return socket_fd_;
 }
 
-int SecureSocket::DoHandshake() {
-  if (ssl_up_) {
+int SecureSocket::DoHandshake()
+{
+  if (ssl_up_)
+  {
     return SSL_ERROR_SYSCALL;
   }
 
-  if (mode_ == Mode::expect_client) {
+  if (mode_ == Mode::expect_client)
+  {
     int ret = SSL_get_error(ssl_obj_, SSL_accept(ssl_obj_));
-    if (!(ret == SSL_ERROR_NONE || ret == SSL_ERROR_WANT_READ)) {
+    if (!(ret == SSL_ERROR_NONE || ret == SSL_ERROR_WANT_READ))
+    {
       return SetError(ErrorCode::kSecureLayerError, ret);
     }
     ssl_up_ = true;
-
-  } else if (mode_ == Mode::client) {
+  }
+  else if (mode_ == Mode::client)
+  {
     int ret = SSL_get_error(ssl_obj_, SSL_connect(ssl_obj_));
-    if (!(ret == SSL_ERROR_NONE || ret == SSL_ERROR_WANT_READ)) {
+    if (!(ret == SSL_ERROR_NONE || ret == SSL_ERROR_WANT_READ))
+    {
       return SetError(ErrorCode::kSecureLayerError, ret);
     }
     ssl_up_ = true;
-  } else {
+  }
+  else
+  {
     ssl_up_ = true;
   }
   return SetError(ErrorCode::kSuccess);
 }
 
-int SecureSocket::Send(const unsigned char* raw_data, int raw_data_size, int /*flags*/) {
-  if (!IsActive() || !ssl_up_) {
+int SecureSocket::Send(const unsigned char * raw_data, int raw_data_size, int /*flags*/)
+{
+  if (!IsActive() || !ssl_up_)
+  {
     return SetError(ErrorCode::kNotActive);
   }
-  if (remote_address_ == std::nullopt) {
+  if (remote_address_ == std::nullopt)
+  {
     return SetError(ErrorCode::kNotConnected);
   }
   size_t sent_bytes = 0;
   int ret = SSL_write_ex(ssl_obj_, raw_data, raw_data_size, &sent_bytes);
-  if (ret <= 0) {
+  if (ret <= 0)
+  {
     return SetError(ErrorCode::kSecureLayerError, SSL_get_error(ssl_obj_, ret));
   }
   return sent_bytes;
 }
 
-int SecureSocket::SendTo(const SocketAddress& /*remote_address*/, const unsigned char* /*raw_data*/,
-                         int /*raw_data_size*/, int /*flags*/) {
+int SecureSocket::SendTo(
+  const SocketAddress & /*remote_address*/, const unsigned char * /*raw_data*/,
+  int /*raw_data_size*/, int /*flags*/)
+{
   throw "NOT SUPPORTED";
 }
 
-int SecureSocket::Receive(unsigned char* buffer, int buffer_size, int /*flags*/) {
-  if (!IsActive() || !ssl_up_) {
+int SecureSocket::Receive(unsigned char * buffer, int buffer_size, int /*flags*/)
+{
+  if (!IsActive() || !ssl_up_)
+  {
     return SetError(ErrorCode::kNotActive);
   }
-  if (local_address_ == std::nullopt) {
+  if (local_address_ == std::nullopt)
+  {
     return SetError(ErrorCode::kNotBound);
   }
   size_t received_bytes;
   int ret = SSL_read_ex(ssl_obj_, buffer, buffer_size, &received_bytes);
-  if (ret == 0) {
+  if (ret == 0)
+  {
     Close();
     return SetError(ErrorCode::kClosed);
-  } else if (ret < 0) {
+  }
+  else if (ret < 0)
+  {
     return SetError(ErrorCode::kSecureLayerError, SSL_get_error(ssl_obj_, ret));
   }
   return received_bytes;
 }
 
-int SecureSocket::ReceiveFrom(SocketAddress& /*incoming_remote_address*/, unsigned char* /*buffer*/,
-                              int /*buffer_size*/, int /*flags*/) {
+int SecureSocket::ReceiveFrom(
+  SocketAddress & /*incoming_remote_address*/, unsigned char * /*buffer*/, int /*buffer_size*/,
+  int /*flags*/)
+{
   throw "NOT SUPPORTED";
 }
 
-std::string SecureSocket::GetLastErrorText() const {
-  if (last_error_state_ == ErrorCode::kSecureLayerError) {
+std::string SecureSocket::GetLastErrorText() const
+{
+  if (last_error_state_ == ErrorCode::kSecureLayerError)
+  {
     return GetSSLErrorText();
-  } else {
+  }
+  else
+  {
     return Socket::GetLastErrorText();
   }
 }
 
-int SecureSocket::Close() {
-  if (IsActive()) {
-    if (ssl_obj_) {
-      if (ssl_up_) {
+int SecureSocket::Close()
+{
+  if (IsActive())
+  {
+    if (ssl_obj_)
+    {
+      if (ssl_up_)
+      {
         SSL_shutdown(ssl_obj_);
       }
       SSL_free(ssl_obj_);
     }
-    if (ssl_context_ && mode_ != Mode::accepted) {
+    if (ssl_context_ && mode_ != Mode::accepted)
+    {
       SSL_CTX_free(ssl_context_);
     }
     ::close(socket_fd_);
@@ -205,29 +253,38 @@ int SecureSocket::Close() {
   return ErrorCode::kNotActive;
 }
 
-int SecureSocket::SetError(ErrorCode code, int err_no) {
+int SecureSocket::SetError(ErrorCode code, int err_no)
+{
   last_error_state_ = code;
-  if (code == ErrorCode::kSecureLayerError) {
+  if (code == ErrorCode::kSecureLayerError)
+  {
     last_errno_ = err_no;
-  } else if (code == ErrorCode::kSocketError) {
+  }
+  else if (code == ErrorCode::kSocketError)
+  {
     last_errno_ = errno;
-  } else {
+  }
+  else
+  {
     last_errno_ = 0;
   }
   return code;
 }
 
-std::unique_ptr<SecureSocket> SecureSocket::Accept() {
-  if (mode_ != Mode::server) {
+std::unique_ptr<SecureSocket> SecureSocket::Accept()
+{
+  if (mode_ != Mode::server)
+  {
     SetError(ErrorCode::kError);
     return nullptr;
   }
-  if (!IsActive() || !ssl_up_) {
+  if (!IsActive() || !ssl_up_)
+  {
     SetError(ErrorCode::kNotActive);
     return nullptr;
   }
 
-  SSL* new_ssl = SSL_new(ssl_context_);
+  SSL * new_ssl = SSL_new(ssl_context_);
   auto bio = BIO_new_dgram(socket_fd_, BIO_NOCLOSE);
   SSL_set_bio(new_ssl, bio, bio);
   SSL_set_options(new_ssl, SSL_OP_COOKIE_EXCHANGE);
@@ -236,24 +293,31 @@ std::unique_ptr<SecureSocket> SecureSocket::Accept() {
   memset(&client_addr, 0, sizeof(struct sockaddr_in));
 
   int ret = 0;
-  if ((ret = DTLSv1_listen(new_ssl, (BIO_ADDR*)&client_addr)) > 0) {
+  if ((ret = DTLSv1_listen(new_ssl, reinterpret_cast<BIO_ADDR *>(&client_addr))) > 0)
+  {
     SocketAddress addr(&client_addr);
     auto accepted = CreateAcceptedSocket(ssl_context_, new_ssl, &client_addr);
-    if (accepted->GetLastSocketError().first == ErrorCode::kSuccess) {
+    if (accepted->GetLastSocketError().first == ErrorCode::kSuccess)
+    {
       ret = SSL_accept(new_ssl);
     }
     return (accepted);
-  } else if (ret == 0) {
+  }
+  else if (ret == 0)
+  {
     SetError(ErrorCode::kSocketError, errno);
     return nullptr;
-  } else {
+  }
+  else
+  {
     SetError(ErrorCode::kSecureLayerError, SSL_get_error(new_ssl, ret));
     return nullptr;
   }
 }
 
-std::unique_ptr<SecureSocket> SecureSocket::CreateAcceptedSocket(SSL_CTX* ssl_ctx, SSL* ssl_obj,
-                                                                 const struct sockaddr_in* remote) {
+std::unique_ptr<SecureSocket> SecureSocket::CreateAcceptedSocket(
+  SSL_CTX * ssl_ctx, SSL * ssl_obj, const struct sockaddr_in * remote)
+{
   std::unique_ptr<SecureSocket> accepted_socket = std::make_unique<SecureSocket>(Mode::accepted);
   accepted_socket->ssl_context_ = ssl_ctx;
   accepted_socket->ssl_obj_ = ssl_obj;
@@ -270,7 +334,8 @@ std::unique_ptr<SecureSocket> SecureSocket::CreateAcceptedSocket(SSL_CTX* ssl_ct
   return accepted_socket;
 }
 
-std::string SecureSocket::GetSSLErrorText() const {
+std::string SecureSocket::GetSSLErrorText() const
+{
   char ssl_err_buf[1024];
   return ERR_error_string(last_errno_, ssl_err_buf);
 }
