@@ -2526,23 +2526,4 @@
          </Parameters>
       </Construct>
    </Constructs>
-</RsiContext>meter Name="UpperLimA2" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="UpperLimA3" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="UpperLimA4" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="UpperLimA5" CanBeSetFromKrl="true" Value="180" />
-            <DoubleParameter Name="UpperLimA6" CanBeSetFromKrl="true" Value="180" />
-         </Parameters>
-      </Construct>
-      <Construct Name="AxisCorrMon_1" BlueprintName="AxisCorrMon" BlueprintCollection="RSI" Location="0,507.44">
-         <Parameters>
-            <DoubleParameter Name="MaxA1" Value="1000" />
-            <DoubleParameter Name="MaxA2" Value="1000" />
-            <DoubleParameter Name="MaxA3" Value="1000" />
-            <DoubleParameter Name="MaxA4" Value="1000" />
-            <DoubleParameter Name="MaxA5" Value="1000" />
-            <DoubleParameter Name="MaxA6" Value="1000" />
-         </Parameters>
-      </Construct>
-      <Construct Name="AxisCorrExt_1" BlueprintName="AxisCorrExt" BlueprintCollection="RSI" Location="0,890.96" />
-   </Constructs>
 </RsiContext>
