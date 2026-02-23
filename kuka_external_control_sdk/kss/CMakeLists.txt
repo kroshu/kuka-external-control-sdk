@@ -14,7 +14,7 @@ set(test_directory ${kss_directory}/test)
 set(target_name "kuka-kss-client-library")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE )
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -63,7 +63,7 @@ target_link_libraries(${target_name}
 target_compile_features(${target_name} INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
 # Build tests for KSS
-if (BUILD_TESTING)
+if(BUILD_TESTING)
   find_package(GTest)
   enable_testing()
 
@@ -96,17 +96,21 @@ install(TARGETS ${target_name} EXPORT SdkExport
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(EXPORT SdkExport NAMESPACE Kuka:: FILE kuka-kss-client-libraryTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-kss-client-library)
+install(EXPORT SdkExport NAMESPACE Kuka::
+    FILE kuka-kss-client-libraryTargets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-kss-client-library
+)
 
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-kss-client-libraryConfig.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-kss-client-library
-        )
+install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-kss-client-libraryConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-kss-client-library
+)
 
 install(DIRECTORY ${kss_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
-if (NOT ${PARENT_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+if(NOT ${PARENT_DIR} MATCHES ${CMAKE_SOURCE_DIR})
     install(DIRECTORY ${common_directory}/include/ ${utils_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")

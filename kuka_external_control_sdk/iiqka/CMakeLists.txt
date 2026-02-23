@@ -15,7 +15,7 @@ set(test_directory ${iiqka_directory}/test)
 set(target_name "kuka-iiqka-client-library")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE )
+  set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -155,11 +155,16 @@ install(TARGETS ${target_name} kuka-iiqka-client-library-protobuf EXPORT SdkExpo
     LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-install(EXPORT SdkExport NAMESPACE Kuka:: FILE kuka-iiqka-client-libraryTargets.cmake DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library)
+install(EXPORT SdkExport NAMESPACE Kuka::
+    FILE kuka-iiqka-client-libraryTargets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library
+)
 
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-iiqka-client-libraryConfig.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library
-        )
+install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/kuka-iiqka-client-libraryConfig.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-iiqka-client-library
+)
+  )
 
 install(DIRECTORY ${iiqka_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
@@ -169,7 +174,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto-api
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/kuka/external-control-sdk/iiqka
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
-if (NOT ${PARENT_DIR} MATCHES ${CMAKE_SOURCE_DIR})
+if(NOT ${PARENT_DIR} MATCHES ${CMAKE_SOURCE_DIR})
     install(DIRECTORY ${common_directory}/include/ ${utils_directory}/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
