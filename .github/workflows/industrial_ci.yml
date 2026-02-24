@@ -44,7 +44,7 @@ jobs:
     steps:
       - name: Reset ANALYZER for pushes not targeting master
         run: |
-          # only run SonarCloud on the default branch (master)
+          # only run SonarCloud on pushes to the default branch (master) or for pull requests
           if [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
             echo "ANALYZER=" >> $GITHUB_ENV
           fi
