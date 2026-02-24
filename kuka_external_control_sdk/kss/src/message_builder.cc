@@ -88,7 +88,7 @@ void MotionState::CreateFromXML(const char * incoming_xml)
   }
 
   char * endptr = nullptr;
-  delay_ = std::strtol(&incoming_xml[next_value_idx], &endptr, 0);
+  delay_ = std::strtoull(&incoming_xml[next_value_idx], &endptr, 0);
   if (errno != 0 && endptr == nullptr)
   {
     throw std::invalid_argument(
@@ -132,7 +132,7 @@ void MotionState::CreateFromXML(const char * incoming_xml)
       "degree of freedom, IPOC node is missing");
   }
 
-  ipoc_ = std::strtol(&incoming_xml[next_value_idx], &endptr, 0);
+  ipoc_ = std::strtoull(&incoming_xml[next_value_idx], &endptr, 0);
   if (errno != 0 && endptr == &incoming_xml[next_value_idx])
   {
     throw std::invalid_argument(

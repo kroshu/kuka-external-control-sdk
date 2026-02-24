@@ -181,7 +181,7 @@ public:
   ControlSignal & operator=(const ControlSignal & other) = delete;
 
   // Create XML containing relative positions in rad
-  std::optional<std::string_view> CreateXMLString(int last_ipoc, bool stop_control = false);
+  std::optional<std::string_view> CreateXMLString(uint64_t last_ipoc, bool stop_control = false);
 
   void SetInitialPositions(const MotionState & initial_positions);
   bool InitialPositionsSet() const { return has_initial_positions_; }
