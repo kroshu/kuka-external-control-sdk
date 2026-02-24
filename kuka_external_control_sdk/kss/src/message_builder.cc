@@ -200,7 +200,8 @@ void ControlSignal::AppendToXMLString(std::string_view str)
   strncat(xml_string_, str.data(), kBufferSize - strnlen(xml_string_, kBufferSize) - 1);
 }
 
-std::optional<std::string_view> ControlSignal::CreateXMLString(uint64_t last_ipoc, bool stop_control)
+std::optional<std::string_view> ControlSignal::CreateXMLString(
+  uint64_t last_ipoc, bool stop_control)
 {
   std::memset(xml_string_, 0, sizeof(xml_string_));
 
