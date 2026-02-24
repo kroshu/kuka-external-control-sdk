@@ -77,13 +77,15 @@ public:
     return {ReturnCode::UNSUPPORTED, error_text};
   }
 
+  uint64_t getDelay() const { return last_motion_state_.GetDelay(); }
+
 protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
   ControlSignal control_signal_;
 
   Configuration config_;
-  int last_ipoc_ = 0;
+  uint64_t last_ipoc_ = 0;
   static constexpr int kStopReceiveTimeoutMs = 40;
 
   Endpoint endpoint_;
