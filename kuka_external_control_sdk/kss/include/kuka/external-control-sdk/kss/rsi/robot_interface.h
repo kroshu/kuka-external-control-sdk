@@ -72,7 +72,7 @@ public:
   {
     return {ReturnCode::UNSUPPORTED, error_text};
   }
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
+  virtual Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
   }
