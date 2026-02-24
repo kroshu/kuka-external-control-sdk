@@ -94,8 +94,8 @@ public:
   MotionState & operator=(const MotionState & other) = delete;
 
   void CreateFromXML(const char * incoming_xml);
-  int GetIpoc() { return ipoc_; }
-  int GetDelay() { return delay_; }
+  uint64_t GetIpoc() const { return ipoc_; }
+  uint64_t GetDelay() const { return delay_; }
 
 private:
   [[nodiscard]] bool ParseMeasuredPositions(
