@@ -79,6 +79,8 @@ public:
 
   uint64_t getDelay() const { return last_motion_state_.GetDelay(); }
 
+  uint64_t getIpoc() const { return last_motion_state_.GetIpoc(); }
+
 protected:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
