@@ -72,12 +72,14 @@ public:
   {
     return {ReturnCode::UNSUPPORTED, error_text};
   }
-  Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
+  virtual Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
   }
 
   uint64_t getDelay() const { return last_motion_state_.GetDelay(); }
+
+  uint64_t getIpoc() const { return last_motion_state_.GetIpoc(); }
 
 protected:
   MotionState last_motion_state_;
