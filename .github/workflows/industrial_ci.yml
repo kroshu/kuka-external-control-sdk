@@ -36,9 +36,18 @@ jobs:
       PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       PR_BASE: ${{ github.event.pull_request.base.ref }}
       PR_NUMBER: ${{ github.event.number }}
+      # enable SonarCloud analysis when the ANALYZER_TOKEN secret is configured
+      ANALYZER: sonarqube
+      ANALYZER_TOKEN: ${{ secrets.ANALYZER_TOKEN }}
       DEBUG_BASH: true
     runs-on: ubuntu-latest
     steps:
+      - name: Reset ANALYZER for pushes not targeting master
+        run: |
+          # only run SonarCloud on pushes to the default branch (master) or for pull requests
+          if [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
+            echo "ANALYZER=" >> $GITHUB_ENV
+          fi
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
