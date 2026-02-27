@@ -98,6 +98,8 @@ public:
   uint64_t GetDelay() const { return delay_; }
 
 private:
+  static std::size_t ParseDouble(const char * start, const char * end, double & out);
+
   [[nodiscard]] bool ParseMeasuredPositions(
     const char * str, const std::size_t len, const std::size_t num_values,
     std::size_t & next_value_idx, const std::size_t offset = 0);

@@ -17,6 +17,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <charconv>
 #include <stdexcept>
 #include <string>
 
@@ -27,6 +28,17 @@ static double RadiansToDegrees(const double radians) { return radians * 180 / M_
 static double DegreesToRadians(const double degrees) { return degrees * M_PI / 180; }
 static double MetersToMillimetres(const double meters) { return meters * 1'000; }
 static double MillimetresToMeters(const double millimetres) { return millimetres / 1'000; }
+
+// Use std::from_chars to avoid heap allocation from std::stod
+std::size_t MotionState::ParseDouble(const char *start, const char *end, double &out)
+{
+  auto res = std::from_chars(start, end, out);
+  if (res.ec != std::errc())
+  {
+    throw std::invalid_argument("Received XML contains an invalid numeric value");
+  }
+  return static_cast<std::size_t>(res.ptr - start);
+}
 
 void MotionState::CreateFromXML(const char * incoming_xml)
 {
@@ -43,7 +55,9 @@ void MotionState::CreateFromXML(const char * incoming_xml)
     next_value_idx += kCartesianPositionAttributePrefixes[i].length() + 1;
     if (next_value_idx < len)
     {
-      measured_cartesian_positions_[i] = std::stod(&incoming_xml[next_value_idx], &dbl_length);
+      double parsed = 0.0;
+      dbl_length = ParseDouble(&incoming_xml[next_value_idx], &incoming_xml[len], parsed);
+      measured_cartesian_positions_[i] = parsed;
       if (i > 2)
       {
         measured_cartesian_positions_[i] *= (M_PI / 180);
@@ -111,7 +125,10 @@ void MotionState::CreateFromXML(const char * incoming_xml)
     next_value_idx += gpioAttributePrefix[i].length() + 1;
     if (next_value_idx < len)
     {
-      measured_gpio_values_[i]->SetValue(std::stod(&incoming_xml[next_value_idx], &dbl_length));
+      // Parse GPIO double value with std::from_chars (no allocation)
+      double parsed = 0.0;
+      dbl_length = ParseDouble(&incoming_xml[next_value_idx], &incoming_xml[len], parsed);
+      measured_gpio_values_[i]->SetValue(parsed);
     }
     else
     {
@@ -163,7 +180,9 @@ bool MotionState::ParseMeasuredPositions(
       {
         std::size_t dbl_length = 0;
         const std::size_t idx = i + offset;
-        const double value = std::stod(&str[next_value_idx], &dbl_length);
+
+        double value = 0.0;
+        dbl_length = ParseDouble(&str[next_value_idx], &str[len], value);
         next_value_idx += dbl_length;
 
         switch (joint_configs_[idx].type)
@@ -306,7 +325,15 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
     AppendToXMLString(kAttributeSuffix);
   }
   AppendToXMLString(kIpocNodePrefix);
-  AppendToXMLString(std::to_string(last_ipoc).data());
+  
+  char ipoc_buf[32];  // 64-bit unsigned integer always fits
+  if (std::snprintf(ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) < 0 )
+  {
+    return std::nullopt;
+  }
+
+  AppendToXMLString(ipoc_buf);
+
   AppendToXMLString(kIpocNodeSuffix);
   AppendToXMLString(kMessageSuffix);
 
