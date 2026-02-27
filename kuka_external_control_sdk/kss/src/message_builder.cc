@@ -17,7 +17,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
-#include <charconv>
 #include <stdexcept>
 #include <string>
 
@@ -29,15 +28,37 @@ static double DegreesToRadians(const double degrees) { return degrees * M_PI / 1
 static double MetersToMillimetres(const double meters) { return meters * 1'000; }
 static double MillimetresToMeters(const double millimetres) { return millimetres / 1'000; }
 
-// Use std::from_chars to avoid heap allocation from std::stod
-std::size_t MotionState::ParseDouble(const char *start, const char *end, double &out)
+
+// Use std::strtod because floating-point std::from_chars is not available
+// on GCC versions shipped with Debian Bullseye or RHEL 8. Consider no longer supporting these.
+// std::stod is not used because it allocates memory when casting from char* to std::string
+std::size_t MotionState::ParseDouble(const char* start, const char* end, double& out)
 {
-  auto res = std::from_chars(start, end, out);
-  if (res.ec != std::errc())
+  errno = 0;  // required: strtod uses errno for range errors
+  char* parse_end = nullptr;
+
+  // strtod stops early on invalid input, does not allocate, and is very fast
+  out = std::strtod(start, &parse_end);
+
+  // No characters consumed → invalid number
+  if (parse_end == start)
   {
     throw std::invalid_argument("Received XML contains an invalid numeric value");
   }
-  return static_cast<std::size_t>(res.ptr - start);
+
+  // Range error (underflow/overflow)
+  if (errno == ERANGE)
+  {
+    throw std::out_of_range("Received XML numeric value is out of range");
+  }
+
+  // Do not allow parsing past the XML buffer
+  if (parse_end > end)
+  {
+    throw std::invalid_argument("Received XML contains an overly long numeric value");
+  }
+
+  return static_cast<std::size_t>(parse_end - start);
 }
 
 void MotionState::CreateFromXML(const char * incoming_xml)
@@ -325,9 +346,11 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
     AppendToXMLString(kAttributeSuffix);
   }
   AppendToXMLString(kIpocNodePrefix);
-  
+
   char ipoc_buf[32];  // 64-bit unsigned integer always fits
-  if (std::snprintf(ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) < 0 )
+  if (
+    std::snprintf(ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) <
+    0)
   {
     return std::nullopt;
   }
