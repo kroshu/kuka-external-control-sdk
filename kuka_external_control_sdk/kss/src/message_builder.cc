@@ -28,14 +28,13 @@ static double DegreesToRadians(const double degrees) { return degrees * M_PI / 1
 static double MetersToMillimetres(const double meters) { return meters * 1'000; }
 static double MillimetresToMeters(const double millimetres) { return millimetres / 1'000; }
 
-
 // Use std::strtod because floating-point std::from_chars is not available
 // on GCC versions shipped with Debian Bullseye or RHEL 8. Consider no longer supporting these.
 // std::stod is not used because it allocates memory when casting from char* to std::string
-std::size_t MotionState::ParseDouble(const char* start, const char* end, double& out)
+std::size_t MotionState::ParseDouble(const char * start, const char * end, double & out)
 {
   errno = 0;  // required: strtod uses errno for range errors
-  char* parse_end = nullptr;
+  char * parse_end = nullptr;
 
   // strtod stops early on invalid input, does not allocate, and is very fast
   out = std::strtod(start, &parse_end);
