@@ -28,6 +28,38 @@ static double DegreesToRadians(const double degrees) { return degrees * M_PI / 1
 static double MetersToMillimetres(const double meters) { return meters * 1'000; }
 static double MillimetresToMeters(const double millimetres) { return millimetres / 1'000; }
 
+// Use std::strtod because floating-point std::from_chars is not available
+// on GCC versions shipped with Debian Bullseye or RHEL 8. Consider no longer supporting these.
+// std::stod is not used because it allocates memory when casting from char* to std::string
+std::size_t MotionState::ParseDouble(const char * start, const char * end, double & out)
+{
+  errno = 0;  // required: strtod uses errno for range errors
+  char * parse_end = nullptr;
+
+  // strtod stops early on invalid input, does not allocate, and is very fast
+  out = std::strtod(start, &parse_end);
+
+  // No characters consumed → invalid number
+  if (parse_end == start)
+  {
+    throw std::invalid_argument("Received XML contains an invalid numeric value");
+  }
+
+  // Range error (underflow/overflow)
+  if (errno == ERANGE)
+  {
+    throw std::out_of_range("Received XML numeric value is out of range");
+  }
+
+  // Do not allow parsing past the XML buffer
+  if (parse_end > end)
+  {
+    throw std::invalid_argument("Received XML contains an overly long numeric value");
+  }
+
+  return static_cast<std::size_t>(parse_end - start);
+}
+
 void MotionState::CreateFromXML(const char * incoming_xml)
 {
   if (incoming_xml == nullptr)
@@ -43,7 +75,9 @@ void MotionState::CreateFromXML(const char * incoming_xml)
     next_value_idx += kCartesianPositionAttributePrefixes[i].length() + 1;
     if (next_value_idx < len)
     {
-      measured_cartesian_positions_[i] = std::stod(&incoming_xml[next_value_idx], &dbl_length);
+      double parsed = 0.0;
+      dbl_length = ParseDouble(&incoming_xml[next_value_idx], &incoming_xml[len], parsed);
+      measured_cartesian_positions_[i] = parsed;
       if (i > 2)
       {
         measured_cartesian_positions_[i] *= (M_PI / 180);
@@ -111,7 +145,10 @@ void MotionState::CreateFromXML(const char * incoming_xml)
     next_value_idx += gpioAttributePrefix[i].length() + 1;
     if (next_value_idx < len)
     {
-      measured_gpio_values_[i]->SetValue(std::stod(&incoming_xml[next_value_idx], &dbl_length));
+      // Parse GPIO double value with std::from_chars (no allocation)
+      double parsed = 0.0;
+      dbl_length = ParseDouble(&incoming_xml[next_value_idx], &incoming_xml[len], parsed);
+      measured_gpio_values_[i]->SetValue(parsed);
     }
     else
     {
@@ -163,7 +200,9 @@ bool MotionState::ParseMeasuredPositions(
       {
         std::size_t dbl_length = 0;
         const std::size_t idx = i + offset;
-        const double value = std::stod(&str[next_value_idx], &dbl_length);
+
+        double value = 0.0;
+        dbl_length = ParseDouble(&str[next_value_idx], &str[len], value);
         next_value_idx += dbl_length;
 
         switch (joint_configs_[idx].type)
@@ -306,7 +345,17 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
     AppendToXMLString(kAttributeSuffix);
   }
   AppendToXMLString(kIpocNodePrefix);
-  AppendToXMLString(std::to_string(last_ipoc).data());
+
+  char ipoc_buf[32];  // 64-bit unsigned integer always fits
+  if (
+    std::snprintf(ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) <
+    0)
+  {
+    return std::nullopt;
+  }
+
+  AppendToXMLString(ipoc_buf);
+
   AppendToXMLString(kIpocNodeSuffix);
   AppendToXMLString(kMessageSuffix);
 
