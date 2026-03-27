@@ -29,9 +29,9 @@ Status Robot::Setup()
   os::core::udp::communication::TCPClient::ErrorCode setup_ret = tcp_client_.Setup();
   if (setup_ret != os::core::udp::communication::TCPClient::ErrorCode::kSuccess)
   {
-    char msg[64] = "Setup failed with error code: ";
-    std::sprintf(msg + std::strlen(msg), "%d", static_cast<int>(setup_ret));
-    return {ReturnCode::ERROR, msg};
+    return {
+      ReturnCode::ERROR,
+      std::string("Setup failed with error code: ") + std::to_string(static_cast<int>(setup_ret))};
   }
 
   Status start_ret = tcp_client_.Start();
