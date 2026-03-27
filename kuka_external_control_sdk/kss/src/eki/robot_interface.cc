@@ -31,8 +31,8 @@ Status Robot::Setup()
   {
     return {
       ReturnCode::ERROR,
-      std::string("Setup failed with error code: ") + std::to_string(static_cast<int>(setup_ret))};
-  }
+      (std::string("Setup failed with error code: ") + std::to_string(static_cast<int>(setup_ret))).c_str()};
+    }
 
   Status start_ret = tcp_client_.Start();
   if (start_ret.return_code != ReturnCode::OK && start_ret.return_code != ReturnCode::WARN)
