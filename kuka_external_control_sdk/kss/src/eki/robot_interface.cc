@@ -31,7 +31,7 @@ Status Robot::Setup()
   {
     char msg[64] = "Setup failed with error code: ";
     std::sprintf(msg + std::strlen(msg), "%d", static_cast<int>(setup_ret));
-    return {ReturnCode::ERROR, (std::string("Setup failed with error code: ") + std::to_string(setup_ret)).c_str()};
+    return {ReturnCode::ERROR, msg};
   }
 
   Status start_ret = tcp_client_.Start();
