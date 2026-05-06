@@ -81,7 +81,7 @@ public:
 
   uint64_t getIpoc() const { return last_motion_state_.GetIpoc(); }
 
-protected:
+public:
   MotionState last_motion_state_;
   MotionState initial_motion_state_;
   ControlSignal control_signal_;
