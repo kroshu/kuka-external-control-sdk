@@ -185,7 +185,7 @@ void Client::StartKeepAliveThread()
 
           connected = true;
         }
-        else if (tick > kInitTimeoutTicks)
+        else if (tick > kInitTimeoutTicks && connected)
         {
           // Mark MXA UDP timeout as an error except in the first ticks, since
           // that always occurs
