@@ -75,6 +75,7 @@ public:
   Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
   BaseControlSignal & GetControlSignal() override;
+  Status ResetControlSignal() override;
   BaseMotionState & GetLastMotionState() override;
 
   Status SwitchControlMode(ControlMode control_mode) override;
