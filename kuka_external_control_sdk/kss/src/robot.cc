@@ -76,6 +76,8 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
 
 BaseControlSignal & Robot::GetControlSignal() { return installed_interface_->GetControlSignal(); }
 
+Status Robot::ResetControlSignal() { return installed_interface_->ResetControlSignal(); }
+
 BaseMotionState & Robot::GetLastMotionState() { return installed_interface_->GetLastMotionState(); }
 
 Status Robot::SwitchControlMode(ControlMode control_mode)
