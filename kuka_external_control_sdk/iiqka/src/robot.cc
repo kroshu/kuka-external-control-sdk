@@ -360,7 +360,8 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
 
 BaseControlSignal & Robot::GetControlSignal() { return control_signal_; }
 
-Status Robot::ResetControlSignal() {
+Status Robot::ResetControlSignal()
+{
   return {ReturnCode::UNSUPPORTED, "Resetting the control signal is not supported"};
 }
 

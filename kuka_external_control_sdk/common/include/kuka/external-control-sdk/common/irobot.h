@@ -78,17 +78,16 @@ public:
   virtual Status StopMonitoring() = 0;
 
   virtual Status SendControlSignal() = 0;
-  virtual Status
-  ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
+  virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
 
-  virtual BaseControlSignal &GetControlSignal() = 0;
+  virtual BaseControlSignal & GetControlSignal() = 0;
   virtual Status ResetControlSignal() = 0;
-  virtual BaseMotionState &GetLastMotionState() = 0;
+  virtual BaseMotionState & GetLastMotionState() = 0;
 
   virtual Status SwitchControlMode(ControlMode control_mode) = 0;
-  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> &&event_handler) = 0;
+  virtual Status RegisterEventHandler(std::unique_ptr<EventHandler> && event_handler) = 0;
 };
 
-} // namespace kuka::external::control
+}  // namespace kuka::external::control
 
 #endif  // KUKA__EXTERNAL_CONTROL_SDK__COMMON__IROBOT_H_
