@@ -134,6 +134,16 @@ Status Robot::ReceiveMotionState(std::chrono::milliseconds receive_request_timeo
 
 BaseControlSignal & Robot::GetControlSignal() { return control_signal_; }
 
+Status Robot::ResetControlSignal()
+{
+  if (control_signal_.InitialPositionsSet())
+  {
+    control_signal_.Reset();
+  }
+
+  return {ReturnCode::OK, "Control signal has been reset"};
+}
+
 BaseMotionState & Robot::GetLastMotionState() { return last_motion_state_; }
 
 Status Robot::UpdateMotionState(std::string_view xml_str)

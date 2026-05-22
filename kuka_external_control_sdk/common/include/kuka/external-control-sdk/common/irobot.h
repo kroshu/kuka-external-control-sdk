@@ -81,6 +81,7 @@ public:
   virtual Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) = 0;
 
   virtual BaseControlSignal & GetControlSignal() = 0;
+  virtual Status ResetControlSignal() = 0;
   virtual BaseMotionState & GetLastMotionState() = 0;
 
   virtual Status SwitchControlMode(ControlMode control_mode) = 0;

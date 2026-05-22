@@ -54,6 +54,7 @@ public:
   Status ReceiveMotionState(std::chrono::milliseconds receive_request_timeout) override;
 
   BaseControlSignal & GetControlSignal() override;
+  Status ResetControlSignal() override;
   BaseMotionState & GetLastMotionState() override;
 
   // TODO(Svastits) add to documentation that other commands could come in between the Stop and
