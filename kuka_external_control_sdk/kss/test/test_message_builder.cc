@@ -202,15 +202,55 @@ TEST_F(KSSMotionState, TestFillEverything)
   EXPECT_EQ(initial_motion_state.GetIpoc(), 357);
 }
 
-TEST_F(KSSMotionState, TestInvalidJointConfigOrder)
+TEST_F(KSSMotionState, TestMotionStateAcceptsMixedJointOrder)
 {
   auto joint_config = GetJointConfig(0, kFixSixAxes);
   auto ext_config = GetJointConfig(kFixSixAxes, 0);
   joint_config.insert(joint_config.end(), ext_config.begin(), ext_config.end());
 
-  EXPECT_THROW(
-    kuka::external::control::kss::MotionState(kFixSixAxes * 2, {}, joint_config),
-    std::invalid_argument);
+  EXPECT_NO_THROW(kuka::external::control::kss::MotionState(kFixSixAxes * 2, {}, joint_config));
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfiguration)
+{
+  using namespace kuka::external::control::kss;
+
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+    {"joint_2", JointConfiguration::Type::PRISMATIC, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_1", MotionStateSignalType::VELOCITY, "Axes", "j1_vel"},
+    {"joint_2", MotionStateSignalType::TORQUE, "Forces", "j2_trq"},
+  };
+  xml_cfg.delay_xml_element = "Meta";
+  xml_cfg.delay_xml_attribute = "delay";
+  xml_cfg.ipoc_xml_element = "Cycle";
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2},
+    {MotionStateXmlFieldType::DELAY, 0},
+    {MotionStateXmlFieldType::IPOC, 0},
+  };
+
+  MotionState motion_state(2, {}, joints, xml_cfg);
+  const char * xml =
+    "<Rob Type=\"KUKA\"><Axes j1_pos=\"90.0\" j1_vel=\"180.0\"/><Forces "
+    "j2_trq=\"12.5\"/><Meta delay=\"3\"/><Cycle>9</Cycle></Rob>";
+
+  motion_state.CreateFromXML(xml);
+
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[0], M_PI / 2.0, 0.0001);
+  EXPECT_NEAR(motion_state.GetMeasuredVelocities()[0], M_PI, 0.0001);
+  EXPECT_TRUE(std::isnan(motion_state.GetMeasuredPositions()[1]));
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredTorques()[1], 12.5);
+  EXPECT_EQ(motion_state.GetDelay(), 3);
+  EXPECT_EQ(motion_state.GetIpoc(), 9);
 }
 
 TEST_F(KSSControlSignal, TestZeroInit6Dof)

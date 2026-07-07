@@ -15,7 +15,9 @@
 #ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
 #define KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
 
+#include <array>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -107,6 +109,70 @@ struct JointConfiguration
   }
 };
 
+enum class MotionStateSignalType : uint8_t
+{
+  POSITION = 0,
+  VELOCITY = 1,
+  TORQUE = 2
+};
+
+inline constexpr const char * MotionStateSignalTypeToString(MotionStateSignalType signal_type)
+{
+  switch (signal_type)
+  {
+    case MotionStateSignalType::POSITION:
+      return "position";
+    case MotionStateSignalType::VELOCITY:
+      return "velocity";
+    case MotionStateSignalType::TORQUE:
+      return "torque";
+    default:
+      return "unknown";
+  }
+}
+
+struct MotionStateJointFieldConfiguration
+{
+  std::string joint_identifier;
+  MotionStateSignalType signal_type = MotionStateSignalType::POSITION;
+  std::string xml_element;
+  std::string xml_attribute;
+};
+
+struct MotionStateCartesianFieldConfiguration
+{
+  bool enabled = true;
+  std::string xml_element = "RIst";
+  std::array<std::string, 6> xml_attributes = {"X", "Y", "Z", "A", "B", "C"};
+};
+
+enum class MotionStateXmlFieldType : uint8_t
+{
+  CARTESIAN = 0,
+  JOINT = 1,
+  DELAY = 2,
+  GPIO = 3,
+  IPOC = 4
+};
+
+struct MotionStateXmlOrderEntry
+{
+  MotionStateXmlFieldType field_type = MotionStateXmlFieldType::JOINT;
+  std::size_t index = 0;
+};
+
+struct MotionStateXmlConfiguration
+{
+  std::vector<MotionStateJointFieldConfiguration> joint_fields;
+  MotionStateCartesianFieldConfiguration cartesian;
+  std::string delay_xml_element = "Delay";
+  std::string delay_xml_attribute = "D";
+  std::string gpio_xml_element = "GPIO";
+  std::vector<std::string> gpio_xml_attributes;
+  std::string ipoc_xml_element = "IPOC";
+  std::vector<MotionStateXmlOrderEntry> field_order;
+};
+
 struct Configuration
 {
   // IP address of the KONI interface on the KRC-5.
@@ -135,6 +201,10 @@ struct Configuration
 
   // GPIO commands
   std::vector<GPIOConfiguration> gpio_command_configs;
+
+  // Optional XML layout used for parsing RSI state messages. If not set, the legacy
+  // RSI layout (<RIst><AIPos><EIPos><Delay><GPIO><IPOC>) is used.
+  std::optional<MotionStateXmlConfiguration> motion_state_xml_config;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:

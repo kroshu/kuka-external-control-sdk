@@ -22,6 +22,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -56,7 +57,8 @@ class MotionState : public BaseMotionState
 public:
   MotionState(
     std::size_t dof, std::vector<GPIOConfiguration> gpio_configs,
-    std::vector<JointConfiguration> joint_configs)
+    std::vector<JointConfiguration> joint_configs,
+    std::optional<MotionStateXmlConfiguration> xml_config = std::nullopt)
   : BaseMotionState(dof), joint_configs_(std::move(joint_configs))
   {
     if (joint_configs_.size() != dof_)
@@ -64,31 +66,19 @@ public:
       throw std::invalid_argument(
         "Number of joint configurations does not match degrees of freedom");
     }
-
-    if (!ExternalsPrecedeInternals(joint_configs_))
-    {
-      throw std::invalid_argument("External axes must precede internal axes");
-    }
-
-    num_internal_axes_ = std::count_if(
-      joint_configs_.cbegin(), joint_configs_.cend(),
-      [](const auto & config) { return !config.is_external; });
-    num_external_axes_ = dof_ - num_internal_axes_;
     measured_positions_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_torques_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_velocities_.resize(dof, std::numeric_limits<double>::quiet_NaN());
     measured_cartesian_positions_.resize(6, std::numeric_limits<double>::quiet_NaN());
-
-    first_cartesian_position_index_ += kMessagePrefix.length();
-    first_cartesian_position_index_ += kCartesianPositionsPrefix.length() - 1;
-
+    gpio_attribute_names_.reserve(gpio_configs.size());
     for (const auto & config : gpio_configs)
     {
       measured_gpio_values_.push_back(
         std::move(std::make_unique<kuka::external::control::kss::GPIOValue>(
           std::move(std::make_unique<GPIOConfig>(config)))));
-      gpioAttributePrefix.push_back(" " + config.name + "=\"");
+      gpio_attribute_names_.push_back(config.name);
     }
+    InitializeParsePlan(std::move(xml_config), std::move(gpio_configs));
   }
   MotionState(const MotionState & other) = default;
   MotionState & operator=(const MotionState & other) = delete;
@@ -99,40 +89,75 @@ public:
 
 private:
   static std::size_t ParseDouble(const char * start, const char * end, double & out);
+  enum class ParsedQuantity : uint8_t
+  {
+    POSITION = 0,
+    VELOCITY = 1,
+    TORQUE = 2
+  };
 
-  [[nodiscard]] bool ParseMeasuredPositions(
-    const char * str, const std::size_t len, const std::size_t num_values,
-    std::size_t & next_value_idx, const std::size_t offset = 0);
+  struct JointParseEntry
+  {
+    ParsedQuantity quantity = ParsedQuantity::POSITION;
+    std::size_t joint_index = 0;
+    std::size_t element_index = 0;
+    std::string attribute_name;
+  };
 
-  const std::string kMessagePrefix = "<Rob Type=\"KUKA\">";
+  struct CartesianParseEntry
+  {
+    std::size_t element_index = 0;
+    std::array<std::string, 6> attribute_names;
+  };
 
-  const std::string kCartesianPositionsPrefix = "<RIst";
-  const std::vector<std::string> kCartesianPositionAttributePrefixes = {" X=\"", " Y=\"", " Z=\"",
-                                                                        " A=\"", " B=\"", " C=\""};
-  const std::string kAttributeSuffix = "\"/>";
+  struct ParseOrderEntry
+  {
+    MotionStateXmlFieldType field_type = MotionStateXmlFieldType::JOINT;
+    std::size_t index = 0;
+  };
 
-  const std::string kJointPositionsPrefix = "<AIPos";
-  const std::string kExtJointPositionsPrefix = "<EIPos";
+  struct ParsePlan
+  {
+    std::vector<std::string> element_names;
+    std::vector<JointParseEntry> joint_entries;
+    std::optional<CartesianParseEntry> cartesian_entry;
+    std::string delay_element_name = "Delay";
+    std::string delay_attribute_name = "D";
+    std::string ipoc_element_name = "IPOC";
+    std::string ipoc_opening_tag = "<IPOC>";
+    std::string ipoc_closing_tag = "</IPOC>";
+    std::optional<std::size_t> gpio_element_index;
+    std::vector<std::string> gpio_attribute_names;
+    std::vector<ParseOrderEntry> parse_order;
+  };
 
-  const std::string kDelayNodePrefix = "<Delay D=\"";
-  const std::string kGpioPrefix = "<GPIO";
-  const std::string kIpocNodePrefix = "<IPOC>";
-  const std::string kIpocNodeSuffix = "</IPOC>";
-  const std::string kMessageSuffix = "</Rob>";
-
-  std::vector<std::string> gpioAttributePrefix;
-
-  int first_cartesian_position_index_ = 0;
+  static MotionStateXmlConfiguration CreateDefaultXmlConfiguration(
+    const std::vector<JointConfiguration> & joint_configs,
+    const std::vector<GPIOConfiguration> & gpio_configs);
+  void InitializeParsePlan(
+    std::optional<MotionStateXmlConfiguration> xml_config,
+    const std::vector<GPIOConfiguration> & gpio_configs);
+  void ValidateAndFinalizeParsePlan();
+  static std::size_t FindElementStart(
+    std::string_view xml, std::string_view element_name, std::size_t start_pos);
+  static std::size_t FindElementEnd(std::string_view xml, std::size_t element_start);
+  static std::size_t FindAttributeValueStart(
+    std::string_view xml, std::size_t element_start, std::size_t element_end,
+    std::string_view attribute_name);
+  void ParseJointField(std::string_view xml, std::size_t joint_entry_index);
+  void ParseCartesianField(std::string_view xml, const CartesianParseEntry & entry);
+  void ParseDelayField(std::string_view xml);
+  void ParseGpioField(std::string_view xml, std::size_t gpio_index);
+  void ParseIpocField(std::string_view xml);
 
   uint64_t ipoc_ = 0;
   uint64_t delay_ = 0;
 
   std::vector<JointConfiguration> joint_configs_;
-  std::size_t num_internal_axes_ = -1;
-  std::size_t num_external_axes_ = -1;
+  ParsePlan parse_plan_;
+  std::vector<std::string> gpio_attribute_names_;
 
-  static constexpr uint8_t kFixSixAxes = 6;
-  static constexpr int kPrecision = 6;
+  static constexpr std::size_t kCartesianDimensions = 6;
 };
 
 class ControlSignal : public BaseControlSignal
