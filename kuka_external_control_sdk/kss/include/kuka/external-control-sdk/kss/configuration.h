@@ -173,6 +173,49 @@ struct MotionStateXmlConfiguration
   std::vector<MotionStateXmlOrderEntry> field_order;
 };
 
+// Field types for outgoing RSI control signal messages
+enum class ControlSignalXmlFieldType : uint8_t
+{
+  JOINT = 0,      // internal joint positions element
+  EXT_JOINT = 1,  // external joint positions element
+  GPIO = 2,       // GPIO command element
+  IPOC = 3        // IPOC element
+};
+
+struct ControlSignalXmlOrderEntry
+{
+  ControlSignalXmlFieldType field_type = ControlSignalXmlFieldType::JOINT;
+  std::size_t index = 0;
+};
+
+struct ControlSignalXmlConfiguration
+{
+  // XML element name for internal joint positions (legacy default: "AK")
+  std::string joint_xml_element = "AK";
+
+  // Attribute names for internal joint positions.
+  // If empty, auto-generated as "A1", "A2", ... up to the number of internal axes.
+  std::vector<std::string> joint_xml_attributes;
+
+  // XML element name for external joint positions (legacy default: "EK")
+  std::string ext_joint_xml_element = "EK";
+
+  // Attribute names for external joint positions.
+  // If empty, auto-generated as "E1", "E2", ... up to the number of external axes.
+  std::vector<std::string> ext_joint_xml_attributes;
+
+  // XML element name for GPIO command values (legacy default: "GPIO")
+  std::string gpio_xml_element = "GPIO";
+
+  // XML element name for the IPOC counter (legacy default: "IPOC")
+  std::string ipoc_xml_element = "IPOC";
+
+  // Explicit field ordering for the transmitted message.
+  // If empty, the default legacy order is used:
+  //   JOINT, EXT_JOINT (if external axes exist), GPIO (if GPIO commands exist), IPOC
+  std::vector<ControlSignalXmlOrderEntry> field_order;
+};
+
 struct Configuration
 {
   // IP address of the KONI interface on the KRC-5.
@@ -205,6 +248,10 @@ struct Configuration
   // Optional XML layout used for parsing RSI state messages. If not set, the legacy
   // RSI layout (<RIst><AIPos><EIPos><Delay><GPIO><IPOC>) is used.
   std::optional<MotionStateXmlConfiguration> motion_state_xml_config;
+
+  // Optional XML layout for transmitted RSI control signal messages. If not set, the legacy
+  // RSI layout (<Stop><AK ...><EK ...><GPIO ...><IPOC>) is used.
+  std::optional<ControlSignalXmlConfiguration> control_signal_xml_config;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:

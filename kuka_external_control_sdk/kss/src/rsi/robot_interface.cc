@@ -24,7 +24,8 @@ Robot::Robot(Configuration config)
     config.dof, config.gpio_state_configs, config.joint_configs, config.motion_state_xml_config),
   initial_motion_state_(
     config.dof, config.gpio_state_configs, config.joint_configs, config.motion_state_xml_config),
-  control_signal_(config.dof, config.gpio_command_configs, config.joint_configs)
+  control_signal_(
+    config.dof, config.gpio_command_configs, config.joint_configs, config.control_signal_xml_config)
 {
 }
 

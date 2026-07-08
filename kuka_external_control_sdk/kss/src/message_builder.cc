@@ -167,9 +167,9 @@ void MotionState::InitializeParsePlan(
   std::optional<MotionStateXmlConfiguration> xml_config,
   const std::vector<GPIOConfiguration> & gpio_configs)
 {
-  MotionStateXmlConfiguration runtime_config = xml_config.has_value() ?
-    std::move(xml_config.value()) :
-    CreateDefaultXmlConfiguration(joint_configs_, gpio_configs);
+  MotionStateXmlConfiguration runtime_config =
+    xml_config.has_value() ? std::move(xml_config.value())
+                           : CreateDefaultXmlConfiguration(joint_configs_, gpio_configs);
 
   if (runtime_config.delay_xml_element.empty() || runtime_config.delay_xml_attribute.empty())
   {
@@ -184,8 +184,10 @@ void MotionState::InitializeParsePlan(
     throw std::invalid_argument("Cartesian XML element must not be empty when enabled");
   }
 
-  auto get_or_add_element_index = [this](const std::string & element_name) -> std::size_t {
-    const auto it = std::find(parse_plan_.element_names.begin(), parse_plan_.element_names.end(), element_name);
+  auto get_or_add_element_index = [this](const std::string & element_name) -> std::size_t
+  {
+    const auto it =
+      std::find(parse_plan_.element_names.begin(), parse_plan_.element_names.end(), element_name);
     if (it != parse_plan_.element_names.end())
     {
       return static_cast<std::size_t>(std::distance(parse_plan_.element_names.begin(), it));
@@ -223,7 +225,8 @@ void MotionState::InitializeParsePlan(
     {
       throw std::invalid_argument("Joint field refers to unknown joint identifier");
     }
-    const std::size_t joint_index = static_cast<std::size_t>(std::distance(joint_configs_.cbegin(), joint_it));
+    const std::size_t joint_index =
+      static_cast<std::size_t>(std::distance(joint_configs_.cbegin(), joint_it));
 
     JointParseEntry entry;
     switch (field.signal_type)
@@ -365,11 +368,14 @@ void MotionState::ValidateAndFinalizeParsePlan()
   {
     throw std::invalid_argument("Cartesian parsing is enabled but not present in parse order");
   }
-  if (!std::all_of(parsed_joint_entries.cbegin(), parsed_joint_entries.cend(), [](uint8_t v) { return v != 0; }))
+  if (!std::all_of(
+        parsed_joint_entries.cbegin(), parsed_joint_entries.cend(),
+        [](uint8_t v) { return v != 0; }))
   {
     throw std::invalid_argument("Parse order must include all configured joint field entries");
   }
-  if (!std::all_of(parsed_gpio_entries.cbegin(), parsed_gpio_entries.cend(), [](uint8_t v) { return v != 0; }))
+  if (!std::all_of(
+        parsed_gpio_entries.cbegin(), parsed_gpio_entries.cend(), [](uint8_t v) { return v != 0; }))
   {
     throw std::invalid_argument("Parse order must include all configured GPIO entries");
   }
@@ -401,9 +407,8 @@ std::size_t MotionState::FindElementStart(
     {
       const std::size_t next = name_start + element_name.size();
       if (
-        next < xml.size() &&
-        (xml[next] == ' ' || xml[next] == '\t' || xml[next] == '\r' || xml[next] == '\n' ||
-         xml[next] == '>'))
+        next < xml.size() && (xml[next] == ' ' || xml[next] == '\t' || xml[next] == '\r' ||
+                              xml[next] == '\n' || xml[next] == '>'))
       {
         return tag_start;
       }
@@ -502,7 +507,9 @@ void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_
       has_velocities_ = true;
       break;
     case ParsedQuantity::TORQUE:
-      measured_torques_[entry.joint_index] = parsed; // TODO: The unit of torque is not specified in the XML, so we assume it is in Nm. If the unit is different, conversion may be needed here.
+      measured_torques_[entry.joint_index] =
+        parsed;  // TODO: The unit of torque is not specified in the XML, so we assume it is in Nm.
+                 // If the unit is different, conversion may be needed here.
       has_torques_ = true;
       break;
     default:
@@ -601,7 +608,9 @@ void MotionState::ParseIpocField(std::string_view xml)
   errno = 0;
   char * endptr = nullptr;
   ipoc_ = std::strtoull(xml.data() + numeric_start, &endptr, 0);
-  if (errno != 0 || endptr == xml.data() + numeric_start || static_cast<std::size_t>(endptr - xml.data()) > value_end)
+  if (
+    errno != 0 || endptr == xml.data() + numeric_start ||
+    static_cast<std::size_t>(endptr - xml.data()) > value_end)
   {
     throw std::invalid_argument("Received XML IPOC value is not a valid integer");
   }
@@ -612,6 +621,190 @@ void ControlSignal::AppendToXMLString(std::string_view str)
   strncat(xml_string_, str.data(), kBufferSize - strnlen(xml_string_, kBufferSize) - 1);
 }
 
+void ControlSignal::InitializeWritePlan(
+  std::optional<ControlSignalXmlConfiguration> xml_config,
+  const std::vector<GPIOConfiguration> & gpio_configs)
+{
+  ControlSignalXmlConfiguration cfg =
+    xml_config.has_value() ? std::move(xml_config.value()) : ControlSignalXmlConfiguration{};
+
+  if (cfg.joint_xml_element.empty())
+  {
+    throw std::invalid_argument("Joint XML element name must not be empty");
+  }
+  if (num_external_axes_ > 0 && cfg.ext_joint_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "External joint XML element name must not be empty when external axes are configured");
+  }
+  if (!gpio_configs.empty() && cfg.gpio_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "GPIO XML element name must not be empty when GPIO commands are configured");
+  }
+  if (cfg.ipoc_xml_element.empty())
+  {
+    throw std::invalid_argument("IPOC XML element name must not be empty");
+  }
+
+  write_plan_.joint_element_prefix = "<" + cfg.joint_xml_element;
+
+  if (cfg.joint_xml_attributes.empty())
+  {
+    for (std::size_t i = 1; i <= num_internal_axes_; ++i)
+    {
+      write_plan_.joint_attrib_prefixes.push_back(" A" + std::to_string(i) + "=\"");
+    }
+  }
+  else
+  {
+    if (cfg.joint_xml_attributes.size() != num_internal_axes_)
+    {
+      throw std::invalid_argument(
+        "Joint XML attribute count must match the number of internal axes");
+    }
+    for (const auto & attr : cfg.joint_xml_attributes)
+    {
+      if (attr.empty())
+      {
+        throw std::invalid_argument("Joint XML attribute names must not be empty");
+      }
+      write_plan_.joint_attrib_prefixes.push_back(" " + attr + "=\"");
+    }
+  }
+
+  write_plan_.ext_joint_element_prefix = "<" + cfg.ext_joint_xml_element;
+
+  if (cfg.ext_joint_xml_attributes.empty())
+  {
+    for (std::size_t i = 1; i <= num_external_axes_; ++i)
+    {
+      write_plan_.ext_joint_attrib_prefixes.push_back(" E" + std::to_string(i) + "=\"");
+    }
+  }
+  else
+  {
+    if (cfg.ext_joint_xml_attributes.size() != num_external_axes_)
+    {
+      throw std::invalid_argument(
+        "External joint XML attribute count must match the number of external axes");
+    }
+    for (const auto & attr : cfg.ext_joint_xml_attributes)
+    {
+      if (attr.empty())
+      {
+        throw std::invalid_argument("External joint XML attribute names must not be empty");
+      }
+      write_plan_.ext_joint_attrib_prefixes.push_back(" " + attr + "=\"");
+    }
+  }
+
+  write_plan_.gpio_element_prefix = "<" + cfg.gpio_xml_element;
+  for (const auto & gpio_cfg : gpio_configs)
+  {
+    write_plan_.gpio_attrib_prefixes.push_back(" " + gpio_cfg.name + "=\"");
+  }
+
+  write_plan_.ipoc_opening_tag = "<" + cfg.ipoc_xml_element + ">";
+  write_plan_.ipoc_closing_tag = "</" + cfg.ipoc_xml_element + ">";
+
+  if (cfg.field_order.empty())
+  {
+    write_plan_.write_order.push_back(ControlSignalXmlFieldType::JOINT);
+    if (num_external_axes_ > 0)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_JOINT);
+    }
+    if (!gpio_configs.empty())
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::GPIO);
+    }
+    write_plan_.write_order.push_back(ControlSignalXmlFieldType::IPOC);
+  }
+  else
+  {
+    write_plan_.write_order.reserve(cfg.field_order.size());
+    for (const auto & entry : cfg.field_order)
+    {
+      write_plan_.write_order.push_back(entry.field_type);
+    }
+  }
+
+  ValidateAndFinalizeWritePlan();
+}
+
+void ControlSignal::ValidateAndFinalizeWritePlan()
+{
+  bool has_joint = false;
+  bool has_ext_joint = false;
+  bool has_gpio = false;
+  bool has_ipoc = false;
+
+  for (const auto & field_type : write_plan_.write_order)
+  {
+    switch (field_type)
+    {
+      case ControlSignalXmlFieldType::JOINT:
+        if (has_joint)
+        {
+          throw std::invalid_argument("Write order must contain JOINT field at most once");
+        }
+        has_joint = true;
+        break;
+      case ControlSignalXmlFieldType::EXT_JOINT:
+        if (has_ext_joint)
+        {
+          throw std::invalid_argument("Write order must contain EXT_JOINT field at most once");
+        }
+        has_ext_joint = true;
+        break;
+      case ControlSignalXmlFieldType::GPIO:
+        if (has_gpio)
+        {
+          throw std::invalid_argument("Write order must contain GPIO field at most once");
+        }
+        has_gpio = true;
+        break;
+      case ControlSignalXmlFieldType::IPOC:
+        if (has_ipoc)
+        {
+          throw std::invalid_argument("Write order must contain IPOC field at most once");
+        }
+        has_ipoc = true;
+        break;
+      default:
+        throw std::invalid_argument("Unsupported field type in write order");
+    }
+  }
+
+  if (!has_ipoc)
+  {
+    throw std::invalid_argument("Write order must contain the IPOC field");
+  }
+  if (!has_joint)
+  {
+    throw std::invalid_argument("Write order must contain the JOINT field");
+  }
+  if (num_external_axes_ > 0 && !has_ext_joint)
+  {
+    throw std::invalid_argument(
+      "Write order must contain EXT_JOINT when external axes are configured");
+  }
+  if (num_external_axes_ == 0 && has_ext_joint)
+  {
+    throw std::invalid_argument(
+      "Write order contains EXT_JOINT but no external axes are configured");
+  }
+  if (!write_plan_.gpio_attrib_prefixes.empty() && !has_gpio)
+  {
+    throw std::invalid_argument("Write order must contain GPIO when GPIO commands are configured");
+  }
+  if (write_plan_.gpio_attrib_prefixes.empty() && has_gpio)
+  {
+    throw std::invalid_argument("Write order contains GPIO but no GPIO commands are configured");
+  }
+}
+
 std::optional<std::string_view> ControlSignal::CreateXMLString(
   uint64_t last_ipoc, bool stop_control)
 {
@@ -619,120 +812,117 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
 
   AppendToXMLString(kMessagePrefix);
 
-  // Stop
   AppendToXMLString(kStopNodePrefix);
   AppendToXMLString(stop_control ? "1" : "0");
   AppendToXMLString(kStopNodeSuffix);
 
-  // Internal axes
-  AppendToXMLString(kJointPositionsPrefix);
-  if (!WritePositions(joint_position_attribute_prefixes_, num_internal_axes_, num_external_axes_))
+  for (const auto & field_type : write_plan_.write_order)
   {
-    return std::nullopt;
-  }
-
-  // External axes
-  if (num_external_axes_ > 0)
-  {
-    AppendToXMLString(kExtJointPositionsPrefix);
-    if (!WritePositions(ext_joint_position_attribute_prefixes_, num_external_axes_))
+    switch (field_type)
     {
-      return std::nullopt;
-    }
-  }
-
-  // GPIO
-  if (!gpioAttributePrefix.empty())
-  {
-    AppendToXMLString(kGpioPrefix);
-  }
-  for (std::size_t i = 0; i < gpioAttributePrefix.size(); i++)
-  {
-    AppendToXMLString(gpioAttributePrefix[i]);
-    switch (gpio_values_[i]->GetGPIOConfig()->GetValueType())
-    {
-      case GPIOValueType::BOOL:
-      {
-        // Append bool value
-        auto value = gpio_values_[i]->GetBoolValue();
-        if (value.has_value())
-        {
-          AppendToXMLString(value.value() ? "1" : "0");
-        }
-        else
+      case ControlSignalXmlFieldType::JOINT:
+        AppendToXMLString(write_plan_.joint_element_prefix);
+        if (!WritePositions(
+              write_plan_.joint_attrib_prefixes, num_internal_axes_, num_external_axes_))
         {
           return std::nullopt;
         }
         break;
-      }
-      case GPIOValueType::DOUBLE:
-      {
-        // Append double value
-        char double_buffer[kPrecision + 19 + 1 + 1 + 1];  // Precision + Digits + Comma + Null +
-                                                          // Minus sign
-        auto value = gpio_values_[i]->GetDoubleValue();
-        if (value.has_value())
-        {
-          int ret = std::snprintf(
-            double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(), value.value());
-          if (ret <= 0)
-          {
-            return std::nullopt;
-          }
-          AppendToXMLString(double_buffer);
-        }
-        else
+      case ControlSignalXmlFieldType::EXT_JOINT:
+        AppendToXMLString(write_plan_.ext_joint_element_prefix);
+        if (!WritePositions(write_plan_.ext_joint_attrib_prefixes, num_external_axes_))
         {
           return std::nullopt;
         }
         break;
-      }
-      case GPIOValueType::LONG:
-      {
-        // Append double value
-        char long_buffer[19 + 1 + 1];  // Digits + Null + Minus sign
-        auto value = gpio_values_[i]->GetLongValue();
-        if (value.has_value())
-        {
-          int ret = std::snprintf(long_buffer, sizeof(long_buffer), "%ld", value.value());
-          if (ret <= 0)
-          {
-            return std::nullopt;
-          }
-          AppendToXMLString(long_buffer);
-        }
-        else
+      case ControlSignalXmlFieldType::GPIO:
+        AppendToXMLString(write_plan_.gpio_element_prefix);
+        if (!WriteGpioValues())
         {
           return std::nullopt;
         }
+        break;
+      case ControlSignalXmlFieldType::IPOC:
+      {
+        AppendToXMLString(write_plan_.ipoc_opening_tag);
+        char ipoc_buf[32];
+        if (
+          std::snprintf(
+            ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) < 0)
+        {
+          return std::nullopt;
+        }
+        AppendToXMLString(ipoc_buf);
+        AppendToXMLString(write_plan_.ipoc_closing_tag);
         break;
       }
       default:
         return std::nullopt;
-        break;
     }
-    AppendToXMLString("\"");
-  }
-  if (!gpioAttributePrefix.empty())
-  {
-    AppendToXMLString(kAttributeSuffix);
-  }
-  AppendToXMLString(kIpocNodePrefix);
-
-  char ipoc_buf[32];  // 64-bit unsigned integer always fits
-  if (
-    std::snprintf(ipoc_buf, sizeof(ipoc_buf), "%llu", static_cast<unsigned long long>(last_ipoc)) <
-    0)
-  {
-    return std::nullopt;
   }
 
-  AppendToXMLString(ipoc_buf);
-
-  AppendToXMLString(kIpocNodeSuffix);
   AppendToXMLString(kMessageSuffix);
 
   return xml_string_;
+}
+
+bool ControlSignal::WriteGpioValues()
+{
+  for (std::size_t i = 0; i < write_plan_.gpio_attrib_prefixes.size(); ++i)
+  {
+    AppendToXMLString(write_plan_.gpio_attrib_prefixes[i]);
+    switch (gpio_values_[i]->GetGPIOConfig()->GetValueType())
+    {
+      case GPIOValueType::BOOL:
+      {
+        auto value = gpio_values_[i]->GetBoolValue();
+        if (!value.has_value())
+        {
+          return false;
+        }
+        AppendToXMLString(value.value() ? "1" : "0");
+        break;
+      }
+      case GPIOValueType::DOUBLE:
+      {
+        char double_buffer[kPrecision + 19 + 1 + 1 + 1];
+        auto value = gpio_values_[i]->GetDoubleValue();
+        if (!value.has_value())
+        {
+          return false;
+        }
+        int ret = std::snprintf(
+          double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(), value.value());
+        if (ret <= 0)
+        {
+          return false;
+        }
+        AppendToXMLString(double_buffer);
+        break;
+      }
+      case GPIOValueType::LONG:
+      {
+        char long_buffer[19 + 1 + 1];
+        auto value = gpio_values_[i]->GetLongValue();
+        if (!value.has_value())
+        {
+          return false;
+        }
+        int ret = std::snprintf(long_buffer, sizeof(long_buffer), "%ld", value.value());
+        if (ret <= 0)
+        {
+          return false;
+        }
+        AppendToXMLString(long_buffer);
+        break;
+      }
+      default:
+        return false;
+    }
+    AppendToXMLString("\"");
+  }
+  AppendToXMLString(kAttributeSuffix);
+  return true;
 }
 
 bool ControlSignal::WritePositions(

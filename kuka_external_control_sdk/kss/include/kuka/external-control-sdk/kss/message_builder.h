@@ -165,7 +165,8 @@ class ControlSignal : public BaseControlSignal
 public:
   ControlSignal(
     std::size_t dof, std::vector<GPIOConfiguration> gpio_configs,
-    std::vector<JointConfiguration> joint_configs)
+    std::vector<JointConfiguration> joint_configs,
+    std::optional<ControlSignalXmlConfiguration> xml_config = std::nullopt)
   : BaseControlSignal(dof), joint_configs_(std::move(joint_configs))
   {
     if (joint_configs_.size() != dof_)
@@ -191,18 +192,9 @@ public:
     {
       gpio_values_.push_back(std::move(std::make_unique<kuka::external::control::kss::GPIOValue>(
         std::move(std::make_unique<GPIOConfig>(config)))));
-      gpioAttributePrefix.push_back(" " + config.name + "=\"");
     }
 
-    for (int i = 1; i <= num_internal_axes_; ++i)
-    {
-      joint_position_attribute_prefixes_.push_back(" A" + std::to_string(i) + "=\"");
-    }
-
-    for (int i = 1; i <= num_external_axes_; ++i)
-    {
-      ext_joint_position_attribute_prefixes_.push_back(" E" + std::to_string(i) + "=\"");
-    }
+    InitializeWritePlan(std::move(xml_config), gpio_configs);
   }
   ControlSignal(const ControlSignal & other) = default;
   ControlSignal & operator=(const ControlSignal & other) = delete;
@@ -221,22 +213,34 @@ private:
     const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
     const std::size_t offset = 0);
 
-  const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
+  [[nodiscard]] bool WriteGpioValues();
 
+  struct WritePlan
+  {
+    std::string joint_element_prefix;
+    std::vector<std::string> joint_attrib_prefixes;
+    std::string ext_joint_element_prefix;
+    std::vector<std::string> ext_joint_attrib_prefixes;
+    std::string gpio_element_prefix;
+    std::vector<std::string> gpio_attrib_prefixes;
+    std::string ipoc_opening_tag;
+    std::string ipoc_closing_tag;
+    std::vector<ControlSignalXmlFieldType> write_order;
+  };
+
+  void InitializeWritePlan(
+    std::optional<ControlSignalXmlConfiguration> xml_config,
+    const std::vector<GPIOConfiguration> & gpio_configs);
+  void ValidateAndFinalizeWritePlan();
+
+  const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
   const std::string kStopNodePrefix = "<Stop>";
   const std::string kStopNodeSuffix = "</Stop>";
-  const std::string kJointPositionsPrefix = "<AK";
-  std::vector<std::string> joint_position_attribute_prefixes_;
   const std::string kDoubleAttributeFormat = "%." + std::to_string(kPrecision) + "f";
   const std::string kAttributeSuffix = "/>";
-  const std::string kExtJointPositionsPrefix = "<EK";
-  std::vector<std::string> ext_joint_position_attribute_prefixes_;
-  const std::string kGpioPrefix = "<GPIO";
-  const std::string kIpocNodePrefix = "<IPOC>";
-  const std::string kIpocNodeSuffix = "</IPOC>";
   const std::string kMessageSuffix = "</Sen>";
 
-  std::vector<std::string> gpioAttributePrefix;
+  WritePlan write_plan_;
 
   bool has_initial_positions_ = false;
   std::vector<double> initial_positions_;
@@ -246,8 +250,8 @@ private:
   char xml_string_[kBufferSize];
 
   const std::vector<JointConfiguration> joint_configs_;
-  std::size_t num_internal_axes_ = -1;
-  std::size_t num_external_axes_ = -1;
+  std::size_t num_internal_axes_ = 0;
+  std::size_t num_external_axes_ = 0;
 };
 }  // namespace kuka::external::control::kss
 

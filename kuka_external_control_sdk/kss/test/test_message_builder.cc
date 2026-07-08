@@ -231,10 +231,8 @@ TEST_F(KSSMotionState, TestCustomXmlConfiguration)
   xml_cfg.delay_xml_attribute = "delay";
   xml_cfg.ipoc_xml_element = "Cycle";
   xml_cfg.field_order = {
-    {MotionStateXmlFieldType::JOINT, 0},
-    {MotionStateXmlFieldType::JOINT, 1},
-    {MotionStateXmlFieldType::JOINT, 2},
-    {MotionStateXmlFieldType::DELAY, 0},
+    {MotionStateXmlFieldType::JOINT, 0}, {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2}, {MotionStateXmlFieldType::DELAY, 0},
     {MotionStateXmlFieldType::IPOC, 0},
   };
 
@@ -321,4 +319,176 @@ TEST_F(KSSControlSignal, TestInvalidJointConfigOrder)
   EXPECT_THROW(
     kuka::external::control::kss::ControlSignal(kFixSixAxes * 2, {}, joint_config),
     std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestCustomElementNames)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.joint_xml_element = "JointCmd";
+  xml_cfg.ipoc_xml_element = "Cycle";
+
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
+
+  std::vector<double> values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  control_signal.AddJointPositionValues(values.begin(), values.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><JointCmd A1=\"0.000000\" A2=\"0.000000\" "
+    "A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><Cycle>7</Cycle></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(7).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestCustomAttributeNames)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.joint_xml_attributes = {"j1", "j2", "j3", "j4", "j5", "j6"};
+
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
+
+  std::vector<double> values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  control_signal.AddJointPositionValues(values.begin(), values.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK j1=\"0.000000\" j2=\"0.000000\" "
+    "j3=\"0.000000\" j4=\"0.000000\" j5=\"0.000000\" j6=\"0.000000\"/><IPOC>1</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(1).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestCustomFieldOrderIpocBeforeJoint)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::IPOC, 0},
+    {ControlSignalXmlFieldType::JOINT, 0},
+  };
+
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
+
+  std::vector<double> values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  control_signal.AddJointPositionValues(values.begin(), values.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><IPOC>42</IPOC><AK A1=\"0.000000\" A2=\"0.000000\" "
+    "A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(42).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.joint_xml_element = "IntAxes";
+  xml_cfg.joint_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
+  xml_cfg.ext_joint_xml_element = "ExtAxes";
+  xml_cfg.ext_joint_xml_attributes = {"e1", "e2"};
+  xml_cfg.ipoc_xml_element = "Time";
+
+  ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
+
+  std::vector<double> values(8, 0.0);
+  control_signal.AddJointPositionValues(values.begin(), values.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<IntAxes q1=\"0.000000\" q2=\"0.000000\" q3=\"0.000000\" q4=\"0.000000\" "
+    "q5=\"0.000000\" q6=\"0.000000\"/>"
+    "<ExtAxes e1=\"0.000000\" e2=\"0.000000\"/>"
+    "<Time>0</Time></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(0).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigMissingIpoc)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::JOINT, 0},
+  };
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::IPOC, 0},
+  };
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigExtJointWithoutExternalAxes)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::JOINT, 0},
+    {ControlSignalXmlFieldType::EXT_JOINT, 0},
+    {ControlSignalXmlFieldType::IPOC, 0},
+  };
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigDuplicateField)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::JOINT, 0},
+    {ControlSignalXmlFieldType::JOINT, 0},
+    {ControlSignalXmlFieldType::IPOC, 0},
+  };
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigWrongAttributeCount)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.joint_xml_attributes = {"a1", "a2"};  // only 2 but 6 internal axes
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigEmptyElementName)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.joint_xml_element = "";
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigEmptyIpocElementName)
+{
+  using namespace kuka::external::control::kss;
+
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.ipoc_xml_element = "";
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
 }
