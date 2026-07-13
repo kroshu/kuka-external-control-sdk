@@ -508,8 +508,8 @@ void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_
       break;
     case ParsedQuantity::TORQUE:
       measured_torques_[entry.joint_index] =
-        parsed;  // TODO: The unit of torque is not specified in the XML, so we assume it is in Nm.
-                 // If the unit is different, conversion may be needed here.
+        parsed;  // TODO(pasztork): The unit of torque is not specified in the XML, so we assume it
+                 // is in Nm. If the unit is different, conversion may be needed here.
       has_torques_ = true;
       break;
     default:
