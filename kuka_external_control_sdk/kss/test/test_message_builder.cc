@@ -18,6 +18,14 @@
 
 #include "kuka/external-control-sdk/kss/message_builder.h"
 
+using kuka::external::control::kss::ControlSignal;
+using kuka::external::control::kss::ControlSignalXmlConfiguration;
+using kuka::external::control::kss::ControlSignalXmlFieldType;
+using kuka::external::control::kss::JointConfiguration;
+using kuka::external::control::kss::MotionState;
+using kuka::external::control::kss::MotionStateSignalType;
+using kuka::external::control::kss::MotionStateXmlConfiguration;
+using kuka::external::control::kss::MotionStateXmlFieldType;
 using ::testing::Test;
 
 static constexpr std::size_t kFixSixAxes = 6;
@@ -213,8 +221,6 @@ TEST_F(KSSMotionState, TestMotionStateAcceptsMixedJointOrder)
 
 TEST_F(KSSMotionState, TestCustomXmlConfiguration)
 {
-  using namespace kuka::external::control::kss;
-
   std::vector<JointConfiguration> joints = {
     {"joint_1", JointConfiguration::Type::REVOLUTE, false},
     {"joint_2", JointConfiguration::Type::PRISMATIC, false},
@@ -323,8 +329,6 @@ TEST_F(KSSControlSignal, TestInvalidJointConfigOrder)
 
 TEST_F(KSSControlSignal, TestCustomElementNames)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_element = "JointCmd";
   xml_cfg.ipoc_xml_element = "Cycle";
@@ -342,8 +346,6 @@ TEST_F(KSSControlSignal, TestCustomElementNames)
 
 TEST_F(KSSControlSignal, TestCustomAttributeNames)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_attributes = {"j1", "j2", "j3", "j4", "j5", "j6"};
 
@@ -360,8 +362,6 @@ TEST_F(KSSControlSignal, TestCustomAttributeNames)
 
 TEST_F(KSSControlSignal, TestCustomFieldOrderIpocBeforeJoint)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
     {ControlSignalXmlFieldType::IPOC, 0},
@@ -381,8 +381,6 @@ TEST_F(KSSControlSignal, TestCustomFieldOrderIpocBeforeJoint)
 
 TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_element = "IntAxes";
   xml_cfg.joint_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
@@ -406,8 +404,6 @@ TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
 
 TEST_F(KSSControlSignal, TestInvalidConfigMissingIpoc)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
     {ControlSignalXmlFieldType::JOINT, 0},
@@ -419,8 +415,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigMissingIpoc)
 
 TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
     {ControlSignalXmlFieldType::IPOC, 0},
@@ -432,8 +426,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)
 
 TEST_F(KSSControlSignal, TestInvalidConfigExtJointWithoutExternalAxes)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
     {ControlSignalXmlFieldType::JOINT, 0},
@@ -447,8 +439,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigExtJointWithoutExternalAxes)
 
 TEST_F(KSSControlSignal, TestInvalidConfigDuplicateField)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
     {ControlSignalXmlFieldType::JOINT, 0},
@@ -462,8 +452,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigDuplicateField)
 
 TEST_F(KSSControlSignal, TestInvalidConfigWrongAttributeCount)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_attributes = {"a1", "a2"};  // only 2 but 6 internal axes
 
@@ -473,8 +461,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigWrongAttributeCount)
 
 TEST_F(KSSControlSignal, TestInvalidConfigEmptyElementName)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_element = "";
 
@@ -484,8 +470,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigEmptyElementName)
 
 TEST_F(KSSControlSignal, TestInvalidConfigEmptyIpocElementName)
 {
-  using namespace kuka::external::control::kss;
-
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.ipoc_xml_element = "";
 
