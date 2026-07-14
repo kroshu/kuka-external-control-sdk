@@ -58,7 +58,7 @@ public:
   MotionState(
     std::size_t dof, std::vector<GPIOConfiguration> gpio_configs,
     std::vector<JointConfiguration> joint_configs,
-    std::optional<MotionStateXmlConfiguration> xml_config = std::nullopt)
+    const std::optional<MotionStateXmlConfiguration> & xml_config = std::nullopt)
   : BaseMotionState(dof), joint_configs_(std::move(joint_configs))
   {
     if (joint_configs_.size() != dof_)
@@ -174,7 +174,7 @@ public:
   ControlSignal(
     std::size_t dof, std::vector<GPIOConfiguration> gpio_configs,
     std::vector<JointConfiguration> joint_configs,
-    std::optional<ControlSignalXmlConfiguration> xml_config = std::nullopt)
+    const std::optional<ControlSignalXmlConfiguration> & xml_config = std::nullopt)
   : BaseControlSignal(dof), joint_configs_(std::move(joint_configs))
   {
     if (joint_configs_.size() != dof_)
