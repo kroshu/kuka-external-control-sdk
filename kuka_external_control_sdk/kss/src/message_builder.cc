@@ -531,9 +531,8 @@ std::size_t MotionState::FindAttributeValueStart(
     throw std::invalid_argument("Configured XML attribute name must not be empty");
   }
 
-  const auto is_xml_whitespace = [](char ch) {
-    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
-  };
+  const auto is_xml_whitespace = [](char ch)
+  { return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'; };
 
   std::size_t search_pos = element_start;
   while (search_pos < element_end)

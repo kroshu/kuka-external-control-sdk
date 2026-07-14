@@ -272,8 +272,7 @@ TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsAttributePrefixMatch)
   };
 
   MotionState motion_state(1, {}, joints, xml_cfg);
-  const char * xml =
-    "<Rob Type=\"KUKA\"><Axes AAA=\"90.0\"/><Delay D=\"0\"/><IPOC>1</IPOC></Rob>";
+  const char * xml = "<Rob Type=\"KUKA\"><Axes AAA=\"90.0\"/><Delay D=\"0\"/><IPOC>1</IPOC></Rob>";
 
   EXPECT_THROW(motion_state.CreateFromXML(xml), std::invalid_argument);
 }
