@@ -136,8 +136,8 @@ private:
     const std::vector<GPIOConfiguration> & gpio_configs);
   void InitializeParsePlan(
     std::optional<MotionStateXmlConfiguration> xml_config,
-    const std::vector<GPIOConfiguration> & gpio_configs);
-  void ValidateAndFinalizeParsePlan();
+    std::vector<GPIOConfiguration> && gpio_configs);
+  void ValidateAndFinalizeParsePlan() const;
   static std::size_t FindElementStart(
     std::string_view xml, std::string_view element_name, std::size_t start_pos);
   static std::size_t FindElementEnd(std::string_view xml, std::size_t element_start);
@@ -194,7 +194,7 @@ public:
         std::move(std::make_unique<GPIOConfig>(config)))));
     }
 
-    InitializeWritePlan(std::move(xml_config), gpio_configs);
+    InitializeWritePlan(std::move(xml_config), std::move(gpio_configs));
   }
   ControlSignal(const ControlSignal & other) = default;
   ControlSignal & operator=(const ControlSignal & other) = delete;
@@ -230,8 +230,8 @@ private:
 
   void InitializeWritePlan(
     std::optional<ControlSignalXmlConfiguration> xml_config,
-    const std::vector<GPIOConfiguration> & gpio_configs);
-  void ValidateAndFinalizeWritePlan();
+    std::vector<GPIOConfiguration> && gpio_configs);
+  void ValidateAndFinalizeWritePlan() const;
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
   const std::string kStopNodePrefix = "<Stop>";

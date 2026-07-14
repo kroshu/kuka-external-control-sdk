@@ -116,7 +116,7 @@ enum class MotionStateSignalType : uint8_t
   TORQUE = 2
 };
 
-inline constexpr const char * MotionStateSignalTypeToString(MotionStateSignalType signal_type)
+constexpr const char * MotionStateSignalTypeToString(MotionStateSignalType signal_type)
 {
   switch (signal_type)
   {
