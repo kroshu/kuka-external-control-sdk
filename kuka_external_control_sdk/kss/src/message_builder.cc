@@ -526,6 +526,15 @@ std::size_t MotionState::FindAttributeValueStart(
   std::string_view xml, std::size_t element_start, std::size_t element_end,
   std::string_view attribute_name)
 {
+  if (attribute_name.empty())
+  {
+    throw std::invalid_argument("Configured XML attribute name must not be empty");
+  }
+
+  const auto is_xml_whitespace = [](char ch) {
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+  };
+
   std::size_t search_pos = element_start;
   while (search_pos < element_end)
   {
@@ -535,8 +544,12 @@ std::size_t MotionState::FindAttributeValueStart(
       break;
     }
 
-    if (const std::size_t value_quote = name_pos + attribute_name.size();
-        value_quote + 1 < element_end && xml[value_quote] == '=' && xml[value_quote + 1] == '"')
+    const std::size_t value_quote = name_pos + attribute_name.size();
+    const bool has_valid_left_boundary =
+      (name_pos > element_start) && is_xml_whitespace(xml[name_pos - 1]);
+    if (
+      has_valid_left_boundary && value_quote + 1 < element_end && xml[value_quote] == '=' &&
+      xml[value_quote + 1] == '"')
     {
       return value_quote + 2;
     }

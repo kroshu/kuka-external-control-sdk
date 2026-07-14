@@ -254,6 +254,30 @@ TEST_F(KSSMotionState, TestCustomXmlConfiguration)
   EXPECT_EQ(motion_state.GetIpoc(), 9);
 }
 
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsAttributePrefixMatch)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "A"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::DELAY, 0},
+    {MotionStateXmlFieldType::IPOC, 0},
+  };
+
+  MotionState motion_state(1, {}, joints, xml_cfg);
+  const char * xml =
+    "<Rob Type=\"KUKA\"><Axes AAA=\"90.0\"/><Delay D=\"0\"/><IPOC>1</IPOC></Rob>";
+
+  EXPECT_THROW(motion_state.CreateFromXML(xml), std::invalid_argument);
+}
+
 TEST_F(KSSControlSignal, TestZeroInit6Dof)
 {
   kuka::external::control::kss::MotionState initial_motion_state(
