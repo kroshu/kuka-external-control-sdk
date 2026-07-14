@@ -78,7 +78,7 @@ public:
           std::move(std::make_unique<GPIOConfig>(config)))));
       gpio_attribute_names_.push_back(config.name);
     }
-    InitializeParsePlan(std::move(xml_config), std::move(gpio_configs));
+    InitializeParsePlan(xml_config, gpio_configs);
   }
   MotionState(const MotionState & other) = default;
   MotionState & operator=(const MotionState & other) = delete;
@@ -95,6 +95,7 @@ private:
     VELOCITY = 1,
     TORQUE = 2
   };
+  static ParsedQuantity ToParsedQuantity(MotionStateSignalType signal_type);
 
   struct JointParseEntry
   {
@@ -134,9 +135,16 @@ private:
   static MotionStateXmlConfiguration CreateDefaultXmlConfiguration(
     const std::vector<JointConfiguration> & joint_configs,
     const std::vector<GPIOConfiguration> & gpio_configs);
+  std::size_t GetOrAddParseElementIndex(const std::string & element_name);
+  void InitializeCoreParsePlanFields(const MotionStateXmlConfiguration & config);
+  void AddCartesianParseEntry(const MotionStateXmlConfiguration & config);
+  void AddJointParseEntries(const MotionStateXmlConfiguration & config);
+  void ConfigureGpioParseEntries(MotionStateXmlConfiguration & config);
+  void BuildParseOrder(const MotionStateXmlConfiguration & config);
+  std::size_t FindJointIndexByIdentifier(const std::string & joint_identifier) const;
   void InitializeParsePlan(
-    std::optional<MotionStateXmlConfiguration> xml_config,
-    std::vector<GPIOConfiguration> && gpio_configs);
+    const std::optional<MotionStateXmlConfiguration> & xml_config,
+    const std::vector<GPIOConfiguration> & gpio_configs);
   void ValidateAndFinalizeParsePlan() const;
   static std::size_t FindElementStart(
     std::string_view xml, std::string_view element_name, std::size_t start_pos);
@@ -194,7 +202,7 @@ public:
         std::move(std::make_unique<GPIOConfig>(config)))));
     }
 
-    InitializeWritePlan(std::move(xml_config), std::move(gpio_configs));
+    InitializeWritePlan(xml_config, gpio_configs);
   }
   ControlSignal(const ControlSignal & other) = default;
   ControlSignal & operator=(const ControlSignal & other) = delete;
@@ -229,14 +237,18 @@ private:
   };
 
   void InitializeWritePlan(
-    std::optional<ControlSignalXmlConfiguration> xml_config,
-    std::vector<GPIOConfiguration> && gpio_configs);
+    const std::optional<ControlSignalXmlConfiguration> & xml_config,
+    const std::vector<GPIOConfiguration> & gpio_configs);
+  void InitializeJointWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeExternalJointWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeGpioWritePrefixes(const std::vector<GPIOConfiguration> & gpio_configs);
+  void BuildWriteOrder(
+    const ControlSignalXmlConfiguration & cfg, const std::vector<GPIOConfiguration> & gpio_configs);
   void ValidateAndFinalizeWritePlan() const;
 
   const std::string kMessagePrefix = "<Sen Type=\"KROSHU\">";
   const std::string kStopNodePrefix = "<Stop>";
   const std::string kStopNodeSuffix = "</Stop>";
-  const std::string kDoubleAttributeFormat = "%." + std::to_string(kPrecision) + "f";
   const std::string kAttributeSuffix = "/>";
   const std::string kMessageSuffix = "</Sen>";
 

@@ -163,6 +163,50 @@ static void ValidateParseOrderFinalState(
   }
 }
 
+MotionState::ParsedQuantity MotionState::ToParsedQuantity(MotionStateSignalType signal_type)
+{
+  switch (signal_type)
+  {
+    case MotionStateSignalType::POSITION:
+      return ParsedQuantity::POSITION;
+    case MotionStateSignalType::VELOCITY:
+      return ParsedQuantity::VELOCITY;
+    case MotionStateSignalType::TORQUE:
+      return ParsedQuantity::TORQUE;
+    default:
+      throw std::invalid_argument("Unsupported motion-state signal type");
+  }
+}
+
+static void BuildAttributePrefixes(
+  const std::vector<std::string> & configured_attributes, std::size_t expected_size,
+  char default_attribute_prefix, const char * count_mismatch_error, const char * empty_name_error,
+  std::vector<std::string> & out_prefixes)
+{
+  if (configured_attributes.empty())
+  {
+    for (std::size_t i = 1; i <= expected_size; ++i)
+    {
+      out_prefixes.push_back(
+        " " + std::string(1, default_attribute_prefix) + std::to_string(i) + "=\"");
+    }
+    return;
+  }
+
+  if (configured_attributes.size() != expected_size)
+  {
+    throw std::invalid_argument(count_mismatch_error);
+  }
+  for (const auto & attr : configured_attributes)
+  {
+    if (attr.empty())
+    {
+      throw std::invalid_argument(empty_name_error);
+    }
+    out_prefixes.push_back(" " + attr + "=\"");
+  }
+}
+
 // Use std::strtod because floating-point std::from_chars is not available
 // on GCC versions shipped with Debian Bullseye or RHEL 8. Consider no longer supporting these.
 // std::stod is not used because it allocates memory when casting from char* to std::string
@@ -296,124 +340,135 @@ MotionStateXmlConfiguration MotionState::CreateDefaultXmlConfiguration(
 }
 
 void MotionState::InitializeParsePlan(
-  std::optional<MotionStateXmlConfiguration> xml_config,
-  std::vector<GPIOConfiguration> && gpio_configs)
+  const std::optional<MotionStateXmlConfiguration> & xml_config,
+  const std::vector<GPIOConfiguration> & gpio_configs)
 {
   MotionStateXmlConfiguration runtime_config =
     xml_config.value_or(CreateDefaultXmlConfiguration(joint_configs_, gpio_configs));
 
   ValidateMotionStateXmlConfiguration(runtime_config);
+  InitializeCoreParsePlanFields(runtime_config);
+  AddCartesianParseEntry(runtime_config);
+  AddJointParseEntries(runtime_config);
+  ConfigureGpioParseEntries(runtime_config);
+  BuildParseOrder(runtime_config);
+  ValidateAndFinalizeParsePlan();
+}
 
-  auto get_or_add_element_index = [this](const std::string & element_name)
+std::size_t MotionState::GetOrAddParseElementIndex(const std::string & element_name)
+{
+  if (const auto it =
+        std::find(parse_plan_.element_names.begin(), parse_plan_.element_names.end(), element_name);
+      it != parse_plan_.element_names.end())
   {
-    if (const auto it = std::find(
-          parse_plan_.element_names.begin(), parse_plan_.element_names.end(), element_name);
-        it != parse_plan_.element_names.end())
-    {
-      return static_cast<std::size_t>(std::distance(parse_plan_.element_names.begin(), it));
-    }
-    parse_plan_.element_names.push_back(element_name);
-    return parse_plan_.element_names.size() - 1;
-  };
+    return static_cast<std::size_t>(std::distance(parse_plan_.element_names.begin(), it));
+  }
+  parse_plan_.element_names.push_back(element_name);
+  return parse_plan_.element_names.size() - 1;
+}
 
-  parse_plan_.delay_element_name = runtime_config.delay_xml_element;
-  parse_plan_.delay_attribute_name = runtime_config.delay_xml_attribute;
-  parse_plan_.ipoc_element_name = runtime_config.ipoc_xml_element;
+void MotionState::InitializeCoreParsePlanFields(const MotionStateXmlConfiguration & config)
+{
+  parse_plan_.delay_element_name = config.delay_xml_element;
+  parse_plan_.delay_attribute_name = config.delay_xml_attribute;
+  parse_plan_.ipoc_element_name = config.ipoc_xml_element;
   parse_plan_.ipoc_opening_tag = "<" + parse_plan_.ipoc_element_name + ">";
   parse_plan_.ipoc_closing_tag = "</" + parse_plan_.ipoc_element_name + ">";
+}
 
-  if (runtime_config.cartesian.enabled)
+void MotionState::AddCartesianParseEntry(const MotionStateXmlConfiguration & config)
+{
+  if (!config.cartesian.enabled)
   {
-    CartesianParseEntry entry;
-    entry.element_index = get_or_add_element_index(runtime_config.cartesian.xml_element);
-    entry.attribute_names = runtime_config.cartesian.xml_attributes;
-    parse_plan_.cartesian_entry = std::move(entry);
+    return;
   }
 
-  parse_plan_.joint_entries.reserve(runtime_config.joint_fields.size());
-  for (const auto & field : runtime_config.joint_fields)
+  CartesianParseEntry entry;
+  entry.element_index = GetOrAddParseElementIndex(config.cartesian.xml_element);
+  entry.attribute_names = config.cartesian.xml_attributes;
+  parse_plan_.cartesian_entry = std::move(entry);
+}
+
+std::size_t MotionState::FindJointIndexByIdentifier(const std::string & joint_identifier) const
+{
+  const auto joint_it = std::find_if(
+    joint_configs_.cbegin(), joint_configs_.cend(),
+    [&](const JointConfiguration & c) { return c.name == joint_identifier; });
+  if (joint_it == joint_configs_.cend())
+  {
+    throw std::invalid_argument("Joint field refers to unknown joint identifier");
+  }
+  return static_cast<std::size_t>(std::distance(joint_configs_.cbegin(), joint_it));
+}
+
+void MotionState::AddJointParseEntries(const MotionStateXmlConfiguration & config)
+{
+  parse_plan_.joint_entries.reserve(config.joint_fields.size());
+  for (const auto & field : config.joint_fields)
   {
     if (field.joint_identifier.empty() || field.xml_element.empty() || field.xml_attribute.empty())
     {
       throw std::invalid_argument("Joint field configuration entries must not be empty");
     }
 
-    const auto joint_it = std::find_if(
-      joint_configs_.cbegin(), joint_configs_.cend(),
-      [&](const JointConfiguration & c) { return c.name == field.joint_identifier; });
-    if (joint_it == joint_configs_.cend())
-    {
-      throw std::invalid_argument("Joint field refers to unknown joint identifier");
-    }
-    const auto joint_index =
-      static_cast<std::size_t>(std::distance(joint_configs_.cbegin(), joint_it));
-
     JointParseEntry entry;
-    switch (field.signal_type)
-    {
-      case MotionStateSignalType::POSITION:
-        entry.quantity = ParsedQuantity::POSITION;
-        break;
-      case MotionStateSignalType::VELOCITY:
-        entry.quantity = ParsedQuantity::VELOCITY;
-        break;
-      case MotionStateSignalType::TORQUE:
-        entry.quantity = ParsedQuantity::TORQUE;
-        break;
-      default:
-        throw std::invalid_argument("Unsupported motion-state signal type");
-    }
-    entry.joint_index = joint_index;
-    entry.element_index = get_or_add_element_index(field.xml_element);
+    entry.quantity = ToParsedQuantity(field.signal_type);
+    entry.joint_index = FindJointIndexByIdentifier(field.joint_identifier);
+    entry.element_index = GetOrAddParseElementIndex(field.xml_element);
     entry.attribute_name = field.xml_attribute;
     parse_plan_.joint_entries.push_back(std::move(entry));
   }
+}
 
-  if (runtime_config.gpio_xml_attributes.empty())
+void MotionState::ConfigureGpioParseEntries(MotionStateXmlConfiguration & config)
+{
+  if (config.gpio_xml_attributes.empty())
   {
-    runtime_config.gpio_xml_attributes = gpio_attribute_names_;
+    config.gpio_xml_attributes = gpio_attribute_names_;
   }
-  if (!measured_gpio_values_.empty())
+  if (measured_gpio_values_.empty())
   {
-    if (runtime_config.gpio_xml_element.empty())
-    {
-      throw std::invalid_argument("GPIO XML element must not be empty when GPIO is configured");
-    }
-    if (runtime_config.gpio_xml_attributes.size() != measured_gpio_values_.size())
-    {
-      throw std::invalid_argument("GPIO XML attributes count must match configured GPIO count");
-    }
-    parse_plan_.gpio_element_index = get_or_add_element_index(runtime_config.gpio_xml_element);
-    parse_plan_.gpio_attribute_names = std::move(runtime_config.gpio_xml_attributes);
+    return;
   }
 
-  if (runtime_config.field_order.empty())
+  if (config.gpio_xml_element.empty())
   {
-    if (parse_plan_.cartesian_entry.has_value())
-    {
-      parse_plan_.parse_order.push_back({MotionStateXmlFieldType::CARTESIAN, 0});
-    }
-    for (std::size_t i = 0; i < parse_plan_.joint_entries.size(); ++i)
-    {
-      parse_plan_.parse_order.push_back({MotionStateXmlFieldType::JOINT, i});
-    }
-    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::DELAY, 0});
-    for (std::size_t i = 0; i < parse_plan_.gpio_attribute_names.size(); ++i)
-    {
-      parse_plan_.parse_order.push_back({MotionStateXmlFieldType::GPIO, i});
-    }
-    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::IPOC, 0});
+    throw std::invalid_argument("GPIO XML element must not be empty when GPIO is configured");
   }
-  else
+  if (config.gpio_xml_attributes.size() != measured_gpio_values_.size())
   {
-    parse_plan_.parse_order.reserve(runtime_config.field_order.size());
-    for (const auto & entry : runtime_config.field_order)
+    throw std::invalid_argument("GPIO XML attributes count must match configured GPIO count");
+  }
+  parse_plan_.gpio_element_index = GetOrAddParseElementIndex(config.gpio_xml_element);
+  parse_plan_.gpio_attribute_names = std::move(config.gpio_xml_attributes);
+}
+
+void MotionState::BuildParseOrder(const MotionStateXmlConfiguration & config)
+{
+  if (!config.field_order.empty())
+  {
+    parse_plan_.parse_order.reserve(config.field_order.size());
+    for (const auto & entry : config.field_order)
     {
       parse_plan_.parse_order.push_back({entry.field_type, entry.index});
     }
+    return;
   }
 
-  ValidateAndFinalizeParsePlan();
+  if (parse_plan_.cartesian_entry.has_value())
+  {
+    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::CARTESIAN, 0});
+  }
+  for (std::size_t i = 0; i < parse_plan_.joint_entries.size(); ++i)
+  {
+    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::JOINT, i});
+  }
+  parse_plan_.parse_order.push_back({MotionStateXmlFieldType::DELAY, 0});
+  for (std::size_t i = 0; i < parse_plan_.gpio_attribute_names.size(); ++i)
+  {
+    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::GPIO, i});
+  }
+  parse_plan_.parse_order.push_back({MotionStateXmlFieldType::IPOC, 0});
 }
 
 void MotionState::ValidateAndFinalizeParsePlan() const
@@ -426,8 +481,8 @@ void MotionState::ValidateAndFinalizeParsePlan() const
   for (const auto & order_entry : parse_plan_.parse_order)
   {
     ValidateParseOrderEntry(
-      order_entry.field_type, order_entry.index, cartesian_enabled, parse_plan_.joint_entries.size(),
-      parse_plan_.gpio_attribute_names.size(), state);
+      order_entry.field_type, order_entry.index, cartesian_enabled,
+      parse_plan_.joint_entries.size(), parse_plan_.gpio_attribute_names.size(), state);
   }
 
   ValidateParseOrderFinalState(cartesian_enabled, state);
@@ -674,97 +729,71 @@ void ControlSignal::AppendToXMLString(std::string_view str)
 }
 
 void ControlSignal::InitializeWritePlan(
-  std::optional<ControlSignalXmlConfiguration> xml_config,
-  std::vector<GPIOConfiguration> && gpio_configs)
+  const std::optional<ControlSignalXmlConfiguration> & xml_config,
+  const std::vector<GPIOConfiguration> & gpio_configs)
 {
   ControlSignalXmlConfiguration cfg = xml_config.value_or(ControlSignalXmlConfiguration{});
 
   ValidateControlSignalXmlConfiguration(cfg, num_external_axes_, gpio_configs.size());
-
-  write_plan_.joint_element_prefix = "<" + cfg.joint_xml_element;
-
-  if (cfg.joint_xml_attributes.empty())
-  {
-    for (std::size_t i = 1; i <= num_internal_axes_; ++i)
-    {
-      write_plan_.joint_attrib_prefixes.push_back(" A" + std::to_string(i) + "=\"");
-    }
-  }
-  else
-  {
-    if (cfg.joint_xml_attributes.size() != num_internal_axes_)
-    {
-      throw std::invalid_argument(
-        "Joint XML attribute count must match the number of internal axes");
-    }
-    for (const auto & attr : cfg.joint_xml_attributes)
-    {
-      if (attr.empty())
-      {
-        throw std::invalid_argument("Joint XML attribute names must not be empty");
-      }
-      write_plan_.joint_attrib_prefixes.push_back(" " + attr + "=\"");
-    }
-  }
-
-  write_plan_.ext_joint_element_prefix = "<" + cfg.ext_joint_xml_element;
-
-  if (cfg.ext_joint_xml_attributes.empty())
-  {
-    for (std::size_t i = 1; i <= num_external_axes_; ++i)
-    {
-      write_plan_.ext_joint_attrib_prefixes.push_back(" E" + std::to_string(i) + "=\"");
-    }
-  }
-  else
-  {
-    if (cfg.ext_joint_xml_attributes.size() != num_external_axes_)
-    {
-      throw std::invalid_argument(
-        "External joint XML attribute count must match the number of external axes");
-    }
-    for (const auto & attr : cfg.ext_joint_xml_attributes)
-    {
-      if (attr.empty())
-      {
-        throw std::invalid_argument("External joint XML attribute names must not be empty");
-      }
-      write_plan_.ext_joint_attrib_prefixes.push_back(" " + attr + "=\"");
-    }
-  }
-
+  InitializeJointWritePrefixes(cfg);
+  InitializeExternalJointWritePrefixes(cfg);
   write_plan_.gpio_element_prefix = "<" + cfg.gpio_xml_element;
+  InitializeGpioWritePrefixes(gpio_configs);
+  write_plan_.ipoc_opening_tag = "<" + cfg.ipoc_xml_element + ">";
+  write_plan_.ipoc_closing_tag = "</" + cfg.ipoc_xml_element + ">";
+  BuildWriteOrder(cfg, gpio_configs);
+  ValidateAndFinalizeWritePlan();
+}
+
+void ControlSignal::InitializeJointWritePrefixes(const ControlSignalXmlConfiguration & cfg)
+{
+  write_plan_.joint_element_prefix = "<" + cfg.joint_xml_element;
+  BuildAttributePrefixes(
+    cfg.joint_xml_attributes, num_internal_axes_, 'A',
+    "Joint XML attribute count must match the number of internal axes",
+    "Joint XML attribute names must not be empty", write_plan_.joint_attrib_prefixes);
+}
+
+void ControlSignal::InitializeExternalJointWritePrefixes(const ControlSignalXmlConfiguration & cfg)
+{
+  write_plan_.ext_joint_element_prefix = "<" + cfg.ext_joint_xml_element;
+  BuildAttributePrefixes(
+    cfg.ext_joint_xml_attributes, num_external_axes_, 'E',
+    "External joint XML attribute count must match the number of external axes",
+    "External joint XML attribute names must not be empty", write_plan_.ext_joint_attrib_prefixes);
+}
+
+void ControlSignal::InitializeGpioWritePrefixes(const std::vector<GPIOConfiguration> & gpio_configs)
+{
   for (const auto & gpio_cfg : gpio_configs)
   {
     write_plan_.gpio_attrib_prefixes.push_back(" " + gpio_cfg.name + "=\"");
   }
+}
 
-  write_plan_.ipoc_opening_tag = "<" + cfg.ipoc_xml_element + ">";
-  write_plan_.ipoc_closing_tag = "</" + cfg.ipoc_xml_element + ">";
-
-  if (cfg.field_order.empty())
-  {
-    write_plan_.write_order.push_back(ControlSignalXmlFieldType::JOINT);
-    if (num_external_axes_ > 0)
-    {
-      write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_JOINT);
-    }
-    if (!gpio_configs.empty())
-    {
-      write_plan_.write_order.push_back(ControlSignalXmlFieldType::GPIO);
-    }
-    write_plan_.write_order.push_back(ControlSignalXmlFieldType::IPOC);
-  }
-  else
+void ControlSignal::BuildWriteOrder(
+  const ControlSignalXmlConfiguration & cfg, const std::vector<GPIOConfiguration> & gpio_configs)
+{
+  if (!cfg.field_order.empty())
   {
     write_plan_.write_order.reserve(cfg.field_order.size());
     for (const auto & entry : cfg.field_order)
     {
       write_plan_.write_order.push_back(entry.field_type);
     }
+    return;
   }
 
-  ValidateAndFinalizeWritePlan();
+  write_plan_.write_order.push_back(ControlSignalXmlFieldType::JOINT);
+  if (num_external_axes_ > 0)
+  {
+    write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_JOINT);
+  }
+  if (!gpio_configs.empty())
+  {
+    write_plan_.write_order.push_back(ControlSignalXmlFieldType::GPIO);
+  }
+  write_plan_.write_order.push_back(ControlSignalXmlFieldType::IPOC);
 }
 
 void ControlSignal::ValidateAndFinalizeWritePlan() const
@@ -882,7 +911,8 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
         std::array<char, 32> ipoc_buf;
         if (
           std::snprintf(
-            ipoc_buf.data(), ipoc_buf.size(), "%llu", static_cast<unsigned long long>(last_ipoc)) < 0)
+            ipoc_buf.data(), ipoc_buf.size(), "%llu", static_cast<unsigned long long>(last_ipoc)) <
+          0)
         {
           return std::nullopt;
         }
@@ -926,7 +956,7 @@ bool ControlSignal::WriteGpioValues()
           return false;
         }
         int ret = std::snprintf(
-          double_buffer.data(), double_buffer.size(), kDoubleAttributeFormat.data(), value.value());
+          double_buffer.data(), double_buffer.size(), "%*.f", kPrecision, value.value());
         if (ret <= 0)
         {
           return false;
@@ -986,8 +1016,8 @@ bool ControlSignal::WritePositions(
         return false;
     }
 
-    const int ret = std::snprintf(
-      double_buffer, sizeof(double_buffer), kDoubleAttributeFormat.data(), target_value);
+    const int ret =
+      std::snprintf(double_buffer, sizeof(double_buffer), "%.*f", kPrecision, target_value);
 
     if (ret <= 0)
     {
