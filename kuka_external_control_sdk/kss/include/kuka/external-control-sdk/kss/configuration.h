@@ -165,11 +165,8 @@ struct MotionStateXmlConfiguration
 {
   std::vector<MotionStateJointFieldConfiguration> joint_fields;
   MotionStateCartesianFieldConfiguration cartesian;
-  std::string delay_xml_element = "Delay";
-  std::string delay_xml_attribute = "D";
   std::string gpio_xml_element = "GPIO";
   std::vector<std::string> gpio_xml_attributes;
-  std::string ipoc_xml_element = "IPOC";
   std::vector<MotionStateXmlOrderEntry> field_order;
 };
 
@@ -206,9 +203,6 @@ struct ControlSignalXmlConfiguration
 
   // XML element name for GPIO command values (legacy default: "GPIO")
   std::string gpio_xml_element = "GPIO";
-
-  // XML element name for the IPOC counter (legacy default: "IPOC")
-  std::string ipoc_xml_element = "IPOC";
 
   // Explicit field ordering for the transmitted message.
   // If empty, the default legacy order is used:

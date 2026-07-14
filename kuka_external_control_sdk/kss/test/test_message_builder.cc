@@ -233,9 +233,6 @@ TEST_F(KSSMotionState, TestCustomXmlConfiguration)
     {"joint_1", MotionStateSignalType::VELOCITY, "Axes", "j1_vel"},
     {"joint_2", MotionStateSignalType::TORQUE, "Forces", "j2_trq"},
   };
-  xml_cfg.delay_xml_element = "Meta";
-  xml_cfg.delay_xml_attribute = "delay";
-  xml_cfg.ipoc_xml_element = "Cycle";
   xml_cfg.field_order = {
     {MotionStateXmlFieldType::JOINT, 0}, {MotionStateXmlFieldType::JOINT, 1},
     {MotionStateXmlFieldType::JOINT, 2}, {MotionStateXmlFieldType::DELAY, 0},
@@ -245,7 +242,7 @@ TEST_F(KSSMotionState, TestCustomXmlConfiguration)
   MotionState motion_state(2, {}, joints, xml_cfg);
   const char * xml =
     "<Rob Type=\"KUKA\"><Axes j1_pos=\"90.0\" j1_vel=\"180.0\"/><Forces "
-    "j2_trq=\"12.5\"/><Meta delay=\"3\"/><Cycle>9</Cycle></Rob>";
+    "j2_trq=\"12.5\"/><Delay D=\"3\"/><IPOC>9</IPOC></Rob>";
 
   motion_state.CreateFromXML(xml);
 
@@ -331,7 +328,6 @@ TEST_F(KSSControlSignal, TestCustomElementNames)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_element = "JointCmd";
-  xml_cfg.ipoc_xml_element = "Cycle";
 
   ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
 
@@ -340,7 +336,7 @@ TEST_F(KSSControlSignal, TestCustomElementNames)
 
   const char * expected_xml =
     "<Sen Type=\"KROSHU\"><Stop>0</Stop><JointCmd A1=\"0.000000\" A2=\"0.000000\" "
-    "A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><Cycle>7</Cycle></Sen>";
+    "A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><IPOC>7</IPOC></Sen>";
   EXPECT_STREQ(control_signal.CreateXMLString(7).value().data(), expected_xml);
 }
 
@@ -386,7 +382,6 @@ TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
   xml_cfg.joint_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
   xml_cfg.ext_joint_xml_element = "ExtAxes";
   xml_cfg.ext_joint_xml_attributes = {"e1", "e2"};
-  xml_cfg.ipoc_xml_element = "Time";
 
   ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
 
@@ -398,7 +393,7 @@ TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
     "<IntAxes q1=\"0.000000\" q2=\"0.000000\" q3=\"0.000000\" q4=\"0.000000\" "
     "q5=\"0.000000\" q6=\"0.000000\"/>"
     "<ExtAxes e1=\"0.000000\" e2=\"0.000000\"/>"
-    "<Time>0</Time></Sen>";
+    "<IPOC>0</IPOC></Sen>";
   EXPECT_STREQ(control_signal.CreateXMLString(0).value().data(), expected_xml);
 }
 
@@ -463,15 +458,6 @@ TEST_F(KSSControlSignal, TestInvalidConfigEmptyElementName)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.joint_xml_element = "";
-
-  EXPECT_THROW(
-    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
-}
-
-TEST_F(KSSControlSignal, TestInvalidConfigEmptyIpocElementName)
-{
-  ControlSignalXmlConfiguration xml_cfg;
-  xml_cfg.ipoc_xml_element = "";
 
   EXPECT_THROW(
     ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);

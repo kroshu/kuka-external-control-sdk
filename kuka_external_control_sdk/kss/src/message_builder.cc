@@ -33,14 +33,6 @@ static double MillimetresToMeters(const double millimetres) { return millimetres
 
 static void ValidateMotionStateXmlConfiguration(const MotionStateXmlConfiguration & config)
 {
-  if (config.delay_xml_element.empty() || config.delay_xml_attribute.empty())
-  {
-    throw std::invalid_argument("Delay XML configuration must not be empty");
-  }
-  if (config.ipoc_xml_element.empty())
-  {
-    throw std::invalid_argument("IPOC XML element must not be empty");
-  }
   if (config.cartesian.enabled && config.cartesian.xml_element.empty())
   {
     throw std::invalid_argument("Cartesian XML element must not be empty when enabled");
@@ -64,10 +56,6 @@ static void ValidateControlSignalXmlConfiguration(
   {
     throw std::invalid_argument(
       "GPIO XML element name must not be empty when GPIO commands are configured");
-  }
-  if (config.ipoc_xml_element.empty())
-  {
-    throw std::invalid_argument("IPOC XML element name must not be empty");
   }
 }
 
@@ -291,10 +279,7 @@ MotionStateXmlConfiguration MotionState::CreateDefaultXmlConfiguration(
   config.cartesian.enabled = true;
   config.cartesian.xml_element = "RIst";
   config.cartesian.xml_attributes = {"X", "Y", "Z", "A", "B", "C"};
-  config.delay_xml_element = "Delay";
-  config.delay_xml_attribute = "D";
   config.gpio_xml_element = "GPIO";
-  config.ipoc_xml_element = "IPOC";
 
   std::size_t internal_idx = 1;
   std::size_t external_idx = 1;
@@ -369,11 +354,12 @@ std::size_t MotionState::GetOrAddParseElementIndex(const std::string & element_n
 
 void MotionState::InitializeCoreParsePlanFields(const MotionStateXmlConfiguration & config)
 {
-  parse_plan_.delay_element_name = config.delay_xml_element;
-  parse_plan_.delay_attribute_name = config.delay_xml_attribute;
-  parse_plan_.ipoc_element_name = config.ipoc_xml_element;
-  parse_plan_.ipoc_opening_tag = "<" + parse_plan_.ipoc_element_name + ">";
-  parse_plan_.ipoc_closing_tag = "</" + parse_plan_.ipoc_element_name + ">";
+  (void)config;
+  parse_plan_.delay_element_name = "Delay";
+  parse_plan_.delay_attribute_name = "D";
+  parse_plan_.ipoc_element_name = "IPOC";
+  parse_plan_.ipoc_opening_tag = "<IPOC>";
+  parse_plan_.ipoc_closing_tag = "</IPOC>";
 }
 
 void MotionState::AddCartesianParseEntry(const MotionStateXmlConfiguration & config)
@@ -739,8 +725,8 @@ void ControlSignal::InitializeWritePlan(
   InitializeExternalJointWritePrefixes(cfg);
   write_plan_.gpio_element_prefix = "<" + cfg.gpio_xml_element;
   InitializeGpioWritePrefixes(gpio_configs);
-  write_plan_.ipoc_opening_tag = "<" + cfg.ipoc_xml_element + ">";
-  write_plan_.ipoc_closing_tag = "</" + cfg.ipoc_xml_element + ">";
+  write_plan_.ipoc_opening_tag = "<IPOC>";
+  write_plan_.ipoc_closing_tag = "</IPOC>";
   BuildWriteOrder(cfg, gpio_configs);
   ValidateAndFinalizeWritePlan();
 }
@@ -956,7 +942,7 @@ bool ControlSignal::WriteGpioValues()
           return false;
         }
         int ret = std::snprintf(
-          double_buffer.data(), double_buffer.size(), "%*.f", kPrecision, value.value());
+          double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, value.value());
         if (ret <= 0)
         {
           return false;
