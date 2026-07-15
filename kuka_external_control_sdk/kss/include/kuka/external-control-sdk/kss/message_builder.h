@@ -150,7 +150,7 @@ private:
     std::string_view xml, std::string_view element_name, std::size_t start_pos);
   static std::size_t FindElementEnd(std::string_view xml, std::size_t element_start);
   static std::size_t FindAttributeValueStart(
-    std::string_view xml, std::size_t element_start, std::size_t element_end,
+    std::string_view xml, std::size_t element_start, std::size_t element_end, std::size_t start_pos,
     std::string_view attribute_name);
   void ParseJointField(std::string_view xml, std::size_t joint_entry_index);
   void ParseCartesianField(std::string_view xml, const CartesianParseEntry & entry);
@@ -160,6 +160,10 @@ private:
 
   uint64_t ipoc_ = 0;
   uint64_t delay_ = 0;
+  std::size_t parse_pos_ = 0;
+  std::string_view cached_element_name_;
+  std::size_t cached_element_start_ = 0;
+  std::size_t cached_element_end_ = 0;
 
   std::vector<JointConfiguration> joint_configs_;
   ParsePlan parse_plan_;

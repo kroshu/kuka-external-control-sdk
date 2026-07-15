@@ -240,6 +240,8 @@ void MotionState::CreateFromXML(const char * incoming_xml)
   has_torques_ = false;
   has_velocities_ = false;
   has_cartesian_positions_ = false;
+  parse_pos_ = 0;
+  cached_element_name_ = std::string_view{};
 
   for (const auto & order_entry : parse_plan_.parse_order)
   {
@@ -283,6 +285,13 @@ MotionStateXmlConfiguration MotionState::CreateDefaultXmlConfiguration(
 
   std::size_t internal_idx = 1;
   std::size_t external_idx = 1;
+
+  // Single pass: collect internal and external fields, then concatenate
+  std::vector<MotionStateJointFieldConfiguration> internal_fields;
+  std::vector<MotionStateJointFieldConfiguration> external_fields;
+  internal_fields.reserve(joint_configs.size());
+  external_fields.reserve(joint_configs.size());
+
   for (const auto & joint : joint_configs)
   {
     MotionStateJointFieldConfiguration field;
@@ -291,13 +300,24 @@ MotionStateXmlConfiguration MotionState::CreateDefaultXmlConfiguration(
     if (joint.is_external)
     {
       field.xml_element = "EIPos";
-      field.xml_attribute = "E" + std::to_string(external_idx++);
+      external_fields.push_back(std::move(field));
     }
     else
     {
       field.xml_element = "AIPos";
-      field.xml_attribute = "A" + std::to_string(internal_idx++);
+      internal_fields.push_back(std::move(field));
     }
+  }
+
+  for (auto & field : internal_fields)
+  {
+    field.xml_attribute = "A" + std::to_string(internal_idx++);
+    config.joint_fields.push_back(std::move(field));
+  }
+
+  for (auto & field : external_fields)
+  {
+    field.xml_attribute = "E" + std::to_string(external_idx++);
     config.joint_fields.push_back(std::move(field));
   }
 
@@ -498,9 +518,7 @@ std::size_t MotionState::FindElementStart(
     if (xml.compare(name_start, element_name.size(), element_name) == 0)
     {
       const std::size_t next = name_start + element_name.size();
-      if (
-        next < xml.size() && (xml[next] == ' ' || xml[next] == '\t' || xml[next] == '\r' ||
-                              xml[next] == '\n' || xml[next] == '>'))
+      if (next < xml.size() && (xml[next] == ' ' || xml[next] == '>'))
       {
         return tag_start;
       }
@@ -522,7 +540,7 @@ std::size_t MotionState::FindElementEnd(std::string_view xml, std::size_t elemen
 }
 
 std::size_t MotionState::FindAttributeValueStart(
-  std::string_view xml, std::size_t element_start, std::size_t element_end,
+  std::string_view xml, std::size_t element_start, std::size_t element_end, std::size_t start_pos,
   std::string_view attribute_name)
 {
   if (attribute_name.empty())
@@ -530,7 +548,7 @@ std::size_t MotionState::FindAttributeValueStart(
     throw std::invalid_argument("Configured XML attribute name must not be empty");
   }
 
-  std::size_t search_pos = element_start;
+  std::size_t search_pos = std::max(element_start, start_pos);
   while (search_pos < element_end)
   {
     const std::size_t name_pos = xml.find(attribute_name, search_pos);
@@ -549,30 +567,42 @@ std::size_t MotionState::FindAttributeValueStart(
     search_pos = name_pos + 1;
   }
 
-  throw std::invalid_argument("Received XML is missing a configured attribute");
+  throw std::invalid_argument(
+    "Received XML is missing a configured attribute: " + std::string(attribute_name));
 }
 
 void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_index)
 {
   const auto & entry = parse_plan_.joint_entries.at(joint_entry_index);
   const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
-  const std::size_t element_start = FindElementStart(xml, element_name, 0);
-  if (element_start == std::string_view::npos)
+  if (cached_element_name_ != element_name)
   {
-    throw std::invalid_argument("Received XML is missing a configured joint element");
+    parse_pos_ = cached_element_end_;
+    const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
+    if (element_start == std::string_view::npos)
+    {
+      throw std::invalid_argument(
+        "Received XML is missing a configured joint element: " + element_name);
+    }
+    cached_element_name_ = element_name;
+    cached_element_start_ = element_start;
+    cached_element_end_ = FindElementEnd(xml, element_start);
+    parse_pos_ = element_start + element_name.size() + 1;
   }
-  const std::size_t element_end = FindElementEnd(xml, element_start);
+  const std::size_t element_start = cached_element_start_;
+  const std::size_t element_end = cached_element_end_;
   const std::size_t value_start =
-    FindAttributeValueStart(xml, element_start, element_end, entry.attribute_name);
+    FindAttributeValueStart(xml, element_start, element_end, parse_pos_, entry.attribute_name);
 
   double parsed = 0.0;
 
-  if (const std::size_t parsed_len =
-        ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
-      value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
+  const std::size_t parsed_len =
+    ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
+  if (value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
   {
     throw std::invalid_argument("Received XML contains malformed numeric attributes");
   }
+  parse_pos_ = value_start + parsed_len + 1;
 
   const auto & joint_config = joint_configs_.at(entry.joint_index);
   switch (entry.quantity)
@@ -617,48 +647,71 @@ void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_
 void MotionState::ParseCartesianField(std::string_view xml, const CartesianParseEntry & entry)
 {
   const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
-  const std::size_t element_start = FindElementStart(xml, element_name, 0);
-  if (element_start == std::string_view::npos)
+  if (cached_element_name_ != element_name)
   {
-    throw std::invalid_argument("Received XML is missing configured Cartesian element");
+    parse_pos_ = cached_element_end_;
+    const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
+    if (element_start == std::string_view::npos)
+    {
+      throw std::invalid_argument("Received XML is missing configured Cartesian element");
+    }
+    cached_element_name_ = element_name;
+    cached_element_start_ = element_start;
+    cached_element_end_ = FindElementEnd(xml, element_start);
+    parse_pos_ = element_start + element_name.size() + 1;
   }
-  const std::size_t element_end = FindElementEnd(xml, element_start);
+  const std::size_t element_start = cached_element_start_;
+  const std::size_t element_end = cached_element_end_;
 
   for (std::size_t i = 0; i < kCartesianDimensions; ++i)
   {
-    const std::size_t value_start =
-      FindAttributeValueStart(xml, element_start, element_end, entry.attribute_names[i]);
+    const std::size_t value_start = FindAttributeValueStart(
+      xml, element_start, element_end, parse_pos_, entry.attribute_names[i]);
 
     double parsed = 0.0;
-    if (const std::size_t parsed_len =
-          ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
-        value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
+    const std::size_t parsed_len =
+      ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
+    if (value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
     {
       throw std::invalid_argument("Received XML contains malformed Cartesian attribute");
     }
-
+    parse_pos_ = value_start + parsed_len + 1;
     measured_cartesian_positions_[i] = (i > 2) ? DegreesToRadians(parsed) : parsed;
   }
 }
 
 void MotionState::ParseDelayField(std::string_view xml)
 {
-  const std::size_t element_start = FindElementStart(xml, parse_plan_.delay_element_name, 0);
-  if (element_start == std::string_view::npos)
+  const std::string & delay_element_name = parse_plan_.delay_element_name;
+  if (cached_element_name_ != delay_element_name)
   {
-    throw std::invalid_argument("Received XML is missing configured Delay element");
+    parse_pos_ = cached_element_end_;
+    const std::size_t element_start = FindElementStart(xml, delay_element_name, parse_pos_);
+    if (element_start == std::string_view::npos)
+    {
+      throw std::invalid_argument("Received XML is missing configured Delay element");
+    }
+    cached_element_name_ = delay_element_name;
+    cached_element_start_ = element_start;
+    cached_element_end_ = FindElementEnd(xml, element_start);
+    parse_pos_ = element_start + delay_element_name.size() + 1;
   }
-  const std::size_t element_end = FindElementEnd(xml, element_start);
-  const std::size_t value_start =
-    FindAttributeValueStart(xml, element_start, element_end, parse_plan_.delay_attribute_name);
+  const std::size_t element_start = cached_element_start_;
+  const std::size_t element_end = cached_element_end_;
+  const std::size_t value_start = FindAttributeValueStart(
+    xml, element_start, element_end, parse_pos_, parse_plan_.delay_attribute_name);
 
   errno = 0;
   char * endptr = nullptr;
   delay_ = std::strtoull(xml.data() + value_start, &endptr, 0);
-  if (errno != 0 || endptr == xml.data() + value_start)
+  const char * const value_ptr = xml.data() + value_start;
+  if (
+    errno != 0 || endptr == value_ptr ||
+    static_cast<std::size_t>(endptr - xml.data()) >= element_end || *endptr != '"')
   {
     throw std::invalid_argument("Received XML Delay value is not a valid integer");
   }
+  parse_pos_ = static_cast<std::size_t>(endptr - xml.data()) + 1;
 }
 
 void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
@@ -670,28 +723,39 @@ void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
   }
   const std::size_t element_index = parse_plan_.gpio_element_index.value();
   const std::string & element_name = parse_plan_.element_names.at(element_index);
-  const std::size_t element_start = FindElementStart(xml, element_name, 0);
-  if (element_start == std::string_view::npos)
+  if (cached_element_name_ != element_name)
   {
-    throw std::invalid_argument("Received XML is missing configured GPIO element");
+    parse_pos_ = cached_element_end_;
+    const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
+    if (element_start == std::string_view::npos)
+    {
+      throw std::invalid_argument("Received XML is missing configured GPIO element");
+    }
+    cached_element_name_ = element_name;
+    cached_element_start_ = element_start;
+    cached_element_end_ = FindElementEnd(xml, element_start);
+    parse_pos_ = element_start + element_name.size() + 1;
   }
-  const std::size_t element_end = FindElementEnd(xml, element_start);
+  const std::size_t element_start = cached_element_start_;
+  const std::size_t element_end = cached_element_end_;
   const std::size_t value_start = FindAttributeValueStart(
-    xml, element_start, element_end, parse_plan_.gpio_attribute_names.at(gpio_index));
+    xml, element_start, element_end, parse_pos_, parse_plan_.gpio_attribute_names.at(gpio_index));
 
   double parsed = 0.0;
-  if (const std::size_t parsed_len =
-        ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
-      value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
+  const std::size_t parsed_len =
+    ParseDouble(xml.data() + value_start, xml.data() + xml.size(), parsed);
+  if (value_start + parsed_len >= element_end || xml[value_start + parsed_len] != '"')
   {
     throw std::invalid_argument("Received XML contains malformed GPIO attribute");
   }
+  parse_pos_ = value_start + parsed_len + 1;
   measured_gpio_values_.at(gpio_index)->SetValue(parsed);
 }
 
 void MotionState::ParseIpocField(std::string_view xml)
 {
-  const std::size_t value_start = xml.find(parse_plan_.ipoc_opening_tag);
+  parse_pos_ = cached_element_end_;
+  const std::size_t value_start = xml.find(parse_plan_.ipoc_opening_tag, parse_pos_);
   if (value_start == std::string_view::npos)
   {
     throw std::invalid_argument("Received XML is missing configured IPOC element");
@@ -712,6 +776,7 @@ void MotionState::ParseIpocField(std::string_view xml)
   {
     throw std::invalid_argument("Received XML IPOC value is not a valid integer");
   }
+  parse_pos_ = value_end + parse_plan_.ipoc_closing_tag.size();
 }
 
 void ControlSignal::AppendToXMLString(std::string_view str)
