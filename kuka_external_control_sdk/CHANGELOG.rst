@@ -2,6 +2,14 @@
 Changelog for package kuka_external_control_sdk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove heap allocations from XML handler
+* Add external axis integration for KSS+ iiQKA OS2
+* Fix propagation of Client IP and Client Port for RSI
+* Add EKI support for iiQKA OS2 
+* Add mxAutomation as commanding protocol
+
 1.4.1 (2025-08-29)
 ------------------
 * Fix package dependency
