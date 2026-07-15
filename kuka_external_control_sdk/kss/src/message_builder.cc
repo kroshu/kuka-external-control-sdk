@@ -248,7 +248,7 @@ void MotionState::CreateFromXML(const char * incoming_xml)
       case MotionStateXmlFieldType::CARTESIAN:
         if (!parse_plan_.cartesian_entry.has_value())
         {
-          throw std::logic_error("Cartesian parse entry is not configured");
+          throw std::logic_error("Cartesian parse entry is not configured");  // NOLINT
         }
         ParseCartesianField(xml, parse_plan_.cartesian_entry.value());
         has_cartesian_positions_ = true;
@@ -530,9 +530,6 @@ std::size_t MotionState::FindAttributeValueStart(
     throw std::invalid_argument("Configured XML attribute name must not be empty");
   }
 
-  const auto is_xml_whitespace = [](char ch)
-  { return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'; };
-
   std::size_t search_pos = element_start;
   while (search_pos < element_end)
   {
@@ -542,14 +539,12 @@ std::size_t MotionState::FindAttributeValueStart(
       break;
     }
 
-    const std::size_t value_quote = name_pos + attribute_name.size();
-    const bool has_valid_left_boundary =
-      (name_pos > element_start) && is_xml_whitespace(xml[name_pos - 1]);
-    if (
-      has_valid_left_boundary && value_quote + 1 < element_end && xml[value_quote] == '=' &&
-      xml[value_quote + 1] == '"')
+    const std::size_t equal_sign_pos = name_pos + attribute_name.size();
+    if (const bool has_valid_left_boundary = (name_pos > element_start) && xml[name_pos - 1] == ' ';
+        has_valid_left_boundary && equal_sign_pos + 1 < element_end && xml[equal_sign_pos] == '=' &&
+        xml[equal_sign_pos + 1] == '"')
     {
-      return value_quote + 2;
+      return equal_sign_pos + 2;
     }
     search_pos = name_pos + 1;
   }
@@ -611,9 +606,7 @@ void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_
       has_velocities_ = true;
       break;
     case ParsedQuantity::TORQUE:
-      measured_torques_[entry.joint_index] =
-        parsed;  // TODO(pasztork): The unit of torque is not specified in the XML, so we assume it
-                 // is in Nm. If the unit is different, conversion may be needed here.
+      measured_torques_[entry.joint_index] = parsed;
       has_torques_ = true;
       break;
     default:
@@ -672,7 +665,7 @@ void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
 {
   if (!parse_plan_.gpio_element_index.has_value())
   {
-    throw std::logic_error("GPIO parse entry exists but GPIO element is not configured");
+    throw std::logic_error("GPIO parse entry exists but GPIO element is not configured");  // NOLINT
   }
   const std::size_t element_index = parse_plan_.gpio_element_index.value();
   const std::string & element_name = parse_plan_.element_names.at(element_index);
