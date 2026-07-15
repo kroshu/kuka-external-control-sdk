@@ -2,8 +2,8 @@
 Changelog for package kuka_external_control_sdk_examples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2026-07-15)
+------------------
 * Add mxAutomation as commanding protocol
 
 1.4.1 (2025-08-29)

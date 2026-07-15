@@ -2,8 +2,8 @@
 Changelog for package kuka_external_control_sdk
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2026-07-15)
+------------------
 * Remove heap allocations from XML handler
 * Add external axis integration for KSS+ iiQKA OS2
 * Fix propagation of Client IP and Client Port for RSI
