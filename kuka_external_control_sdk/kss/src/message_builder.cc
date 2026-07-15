@@ -574,8 +574,8 @@ std::size_t MotionState::FindAttributeValueStart(
 void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_index)
 {
   const auto & entry = parse_plan_.joint_entries.at(joint_entry_index);
-  const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
-  if (cached_element_name_ != element_name)
+  if (const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
+      cached_element_name_ != element_name)
   {
     parse_pos_ = cached_element_end_;
     const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
@@ -646,8 +646,8 @@ void MotionState::ParseJointField(std::string_view xml, std::size_t joint_entry_
 
 void MotionState::ParseCartesianField(std::string_view xml, const CartesianParseEntry & entry)
 {
-  const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
-  if (cached_element_name_ != element_name)
+  if (const std::string & element_name = parse_plan_.element_names.at(entry.element_index);
+      cached_element_name_ != element_name)
   {
     parse_pos_ = cached_element_end_;
     const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
@@ -682,8 +682,8 @@ void MotionState::ParseCartesianField(std::string_view xml, const CartesianParse
 
 void MotionState::ParseDelayField(std::string_view xml)
 {
-  const std::string & delay_element_name = parse_plan_.delay_element_name;
-  if (cached_element_name_ != delay_element_name)
+  if (const std::string & delay_element_name = parse_plan_.delay_element_name;
+      cached_element_name_ != delay_element_name)
   {
     parse_pos_ = cached_element_end_;
     const std::size_t element_start = FindElementStart(xml, delay_element_name, parse_pos_);
@@ -704,10 +704,9 @@ void MotionState::ParseDelayField(std::string_view xml)
   errno = 0;
   char * endptr = nullptr;
   delay_ = std::strtoull(xml.data() + value_start, &endptr, 0);
-  const char * const value_ptr = xml.data() + value_start;
-  if (
-    errno != 0 || endptr == value_ptr ||
-    static_cast<std::size_t>(endptr - xml.data()) >= element_end || *endptr != '"')
+  if (const char * const value_ptr = xml.data() + value_start;
+      errno != 0 || endptr == value_ptr ||
+      static_cast<std::size_t>(endptr - xml.data()) >= element_end || *endptr != '"')
   {
     throw std::invalid_argument("Received XML Delay value is not a valid integer");
   }
@@ -718,12 +717,12 @@ void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
 {
   if (!parse_plan_.gpio_element_index.has_value())
   {
-    throw std::logic_error(
-      "GPIO parse entry exists but GPIO element is not configured");  // NOSONAR
+    throw std::logic_error(  // NOSONAR
+      "GPIO parse entry exists but GPIO element is not configured");
   }
   const std::size_t element_index = parse_plan_.gpio_element_index.value();
-  const std::string & element_name = parse_plan_.element_names.at(element_index);
-  if (cached_element_name_ != element_name)
+  if (const std::string & element_name = parse_plan_.element_names.at(element_index);
+      cached_element_name_ != element_name)
   {
     parse_pos_ = cached_element_end_;
     const std::size_t element_start = FindElementStart(xml, element_name, parse_pos_);
