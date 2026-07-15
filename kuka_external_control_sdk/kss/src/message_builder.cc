@@ -332,7 +332,7 @@ void MotionState::InitializeParsePlan(
     xml_config.value_or(CreateDefaultXmlConfiguration(joint_configs_, gpio_configs));
 
   ValidateMotionStateXmlConfiguration(runtime_config);
-  InitializeCoreParsePlanFields(runtime_config);
+  InitializeCoreParsePlanFields();
   AddCartesianParseEntry(runtime_config);
   AddJointParseEntries(runtime_config);
   ConfigureGpioParseEntries(runtime_config);
@@ -352,9 +352,8 @@ std::size_t MotionState::GetOrAddParseElementIndex(const std::string & element_n
   return parse_plan_.element_names.size() - 1;
 }
 
-void MotionState::InitializeCoreParsePlanFields(const MotionStateXmlConfiguration & config)
+void MotionState::InitializeCoreParsePlanFields()
 {
-  (void)config;
   parse_plan_.delay_element_name = "Delay";
   parse_plan_.delay_attribute_name = "D";
   parse_plan_.ipoc_element_name = "IPOC";

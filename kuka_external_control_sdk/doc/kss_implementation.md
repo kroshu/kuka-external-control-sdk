@@ -66,7 +66,7 @@ The KSS parser is configuration-driven. Instead of hard-coding `RIst/AIPos/EIPos
 | `gpio_xml_element` | `std::string` | `"GPIO"` | XML element name for GPIO state values |
 | `gpio_xml_attributes` | `vector<string>` | *empty* | Attribute names for each GPIO; defaults to GPIO config names if empty |
 | `ipoc_xml_element` | `std::string` | `"IPOC"` | XML element name for the IPOC counter |
-| `field_order` | `vector<MotionStateXmlOrderEntry>` | *empty* | Explicit parse ordering; default legacy order used if empty |
+| `field_order` | `vector<MotionStateXmlOrderEntry>` | *empty* | Explicit parse ordering; default order used if empty |
 
 Each `MotionStateJointFieldConfiguration` entry specifies:
 
@@ -87,7 +87,7 @@ The `MotionStateXmlFieldType` enum values used in `field_order`:
 | `GPIO` | One GPIO attribute entry |
 | `IPOC` | IPOC counter element |
 
-If `motion_state_xml_config` is not provided, the legacy RSI layout is generated automatically to keep existing applications compatible.
+If `motion_state_xml_config` is not provided, the default RSI layout is generated automatically to keep existing applications compatible.
 
 ### Initialization-time validation
 
@@ -119,7 +119,7 @@ No dynamic memory allocation is performed after `MotionState` and `ControlSignal
 
 ### Example configurations
 
-#### 1. Legacy-compatible layout (implicit default)
+#### 1. Default layout
 
 ```cpp
 kuka::external::control::kss::Configuration cfg;
@@ -218,7 +218,7 @@ This is valid because every configured joint field (`JOINT`) and GPIO attribute 
 
 The outgoing RSI control signal (sent from the SDK to KSS) is also configuration-driven. `Configuration::control_signal_xml_config` (`ControlSignalXmlConfiguration`) lets you customise element names, attribute names, and field ordering.
 
-If `control_signal_xml_config` is not set, the legacy RSI layout is used and all existing applications remain unaffected.
+If `control_signal_xml_config` is not set, the default RSI layout is used and all existing applications remain unaffected.
 
 ### Configuration model
 
@@ -232,7 +232,7 @@ If `control_signal_xml_config` is not set, the legacy RSI layout is used and all
 | `ext_joint_xml_attributes` | `vector<string>` | *empty* | Attribute names for each external axis; auto-generated as `E1`, `E2`, … if empty |
 | `gpio_xml_element` | `std::string` | `"GPIO"` | XML element name for GPIO command values |
 | `ipoc_xml_element` | `std::string` | `"IPOC"` | XML element name for the IPOC counter |
-| `field_order` | `vector<ControlSignalXmlOrderEntry>` | *empty* | Explicit field ordering; default legacy order used if empty |
+| `field_order` | `vector<ControlSignalXmlOrderEntry>` | *empty* | Explicit field ordering; default order used if empty |
 
 The `ControlSignalXmlFieldType` enum values used in `field_order`:
 
@@ -248,8 +248,7 @@ The `ControlSignalXmlFieldType` enum values used in `field_order`:
 
 ### Default behavior and backward compatibility
 
-When `control_signal_xml_config` is not set (or set to `std::nullopt`), the transmitted
-message is identical to the pre-existing legacy format:
+When `control_signal_xml_config` is not set (or set to `std::nullopt`), the transmitted message is identical to the default format:
 
 ```xml
 <Sen Type="KROSHU"><Stop>0</Stop><AK A1="..." A2="..."/><EK E1="..."/><GPIO name="..."/><IPOC>...</IPOC></Sen>
@@ -279,7 +278,7 @@ Invalid configurations throw `std::invalid_argument` at construction time.
 
 ### Example configurations
 
-#### 1. Legacy-compatible layout (implicit default)
+#### 1. Default layout
 
 ```cpp
 kuka::external::control::kss::Configuration cfg;

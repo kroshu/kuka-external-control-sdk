@@ -136,7 +136,7 @@ private:
     const std::vector<JointConfiguration> & joint_configs,
     const std::vector<GPIOConfiguration> & gpio_configs);
   std::size_t GetOrAddParseElementIndex(const std::string & element_name);
-  void InitializeCoreParsePlanFields(const MotionStateXmlConfiguration & config);
+  void InitializeCoreParsePlanFields();
   void AddCartesianParseEntry(const MotionStateXmlConfiguration & config);
   void AddJointParseEntries(const MotionStateXmlConfiguration & config);
   void ConfigureGpioParseEntries(MotionStateXmlConfiguration & config);

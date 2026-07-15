@@ -163,10 +163,19 @@ struct MotionStateXmlOrderEntry
 
 struct MotionStateXmlConfiguration
 {
+  // XML field definitions for joint state values.
   std::vector<MotionStateJointFieldConfiguration> joint_fields;
+
+  // XML field definition for Cartesian state values.
   MotionStateCartesianFieldConfiguration cartesian;
+
+  // XML element name for GPIO state values (default: "GPIO").
   std::string gpio_xml_element = "GPIO";
+
+  // Attribute names for GPIO state values.
   std::vector<std::string> gpio_xml_attributes;
+
+  // Explicit field ordering for the transmitted message.
   std::vector<MotionStateXmlOrderEntry> field_order;
 };
 
@@ -187,25 +196,25 @@ struct ControlSignalXmlOrderEntry
 
 struct ControlSignalXmlConfiguration
 {
-  // XML element name for internal joint positions (legacy default: "AK")
+  // XML element name for internal joint positions (default: "AK")
   std::string joint_xml_element = "AK";
 
   // Attribute names for internal joint positions.
   // If empty, auto-generated as "A1", "A2", ... up to the number of internal axes.
   std::vector<std::string> joint_xml_attributes;
 
-  // XML element name for external joint positions (legacy default: "EK")
+  // XML element name for external joint positions (default: "EK")
   std::string ext_joint_xml_element = "EK";
 
   // Attribute names for external joint positions.
   // If empty, auto-generated as "E1", "E2", ... up to the number of external axes.
   std::vector<std::string> ext_joint_xml_attributes;
 
-  // XML element name for GPIO command values (legacy default: "GPIO")
+  // XML element name for GPIO command values (default: "GPIO")
   std::string gpio_xml_element = "GPIO";
 
   // Explicit field ordering for the transmitted message.
-  // If empty, the default legacy order is used:
+  // If empty, the default order is used:
   //   JOINT, EXT_JOINT (if external axes exist), GPIO (if GPIO commands exist), IPOC
   std::vector<ControlSignalXmlOrderEntry> field_order;
 };
@@ -239,11 +248,11 @@ struct Configuration
   // GPIO commands
   std::vector<GPIOConfiguration> gpio_command_configs;
 
-  // Optional XML layout used for parsing RSI state messages. If not set, the legacy
+  // Optional XML layout used for parsing RSI state messages. If not set, the default
   // RSI layout (<RIst><AIPos><EIPos><Delay><GPIO><IPOC>) is used.
   std::optional<MotionStateXmlConfiguration> motion_state_xml_config;
 
-  // Optional XML layout for transmitted RSI control signal messages. If not set, the legacy
+  // Optional XML layout for transmitted RSI control signal messages. If not set, the default
   // RSI layout (<Stop><AK ...><EK ...><GPIO ...><IPOC>) is used.
   std::optional<ControlSignalXmlConfiguration> control_signal_xml_config;
 
