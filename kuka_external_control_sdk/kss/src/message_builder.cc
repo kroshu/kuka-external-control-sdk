@@ -248,7 +248,7 @@ void MotionState::CreateFromXML(const char * incoming_xml)
       case MotionStateXmlFieldType::CARTESIAN:
         if (!parse_plan_.cartesian_entry.has_value())
         {
-          throw std::logic_error("Cartesian parse entry is not configured");  // NOLINT
+          throw std::logic_error("Cartesian parse entry is not configured");  // NOSONAR
         }
         ParseCartesianField(xml, parse_plan_.cartesian_entry.value());
         has_cartesian_positions_ = true;
@@ -665,7 +665,7 @@ void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
 {
   if (!parse_plan_.gpio_element_index.has_value())
   {
-    throw std::logic_error("GPIO parse entry exists but GPIO element is not configured");  // NOLINT
+    throw std::logic_error("GPIO parse entry exists but GPIO element is not configured");  // NOSONAR
   }
   const std::size_t element_index = parse_plan_.gpio_element_index.value();
   const std::string & element_name = parse_plan_.element_names.at(element_index);
