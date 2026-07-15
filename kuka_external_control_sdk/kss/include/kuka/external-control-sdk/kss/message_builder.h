@@ -260,6 +260,7 @@ private:
   static constexpr int kPrecision = 6;
   static constexpr int kBufferSize = 1024;
   char xml_string_[kBufferSize];
+  std::size_t write_pos_ = 0;
 
   const std::vector<JointConfiguration> joint_configs_;
   std::size_t num_internal_axes_ = 0;

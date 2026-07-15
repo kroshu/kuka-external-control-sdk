@@ -665,7 +665,8 @@ void MotionState::ParseGpioField(std::string_view xml, std::size_t gpio_index)
 {
   if (!parse_plan_.gpio_element_index.has_value())
   {
-    throw std::logic_error("GPIO parse entry exists but GPIO element is not configured");  // NOSONAR
+    throw std::logic_error(
+      "GPIO parse entry exists but GPIO element is not configured");  // NOSONAR
   }
   const std::size_t element_index = parse_plan_.gpio_element_index.value();
   const std::string & element_name = parse_plan_.element_names.at(element_index);
@@ -715,7 +716,11 @@ void MotionState::ParseIpocField(std::string_view xml)
 
 void ControlSignal::AppendToXMLString(std::string_view str)
 {
-  strncat(xml_string_, str.data(), kBufferSize - strnlen(xml_string_, kBufferSize) - 1);
+  std::size_t available = kBufferSize - write_pos_ - 1;
+  std::size_t to_copy = std::min(str.size(), available);
+  std::memcpy(xml_string_ + write_pos_, str.data(), to_copy);
+  write_pos_ += to_copy;
+  xml_string_[write_pos_] = '\0';
 }
 
 void ControlSignal::InitializeWritePlan(
@@ -862,6 +867,7 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
   uint64_t last_ipoc, bool stop_control)
 {
   std::memset(xml_string_, 0, sizeof(xml_string_));
+  write_pos_ = 0;
 
   AppendToXMLString(kMessagePrefix);
 
