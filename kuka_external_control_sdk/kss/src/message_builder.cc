@@ -52,6 +52,32 @@ static void ValidateControlSignalXmlConfiguration(
     throw std::invalid_argument(
       "External joint XML element name must not be empty when external axes are configured");
   }
+  if (config.include_torque_values && config.torque_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "Torque XML element name must not be empty when torque transmission is enabled");
+  }
+  if (config.include_velocity_values && config.velocity_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "Velocity XML element name must not be empty when velocity transmission is enabled");
+  }
+  if (
+    config.include_ext_torque_values && num_external_axes > 0 &&
+    config.ext_torque_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "External torque XML element name must not be empty when external torque transmission is "
+      "enabled and external axes are configured");
+  }
+  if (
+    config.include_ext_velocity_values && num_external_axes > 0 &&
+    config.ext_velocity_xml_element.empty())
+  {
+    throw std::invalid_argument(
+      "External velocity XML element name must not be empty when external velocity transmission is "
+      "enabled and external axes are configured");
+  }
   if (num_gpio_configs > 0 && config.gpio_xml_element.empty())
   {
     throw std::invalid_argument(
@@ -327,19 +353,16 @@ MotionStateXmlConfiguration MotionState::CreateDefaultXmlConfiguration(
     config.gpio_xml_attributes.push_back(gpio.name);
   }
 
-  config.field_order.reserve(
-    1 + config.joint_fields.size() + 1 + config.gpio_xml_attributes.size() + 1);
+  config.field_order.reserve(1 + config.joint_fields.size() + config.gpio_xml_attributes.size());
   config.field_order.push_back({MotionStateXmlFieldType::CARTESIAN, 0});
   for (std::size_t i = 0; i < config.joint_fields.size(); ++i)
   {
     config.field_order.push_back({MotionStateXmlFieldType::JOINT, i});
   }
-  config.field_order.push_back({MotionStateXmlFieldType::DELAY, 0});
   for (std::size_t i = 0; i < config.gpio_xml_attributes.size(); ++i)
   {
     config.field_order.push_back({MotionStateXmlFieldType::GPIO, i});
   }
-  config.field_order.push_back({MotionStateXmlFieldType::IPOC, 0});
 
   return config;
 }
@@ -409,6 +432,9 @@ std::size_t MotionState::FindJointIndexByIdentifier(const std::string & joint_id
 void MotionState::AddJointParseEntries(const MotionStateXmlConfiguration & config)
 {
   parse_plan_.joint_entries.reserve(config.joint_fields.size());
+  std::vector<bool> has_position_for_joint(dof_, false);
+  std::vector<bool> has_velocity_for_joint(dof_, false);
+  std::vector<bool> has_torque_for_joint(dof_, false);
   for (const auto & field : config.joint_fields)
   {
     if (field.joint_identifier.empty() || field.xml_element.empty() || field.xml_attribute.empty())
@@ -421,7 +447,67 @@ void MotionState::AddJointParseEntries(const MotionStateXmlConfiguration & confi
     entry.joint_index = FindJointIndexByIdentifier(field.joint_identifier);
     entry.element_index = GetOrAddParseElementIndex(field.xml_element);
     entry.attribute_name = field.xml_attribute;
+    if (entry.quantity == ParsedQuantity::POSITION)
+    {
+      has_position_for_joint[entry.joint_index] = true;
+    }
+    else if (entry.quantity == ParsedQuantity::VELOCITY)
+    {
+      has_velocity_for_joint[entry.joint_index] = true;
+    }
+    else if (entry.quantity == ParsedQuantity::TORQUE)
+    {
+      has_torque_for_joint[entry.joint_index] = true;
+    }
     parse_plan_.joint_entries.push_back(std::move(entry));
+  }
+
+  if (!std::all_of(
+        has_position_for_joint.cbegin(), has_position_for_joint.cend(), [](bool v) { return v; }))
+  {
+    throw std::invalid_argument(
+      "Motion-state configuration must include POSITION field for every joint");
+  }
+
+  if (
+    std::any_of(
+      has_velocity_for_joint.cbegin(), has_velocity_for_joint.cend(), [](bool v) { return v; }) &&
+    !std::all_of(
+      has_velocity_for_joint.cbegin(), has_velocity_for_joint.cend(), [](bool v) { return v; }))
+  {
+    throw std::invalid_argument(
+      "Motion-state configuration must include VELOCITY field for every joint if configured");
+  }
+
+  bool any_internal_torque = false;
+  bool all_internal_torque = true;
+  bool any_external_torque = false;
+  bool all_external_torque = true;
+  for (std::size_t i = 0; i < joint_configs_.size(); ++i)
+  {
+    if (joint_configs_[i].is_external)
+    {
+      any_external_torque = any_external_torque || has_torque_for_joint[i];
+      all_external_torque = all_external_torque && has_torque_for_joint[i];
+    }
+    else
+    {
+      any_internal_torque = any_internal_torque || has_torque_for_joint[i];
+      all_internal_torque = all_internal_torque && has_torque_for_joint[i];
+    }
+  }
+
+  if (any_internal_torque && !all_internal_torque)
+  {
+    throw std::invalid_argument(
+      "Motion-state configuration must include TORQUE field for every internal joint if "
+      "configured");
+  }
+  if (any_external_torque && !all_external_torque)
+  {
+    throw std::invalid_argument(
+      "Motion-state configuration must include TORQUE field for every external joint if "
+      "configured");
   }
 }
 
@@ -450,29 +536,47 @@ void MotionState::ConfigureGpioParseEntries(MotionStateXmlConfiguration & config
 
 void MotionState::BuildParseOrder(const MotionStateXmlConfiguration & config)
 {
+  std::vector<ParseOrderEntry> configurable_order;
   if (!config.field_order.empty())
   {
-    parse_plan_.parse_order.reserve(config.field_order.size());
+    configurable_order.reserve(config.field_order.size());
     for (const auto & entry : config.field_order)
     {
-      parse_plan_.parse_order.push_back({entry.field_type, entry.index});
+      if (
+        entry.field_type == MotionStateXmlFieldType::DELAY ||
+        entry.field_type == MotionStateXmlFieldType::IPOC)
+      {
+        throw std::invalid_argument(
+          "Motion-state field_order must not contain DELAY or IPOC; they are handled internally");
+      }
+      configurable_order.push_back({entry.field_type, entry.index});
     }
-    return;
+  }
+  else
+  {
+    if (parse_plan_.cartesian_entry.has_value())
+    {
+      configurable_order.push_back({MotionStateXmlFieldType::CARTESIAN, 0});
+    }
+    for (std::size_t i = 0; i < parse_plan_.joint_entries.size(); ++i)
+    {
+      configurable_order.push_back({MotionStateXmlFieldType::JOINT, i});
+    }
+    for (std::size_t i = 0; i < parse_plan_.gpio_attribute_names.size(); ++i)
+    {
+      configurable_order.push_back({MotionStateXmlFieldType::GPIO, i});
+    }
   }
 
-  if (parse_plan_.cartesian_entry.has_value())
+  // Delay and IPOC are always parsed exactly once and are not configurable.
+  parse_plan_.parse_order.clear();
+  parse_plan_.parse_order.reserve(configurable_order.size() + 2);
+  for (const auto & entry : configurable_order)
   {
-    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::CARTESIAN, 0});
+    parse_plan_.parse_order.push_back(entry);
   }
-  for (std::size_t i = 0; i < parse_plan_.joint_entries.size(); ++i)
-  {
-    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::JOINT, i});
-  }
+  // These are always parsed after all configurable fields.
   parse_plan_.parse_order.push_back({MotionStateXmlFieldType::DELAY, 0});
-  for (std::size_t i = 0; i < parse_plan_.gpio_attribute_names.size(); ++i)
-  {
-    parse_plan_.parse_order.push_back({MotionStateXmlFieldType::GPIO, i});
-  }
   parse_plan_.parse_order.push_back({MotionStateXmlFieldType::IPOC, 0});
 }
 
@@ -796,6 +900,10 @@ void ControlSignal::InitializeWritePlan(
   ValidateControlSignalXmlConfiguration(cfg, num_external_axes_, gpio_configs.size());
   InitializeJointWritePrefixes(cfg);
   InitializeExternalJointWritePrefixes(cfg);
+  InitializeVelocityWritePrefixes(cfg);
+  InitializeExternalVelocityWritePrefixes(cfg);
+  InitializeTorqueWritePrefixes(cfg);
+  InitializeExternalTorqueWritePrefixes(cfg);
   write_plan_.gpio_element_prefix = "<" + cfg.gpio_xml_element;
   InitializeGpioWritePrefixes(gpio_configs);
   write_plan_.ipoc_opening_tag = "<IPOC>";
@@ -822,6 +930,61 @@ void ControlSignal::InitializeExternalJointWritePrefixes(const ControlSignalXmlC
     "External joint XML attribute names must not be empty", write_plan_.ext_joint_attrib_prefixes);
 }
 
+void ControlSignal::InitializeTorqueWritePrefixes(const ControlSignalXmlConfiguration & cfg)
+{
+  if (!cfg.include_torque_values)
+  {
+    return;
+  }
+  write_plan_.torque_element_prefix = "<" + cfg.torque_xml_element;
+  BuildAttributePrefixes(
+    cfg.torque_xml_attributes, num_internal_axes_, 'A',
+    "Torque XML attribute count must match the number of internal axes",
+    "Torque XML attribute names must not be empty", write_plan_.torque_attrib_prefixes);
+}
+
+void ControlSignal::InitializeVelocityWritePrefixes(const ControlSignalXmlConfiguration & cfg)
+{
+  if (!cfg.include_velocity_values)
+  {
+    return;
+  }
+  write_plan_.velocity_element_prefix = "<" + cfg.velocity_xml_element;
+  BuildAttributePrefixes(
+    cfg.velocity_xml_attributes, num_internal_axes_, 'A',
+    "Velocity XML attribute count must match the number of internal axes",
+    "Velocity XML attribute names must not be empty", write_plan_.velocity_attrib_prefixes);
+}
+
+void ControlSignal::InitializeExternalVelocityWritePrefixes(
+  const ControlSignalXmlConfiguration & cfg)
+{
+  if (!cfg.include_ext_velocity_values || num_external_axes_ == 0)
+  {
+    return;
+  }
+  write_plan_.ext_velocity_element_prefix = "<" + cfg.ext_velocity_xml_element;
+  BuildAttributePrefixes(
+    cfg.ext_velocity_xml_attributes, num_external_axes_, 'E',
+    "External velocity XML attribute count must match the number of external axes",
+    "External velocity XML attribute names must not be empty",
+    write_plan_.ext_velocity_attrib_prefixes);
+}
+
+void ControlSignal::InitializeExternalTorqueWritePrefixes(const ControlSignalXmlConfiguration & cfg)
+{
+  if (!cfg.include_ext_torque_values || num_external_axes_ == 0)
+  {
+    return;
+  }
+  write_plan_.ext_torque_element_prefix = "<" + cfg.ext_torque_xml_element;
+  BuildAttributePrefixes(
+    cfg.ext_torque_xml_attributes, num_external_axes_, 'E',
+    "External torque XML attribute count must match the number of external axes",
+    "External torque XML attribute names must not be empty",
+    write_plan_.ext_torque_attrib_prefixes);
+}
+
 void ControlSignal::InitializeGpioWritePrefixes(const std::vector<GPIOConfiguration> & gpio_configs)
 {
   for (const auto & gpio_cfg : gpio_configs)
@@ -838,20 +1001,44 @@ void ControlSignal::BuildWriteOrder(
     write_plan_.write_order.reserve(cfg.field_order.size());
     for (const auto & entry : cfg.field_order)
     {
+      if (entry.field_type == ControlSignalXmlFieldType::IPOC)
+      {
+        throw std::invalid_argument(
+          "Control-signal field_order must not contain IPOC; it is handled internally");
+      }
       write_plan_.write_order.push_back(entry.field_type);
     }
-    return;
+  }
+  else
+  {
+    write_plan_.write_order.push_back(ControlSignalXmlFieldType::POSITION);
+    if (num_external_axes_ > 0)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_POSITION);
+    }
+    if (cfg.include_velocity_values)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::VELOCITY);
+    }
+    if (cfg.include_ext_velocity_values && num_external_axes_ > 0)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_VELOCITY);
+    }
+    if (cfg.include_torque_values)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::TORQUE);
+    }
+    if (cfg.include_ext_torque_values && num_external_axes_ > 0)
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_TORQUE);
+    }
+    if (!gpio_configs.empty())
+    {
+      write_plan_.write_order.push_back(ControlSignalXmlFieldType::GPIO);
+    }
   }
 
-  write_plan_.write_order.push_back(ControlSignalXmlFieldType::JOINT);
-  if (num_external_axes_ > 0)
-  {
-    write_plan_.write_order.push_back(ControlSignalXmlFieldType::EXT_JOINT);
-  }
-  if (!gpio_configs.empty())
-  {
-    write_plan_.write_order.push_back(ControlSignalXmlFieldType::GPIO);
-  }
+  // IPOC is always emitted exactly once and is not configurable.
   write_plan_.write_order.push_back(ControlSignalXmlFieldType::IPOC);
 }
 
@@ -859,6 +1046,10 @@ void ControlSignal::ValidateAndFinalizeWritePlan() const
 {
   bool has_joint = false;
   bool has_ext_joint = false;
+  bool has_velocity = false;
+  bool has_ext_velocity = false;
+  bool has_torque = false;
+  bool has_ext_torque = false;
   bool has_gpio = false;
   bool has_ipoc = false;
 
@@ -866,19 +1057,47 @@ void ControlSignal::ValidateAndFinalizeWritePlan() const
   {
     switch (field_type)
     {
-      case ControlSignalXmlFieldType::JOINT:
+      case ControlSignalXmlFieldType::POSITION:
         if (has_joint)
         {
-          throw std::invalid_argument("Write order must contain JOINT field at most once");
+          throw std::invalid_argument("Write order must contain POSITION field at most once");
         }
         has_joint = true;
         break;
-      case ControlSignalXmlFieldType::EXT_JOINT:
+      case ControlSignalXmlFieldType::EXT_POSITION:
         if (has_ext_joint)
         {
-          throw std::invalid_argument("Write order must contain EXT_JOINT field at most once");
+          throw std::invalid_argument("Write order must contain EXT_POSITION field at most once");
         }
         has_ext_joint = true;
+        break;
+      case ControlSignalXmlFieldType::TORQUE:
+        if (has_torque)
+        {
+          throw std::invalid_argument("Write order must contain TORQUE field at most once");
+        }
+        has_torque = true;
+        break;
+      case ControlSignalXmlFieldType::VELOCITY:
+        if (has_velocity)
+        {
+          throw std::invalid_argument("Write order must contain VELOCITY field at most once");
+        }
+        has_velocity = true;
+        break;
+      case ControlSignalXmlFieldType::EXT_VELOCITY:
+        if (has_ext_velocity)
+        {
+          throw std::invalid_argument("Write order must contain EXT_VELOCITY field at most once");
+        }
+        has_ext_velocity = true;
+        break;
+      case ControlSignalXmlFieldType::EXT_TORQUE:
+        if (has_ext_torque)
+        {
+          throw std::invalid_argument("Write order must contain EXT_TORQUE field at most once");
+        }
+        has_ext_torque = true;
         break;
       case ControlSignalXmlFieldType::GPIO:
         if (has_gpio)
@@ -905,17 +1124,57 @@ void ControlSignal::ValidateAndFinalizeWritePlan() const
   }
   if (!has_joint)
   {
-    throw std::invalid_argument("Write order must contain the JOINT field");
+    throw std::invalid_argument("Write order must contain the POSITION field");
   }
   if (num_external_axes_ > 0 && !has_ext_joint)
   {
     throw std::invalid_argument(
-      "Write order must contain EXT_JOINT when external axes are configured");
+      "Write order must contain EXT_POSITION when external axes are configured");
   }
   if (num_external_axes_ == 0 && has_ext_joint)
   {
     throw std::invalid_argument(
-      "Write order contains EXT_JOINT but no external axes are configured");
+      "Write order contains EXT_POSITION but no external axes are configured");
+  }
+  if (!write_plan_.torque_attrib_prefixes.empty() && !has_torque)
+  {
+    throw std::invalid_argument(
+      "Write order must contain TORQUE when torque transmission is configured");
+  }
+  if (write_plan_.torque_attrib_prefixes.empty() && has_torque)
+  {
+    throw std::invalid_argument(
+      "Write order contains TORQUE but torque transmission is not configured");
+  }
+  if (!write_plan_.velocity_attrib_prefixes.empty() && !has_velocity)
+  {
+    throw std::invalid_argument(
+      "Write order must contain VELOCITY when velocity transmission is configured");
+  }
+  if (write_plan_.velocity_attrib_prefixes.empty() && has_velocity)
+  {
+    throw std::invalid_argument(
+      "Write order contains VELOCITY but velocity transmission is not configured");
+  }
+  if (!write_plan_.ext_torque_attrib_prefixes.empty() && !has_ext_torque)
+  {
+    throw std::invalid_argument(
+      "Write order must contain EXT_TORQUE when external torque transmission is configured");
+  }
+  if (write_plan_.ext_torque_attrib_prefixes.empty() && has_ext_torque)
+  {
+    throw std::invalid_argument(
+      "Write order contains EXT_TORQUE but external torque transmission is not configured");
+  }
+  if (!write_plan_.ext_velocity_attrib_prefixes.empty() && !has_ext_velocity)
+  {
+    throw std::invalid_argument(
+      "Write order must contain EXT_VELOCITY when external velocity transmission is configured");
+  }
+  if (write_plan_.ext_velocity_attrib_prefixes.empty() && has_ext_velocity)
+  {
+    throw std::invalid_argument(
+      "Write order contains EXT_VELOCITY but external velocity transmission is not configured");
   }
   if (!write_plan_.gpio_attrib_prefixes.empty() && !has_gpio)
   {
@@ -943,7 +1202,7 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
   {
     switch (field_type)
     {
-      case ControlSignalXmlFieldType::JOINT:
+      case ControlSignalXmlFieldType::POSITION:
         AppendToXMLString(write_plan_.joint_element_prefix);
         if (!WritePositions(
               write_plan_.joint_attrib_prefixes, num_internal_axes_, num_external_axes_))
@@ -951,9 +1210,39 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
           return std::nullopt;
         }
         break;
-      case ControlSignalXmlFieldType::EXT_JOINT:
+      case ControlSignalXmlFieldType::EXT_POSITION:
         AppendToXMLString(write_plan_.ext_joint_element_prefix);
         if (!WritePositions(write_plan_.ext_joint_attrib_prefixes, num_external_axes_))
+        {
+          return std::nullopt;
+        }
+        break;
+      case ControlSignalXmlFieldType::TORQUE:
+        AppendToXMLString(write_plan_.torque_element_prefix);
+        if (!WriteTorques(
+              write_plan_.torque_attrib_prefixes, num_internal_axes_, num_external_axes_))
+        {
+          return std::nullopt;
+        }
+        break;
+      case ControlSignalXmlFieldType::VELOCITY:
+        AppendToXMLString(write_plan_.velocity_element_prefix);
+        if (!WriteVelocities(
+              write_plan_.velocity_attrib_prefixes, num_internal_axes_, num_external_axes_))
+        {
+          return std::nullopt;
+        }
+        break;
+      case ControlSignalXmlFieldType::EXT_VELOCITY:
+        AppendToXMLString(write_plan_.ext_velocity_element_prefix);
+        if (!WriteVelocities(write_plan_.ext_velocity_attrib_prefixes, num_external_axes_))
+        {
+          return std::nullopt;
+        }
+        break;
+      case ControlSignalXmlFieldType::EXT_TORQUE:
+        AppendToXMLString(write_plan_.ext_torque_element_prefix);
+        if (!WriteTorques(write_plan_.ext_torque_attrib_prefixes, num_external_axes_))
         {
           return std::nullopt;
         }
@@ -1079,6 +1368,74 @@ bool ControlSignal::WritePositions(
     const int ret =
       std::snprintf(double_buffer, sizeof(double_buffer), "%.*f", kPrecision, target_value);
 
+    if (ret <= 0)
+    {
+      return false;
+    }
+
+    AppendToXMLString(double_buffer);
+    AppendToXMLString("\"");
+  }
+  AppendToXMLString(kAttributeSuffix);
+
+  return true;
+}
+
+bool ControlSignal::WriteTorques(
+  const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
+  const std::size_t offset)
+{
+  for (std::size_t i = 0; i < num_values; ++i)
+  {
+    char
+      double_buffer[kPrecision + 3 + 1 + 1 + 1];  // Precision + Digits + Comma + Null + Minus sign
+    AppendToXMLString(attrib_prefixes[i]);
+
+    const std::size_t idx = i + offset;
+    const int ret = std::snprintf(
+      double_buffer, sizeof(double_buffer), "%.*f", kPrecision, joint_torque_values_[idx]);
+
+    if (ret <= 0)
+    {
+      return false;
+    }
+
+    AppendToXMLString(double_buffer);
+    AppendToXMLString("\"");
+  }
+  AppendToXMLString(kAttributeSuffix);
+
+  return true;
+}
+
+bool ControlSignal::WriteVelocities(
+  const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
+  const std::size_t offset)
+{
+  using JointType = JointConfiguration::Type;
+
+  for (std::size_t i = 0; i < num_values; ++i)
+  {
+    char
+      double_buffer[kPrecision + 3 + 1 + 1 + 1];  // Precision + Digits + Comma + Null + Minus sign
+    AppendToXMLString(attrib_prefixes[i]);
+
+    const std::size_t idx = i + offset;
+    double target_value;
+    switch (joint_configs_[idx].type)
+    {
+      case JointType::REVOLUTE:
+        target_value = RadiansToDegrees(joint_velocity_values_[idx]);
+        break;
+      case JointType::PRISMATIC:
+        target_value = MetersToMillimetres(joint_velocity_values_[idx]);
+        break;
+      default:
+        return false;
+    }
+
+    const int ret =
+      std::snprintf(double_buffer, sizeof(double_buffer), "%.*f", kPrecision, target_value);
     if (ret <= 0)
     {
       return false;

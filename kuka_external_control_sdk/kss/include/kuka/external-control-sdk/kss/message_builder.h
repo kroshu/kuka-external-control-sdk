@@ -197,6 +197,8 @@ public:
       [](const auto & config) { return !config.is_external; });
     num_external_axes_ = dof_ - num_internal_axes_;
     joint_position_values_.resize(dof, 0.0);
+    joint_velocity_values_.resize(dof, 0.0);
+    joint_torque_values_.resize(dof, 0.0);
     initial_positions_.resize(dof, 0.0);
     cartesian_position_values_.resize(6, 0.0);
 
@@ -224,6 +226,12 @@ private:
   [[nodiscard]] bool WritePositions(
     const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
     const std::size_t offset = 0);
+  [[nodiscard]] bool WriteTorques(
+    const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
+    const std::size_t offset = 0);
+  [[nodiscard]] bool WriteVelocities(
+    const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
+    const std::size_t offset = 0);
 
   [[nodiscard]] bool WriteGpioValues();
 
@@ -233,6 +241,14 @@ private:
     std::vector<std::string> joint_attrib_prefixes;
     std::string ext_joint_element_prefix;
     std::vector<std::string> ext_joint_attrib_prefixes;
+    std::string velocity_element_prefix;
+    std::vector<std::string> velocity_attrib_prefixes;
+    std::string ext_velocity_element_prefix;
+    std::vector<std::string> ext_velocity_attrib_prefixes;
+    std::string torque_element_prefix;
+    std::vector<std::string> torque_attrib_prefixes;
+    std::string ext_torque_element_prefix;
+    std::vector<std::string> ext_torque_attrib_prefixes;
     std::string gpio_element_prefix;
     std::vector<std::string> gpio_attrib_prefixes;
     std::string ipoc_opening_tag;
@@ -245,6 +261,10 @@ private:
     const std::vector<GPIOConfiguration> & gpio_configs);
   void InitializeJointWritePrefixes(const ControlSignalXmlConfiguration & cfg);
   void InitializeExternalJointWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeVelocityWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeExternalVelocityWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeTorqueWritePrefixes(const ControlSignalXmlConfiguration & cfg);
+  void InitializeExternalTorqueWritePrefixes(const ControlSignalXmlConfiguration & cfg);
   void InitializeGpioWritePrefixes(const std::vector<GPIOConfiguration> & gpio_configs);
   void BuildWriteOrder(
     const ControlSignalXmlConfiguration & cfg, const std::vector<GPIOConfiguration> & gpio_configs);

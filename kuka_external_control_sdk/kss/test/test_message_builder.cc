@@ -231,27 +231,151 @@ TEST_F(KSSMotionState, TestCustomXmlConfiguration)
   xml_cfg.joint_fields = {
     {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
     {"joint_1", MotionStateSignalType::VELOCITY, "Axes", "j1_vel"},
+    {"joint_2", MotionStateSignalType::POSITION, "Axes", "j2_pos"},
+    {"joint_2", MotionStateSignalType::VELOCITY, "Axes", "j2_vel"},
+    {"joint_1", MotionStateSignalType::TORQUE, "Forces", "j1_trq"},
     {"joint_2", MotionStateSignalType::TORQUE, "Forces", "j2_trq"},
   };
   xml_cfg.field_order = {
     {MotionStateXmlFieldType::JOINT, 0}, {MotionStateXmlFieldType::JOINT, 1},
-    {MotionStateXmlFieldType::JOINT, 2}, {MotionStateXmlFieldType::DELAY, 0},
-    {MotionStateXmlFieldType::IPOC, 0},
+    {MotionStateXmlFieldType::JOINT, 2}, {MotionStateXmlFieldType::JOINT, 3},
+    {MotionStateXmlFieldType::JOINT, 4}, {MotionStateXmlFieldType::JOINT, 5},
   };
 
   MotionState motion_state(2, {}, joints, xml_cfg);
   const char * xml =
-    "<Rob Type=\"KUKA\"><Axes j1_pos=\"90.0\" j1_vel=\"180.0\"/><Forces "
-    "j2_trq=\"12.5\"/><Delay D=\"3\"/><IPOC>9</IPOC></Rob>";
+    "<Rob Type=\"KUKA\"><Axes j1_pos=\"90.0\" j1_vel=\"180.0\" j2_pos=\"1000.0\" "
+    "j2_vel=\"2000.0\"/><Forces j1_trq=\"10.0\" j2_trq=\"12.5\"/><Delay D=\"3\"/><IPOC>9</IPOC>"
+    "</Rob>";
 
   motion_state.CreateFromXML(xml);
 
   EXPECT_NEAR(motion_state.GetMeasuredPositions()[0], M_PI / 2.0, 0.0001);
   EXPECT_NEAR(motion_state.GetMeasuredVelocities()[0], M_PI, 0.0001);
-  EXPECT_TRUE(std::isnan(motion_state.GetMeasuredPositions()[1]));
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredPositions()[1], 1.0);
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredVelocities()[1], 2.0);
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredTorques()[0], 10.0);
   EXPECT_DOUBLE_EQ(motion_state.GetMeasuredTorques()[1], 12.5);
   EXPECT_EQ(motion_state.GetDelay(), 3);
   EXPECT_EQ(motion_state.GetIpoc(), 9);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsPartialVelocityFields)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+    {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_2", MotionStateSignalType::POSITION, "Axes", "j2_pos"},
+    {"joint_1", MotionStateSignalType::VELOCITY, "Axes", "j1_vel"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2},
+  };
+
+  EXPECT_THROW(MotionState(2, {}, joints, xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsPartialInternalTorqueFields)
+{
+  std::vector<JointConfiguration> joints = {
+    {"ext_joint_1", JointConfiguration::Type::PRISMATIC, true},
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+    {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"ext_joint_1", MotionStateSignalType::POSITION, "Axes", "e1_pos"},
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_2", MotionStateSignalType::POSITION, "Axes", "j2_pos"},
+    {"joint_1", MotionStateSignalType::TORQUE, "Forces", "j1_trq"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2},
+    {MotionStateXmlFieldType::JOINT, 3},
+  };
+
+  EXPECT_THROW(MotionState(3, {}, joints, xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsPartialExternalTorqueFields)
+{
+  std::vector<JointConfiguration> joints = {
+    {"ext_joint_1", JointConfiguration::Type::PRISMATIC, true},
+    {"ext_joint_2", JointConfiguration::Type::PRISMATIC, true},
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"ext_joint_1", MotionStateSignalType::POSITION, "Axes", "e1_pos"},
+    {"ext_joint_2", MotionStateSignalType::POSITION, "Axes", "e2_pos"},
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"ext_joint_1", MotionStateSignalType::TORQUE, "Forces", "e1_trq"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2},
+    {MotionStateXmlFieldType::JOINT, 3},
+  };
+
+  EXPECT_THROW(MotionState(3, {}, joints, xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationAllowsExternalTorqueWithoutInternalTorque)
+{
+  std::vector<JointConfiguration> joints = {
+    {"ext_joint_1", JointConfiguration::Type::PRISMATIC, true},
+    {"ext_joint_2", JointConfiguration::Type::PRISMATIC, true},
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+    {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"ext_joint_1", MotionStateSignalType::POSITION, "Axes", "e1_pos"},
+    {"ext_joint_2", MotionStateSignalType::POSITION, "Axes", "e2_pos"},
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_2", MotionStateSignalType::POSITION, "Axes", "j2_pos"},
+    {"ext_joint_1", MotionStateSignalType::TORQUE, "Forces", "e1_trq"},
+    {"ext_joint_2", MotionStateSignalType::TORQUE, "Forces", "e2_trq"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0}, {MotionStateXmlFieldType::JOINT, 1},
+    {MotionStateXmlFieldType::JOINT, 2}, {MotionStateXmlFieldType::JOINT, 3},
+    {MotionStateXmlFieldType::JOINT, 4}, {MotionStateXmlFieldType::JOINT, 5},
+  };
+
+  MotionState motion_state(4, {}, joints, xml_cfg);
+  const char * xml =
+    "<Rob Type=\"KUKA\"><Axes e1_pos=\"1000.0\" e2_pos=\"2000.0\" j1_pos=\"90.0\" "
+    "j2_pos=\"45.0\"/><Forces e1_trq=\"10.0\" e2_trq=\"11.0\"/><Delay D=\"3\"/><IPOC>9</IPOC>"
+    "</Rob>";
+
+  motion_state.CreateFromXML(xml);
+
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredPositions()[0], 1.0);
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredPositions()[1], 2.0);
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[2], M_PI / 2.0, 0.0001);
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[3], M_PI / 4.0, 0.0001);
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredTorques()[0], 10.0);
+  EXPECT_DOUBLE_EQ(motion_state.GetMeasuredTorques()[1], 11.0);
+  EXPECT_TRUE(std::isnan(motion_state.GetMeasuredTorques()[2]));
+  EXPECT_TRUE(std::isnan(motion_state.GetMeasuredTorques()[3]));
 }
 
 TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsAttributePrefixMatch)
@@ -267,14 +391,125 @@ TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsAttributePrefixMatch)
   };
   xml_cfg.field_order = {
     {MotionStateXmlFieldType::JOINT, 0},
-    {MotionStateXmlFieldType::DELAY, 0},
-    {MotionStateXmlFieldType::IPOC, 0},
   };
 
   MotionState motion_state(1, {}, joints, xml_cfg);
   const char * xml = "<Rob Type=\"KUKA\"><Axes AAA=\"90.0\"/><Delay D=\"0\"/><IPOC>1</IPOC></Rob>";
 
   EXPECT_THROW(motion_state.CreateFromXML(xml), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationAcceptsFieldOrderWithoutDelayAndIpoc)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+  };
+  EXPECT_NO_THROW(MotionState(1, {}, joints, xml_cfg));
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsDelayAndIpocInFieldOrder)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::DELAY, 0},
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::IPOC, 0},
+    {MotionStateXmlFieldType::IPOC, 0},
+  };
+
+  EXPECT_THROW(MotionState(1, {}, joints, xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsMissingPositionForJoint)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+    {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_2", MotionStateSignalType::TORQUE, "Forces", "j2_trq"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+  };
+
+  EXPECT_THROW(MotionState(2, {}, joints, xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationRejectsMissingDelayElementInMessage)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+    {"joint_1", MotionStateSignalType::TORQUE, "Forces", "t1"},
+  };
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::JOINT, 1},
+  };
+
+  MotionState motion_state(1, {}, joints, xml_cfg);
+  const char * xml =
+    "<Rob Type=\"KUKA\"><Axes j1_pos=\"0.0\"/><Forces t1=\"12.5\"/><IPOC>9</IPOC></Rob>";
+
+  EXPECT_THROW(motion_state.CreateFromXML(xml), std::invalid_argument);
+}
+
+TEST_F(KSSMotionState, TestCustomXmlConfigurationParsesDelayAfterGpio)
+{
+  std::vector<JointConfiguration> joints = {
+    {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  };
+  std::vector<kuka::external::control::kss::GPIOConfiguration> gpio_configs = {
+    {"g1", kuka::external::control::GPIOValueType::BOOL},
+  };
+
+  MotionStateXmlConfiguration xml_cfg;
+  xml_cfg.cartesian.enabled = false;
+  xml_cfg.joint_fields = {
+    {"joint_1", MotionStateSignalType::POSITION, "Axes", "j1_pos"},
+  };
+  xml_cfg.gpio_xml_element = "Io";
+  xml_cfg.gpio_xml_attributes = {"g1"};
+  xml_cfg.field_order = {
+    {MotionStateXmlFieldType::JOINT, 0},
+    {MotionStateXmlFieldType::GPIO, 0},
+  };
+
+  MotionState motion_state(1, gpio_configs, joints, xml_cfg);
+  const char * xml =
+    "<Rob Type=\"KUKA\"><Axes j1_pos=\"90.0\"/><Io g1=\"1\"/><Delay D=\"4\"/><IPOC>5</IPOC></Rob>";
+  EXPECT_NO_THROW(motion_state.CreateFromXML(xml));
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[0], M_PI / 2.0, 0.0001);
+  EXPECT_EQ(motion_state.GetDelay(), 4);
+  EXPECT_EQ(motion_state.GetIpoc(), 5);
 }
 
 TEST_F(KSSControlSignal, TestZeroInit6Dof)
@@ -311,6 +546,157 @@ TEST_F(KSSControlSignal, TestFillEverything6Dof)
     "A4=\"194.805650\" A5=\"194.805650\" A6=\"194.805650\"/><IPOC>543265442</IPOC></Sen>";
 
   EXPECT_STREQ(control_signal.CreateXMLString(543265442, true).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestTorqueValuesAreNotIncludedByDefault)
+{
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes));
+
+  std::vector<double> positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> torques = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" "
+    "A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><IPOC>9</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(9).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestTorqueValuesAreIncludedWhenEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  xml_cfg.torque_xml_element = "TK";
+  xml_cfg.torque_xml_attributes = {"A1", "A2", "A3", "A4", "A5", "A6"};
+
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> torques = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" "
+    "A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><TK A1=\"1.000000\" A2=\"2.000000\" "
+    "A3=\"3.000000\" A4=\"4.000000\" A5=\"5.000000\" A6=\"6.000000\"/><IPOC>11</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(11).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestVelocityValuesAreIncludedWhenEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_velocity_values = true;
+  xml_cfg.velocity_xml_element = "VK";
+  xml_cfg.velocity_xml_attributes = {"A1", "A2", "A3", "A4", "A5", "A6"};
+
+  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> velocities = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddVelocityValues(velocities.begin(), velocities.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop><AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" "
+    "A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/><VK A1=\"57.295780\" A2=\"114.591559\" "
+    "A3=\"171.887339\" A4=\"229.183118\" A5=\"286.478898\" "
+    "A6=\"343.774677\"/><IPOC>12</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(12).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestTorqueValuesInternalOnlyWithExternalAxes)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  // include_ext_torque_values intentionally left false
+
+  ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions(8, 0.0);
+  std::vector<double> torques = {100.0, 200.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<EK E1=\"0.000000\" E2=\"0.000000\"/>"
+    "<TK A1=\"1.000000\" A2=\"2.000000\" A3=\"3.000000\" A4=\"4.000000\" A5=\"5.000000\" "
+    "A6=\"6.000000\"/>"
+    "<IPOC>5</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(5).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestExternalTorqueValuesWithoutInternalTorqueAreIncludedWhenEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_ext_torque_values = true;
+
+  ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions(8, 0.0);
+  std::vector<double> torques = {100.0, 200.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<EK E1=\"0.000000\" E2=\"0.000000\"/>"
+    "<ETK E1=\"100.000000\" E2=\"200.000000\"/>"
+    "<IPOC>8</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(8).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestExternalVelocityValuesWithoutInternalVelocityAreIncludedWhenEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_ext_velocity_values = true;
+
+  ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions(8, 0.0);
+  std::vector<double> velocities = {0.1, 0.2, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddVelocityValues(velocities.begin(), velocities.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<EK E1=\"0.000000\" E2=\"0.000000\"/>"
+    "<EVK E1=\"100.000000\" E2=\"200.000000\"/>"
+    "<IPOC>13</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(13).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestTorqueValuesWithExternalAxesWhenEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  xml_cfg.include_ext_torque_values = true;
+
+  ControlSignal control_signal(kFixSixAxes + 2, {}, GetJointConfig(2, kFixSixAxes), xml_cfg);
+
+  std::vector<double> positions(8, 0.0);
+  std::vector<double> torques = {100.0, 200.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+
+  const char * expected_xml =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<EK E1=\"0.000000\" E2=\"0.000000\"/>"
+    "<TK A1=\"1.000000\" A2=\"2.000000\" A3=\"3.000000\" A4=\"4.000000\" A5=\"5.000000\" "
+    "A6=\"6.000000\"/>"
+    "<ETK E1=\"100.000000\" E2=\"200.000000\"/>"
+    "<IPOC>6</IPOC></Sen>";
+  EXPECT_STREQ(control_signal.CreateXMLString(6).value().data(), expected_xml);
 }
 
 TEST_F(KSSControlSignal, TestFillEverything)
@@ -379,23 +765,16 @@ TEST_F(KSSControlSignal, TestCustomAttributeNames)
   EXPECT_STREQ(control_signal.CreateXMLString(1).value().data(), expected_xml);
 }
 
-TEST_F(KSSControlSignal, TestCustomFieldOrderIpocBeforeJoint)
+TEST_F(KSSControlSignal, TestCustomFieldOrderRejectsLegacyIpocEntry)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::POSITION, 0},
     {ControlSignalXmlFieldType::IPOC, 0},
-    {ControlSignalXmlFieldType::JOINT, 0},
   };
 
-  ControlSignal control_signal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg);
-
-  std::vector<double> values = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  control_signal.AddJointPositionValues(values.begin(), values.end());
-
-  const char * expected_xml =
-    "<Sen Type=\"KROSHU\"><Stop>0</Stop><IPOC>42</IPOC><AK A1=\"0.000000\" A2=\"0.000000\" "
-    "A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" A6=\"0.000000\"/></Sen>";
-  EXPECT_STREQ(control_signal.CreateXMLString(42).value().data(), expected_xml);
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
 }
 
 TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
@@ -420,22 +799,11 @@ TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
   EXPECT_STREQ(control_signal.CreateXMLString(0).value().data(), expected_xml);
 }
 
-TEST_F(KSSControlSignal, TestInvalidConfigMissingIpoc)
-{
-  ControlSignalXmlConfiguration xml_cfg;
-  xml_cfg.field_order = {
-    {ControlSignalXmlFieldType::JOINT, 0},
-  };
-
-  EXPECT_THROW(
-    ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
-}
-
 TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
-    {ControlSignalXmlFieldType::IPOC, 0},
+    {ControlSignalXmlFieldType::GPIO, 0},
   };
 
   EXPECT_THROW(
@@ -446,9 +814,8 @@ TEST_F(KSSControlSignal, TestInvalidConfigExtJointWithoutExternalAxes)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
-    {ControlSignalXmlFieldType::JOINT, 0},
-    {ControlSignalXmlFieldType::EXT_JOINT, 0},
-    {ControlSignalXmlFieldType::IPOC, 0},
+    {ControlSignalXmlFieldType::POSITION, 0},
+    {ControlSignalXmlFieldType::EXT_POSITION, 0},
   };
 
   EXPECT_THROW(
@@ -459,13 +826,28 @@ TEST_F(KSSControlSignal, TestInvalidConfigDuplicateField)
 {
   ControlSignalXmlConfiguration xml_cfg;
   xml_cfg.field_order = {
-    {ControlSignalXmlFieldType::JOINT, 0},
-    {ControlSignalXmlFieldType::JOINT, 0},
-    {ControlSignalXmlFieldType::IPOC, 0},
+    {ControlSignalXmlFieldType::POSITION, 0},
+    {ControlSignalXmlFieldType::POSITION, 0},
   };
 
   EXPECT_THROW(
     ControlSignal(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes), xml_cfg), std::invalid_argument);
+}
+
+TEST_F(KSSControlSignal, TestInvalidConfigExternalTorqueFieldWhenNotEnabled)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  xml_cfg.field_order = {
+    {ControlSignalXmlFieldType::POSITION, 0},
+    {ControlSignalXmlFieldType::EXT_POSITION, 0},
+    {ControlSignalXmlFieldType::TORQUE, 0},
+    {ControlSignalXmlFieldType::EXT_TORQUE, 0},
+  };
+
+  EXPECT_THROW(
+    ControlSignal(kFixSixAxes + 1, {}, GetJointConfig(1, kFixSixAxes), xml_cfg),
+    std::invalid_argument);
 }
 
 TEST_F(KSSControlSignal, TestInvalidConfigWrongAttributeCount)
