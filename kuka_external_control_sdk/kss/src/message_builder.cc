@@ -1346,8 +1346,8 @@ bool ControlSignal::WritePositions(
 
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    char
-      double_buffer[kPrecision + 3 + 1 + 1 + 1];  // Precision + Digits + Comma + Null + Minus sign
+    std::array<char, kPrecision + 3 + 1 + 1 + 1>
+      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(attrib_prefixes[i]);
 
     const std::size_t idx = i + offset;
@@ -1365,15 +1365,14 @@ bool ControlSignal::WritePositions(
         return false;
     }
 
-    const int ret =
-      std::snprintf(double_buffer, sizeof(double_buffer), "%.*f", kPrecision, target_value);
-
-    if (ret <= 0)
+    if (
+      std::snprintf(double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value) <=
+      0)
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer);
+    AppendToXMLString(double_buffer.data());
     AppendToXMLString("\"");
   }
   AppendToXMLString(kAttributeSuffix);
@@ -1387,20 +1386,18 @@ bool ControlSignal::WriteTorques(
 {
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    char
-      double_buffer[kPrecision + 3 + 1 + 1 + 1];  // Precision + Digits + Comma + Null + Minus sign
+    std::array<char, kPrecision + 3 + 1 + 1 + 1>
+      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(attrib_prefixes[i]);
 
-    const std::size_t idx = i + offset;
-    const int ret = std::snprintf(
-      double_buffer, sizeof(double_buffer), "%.*f", kPrecision, joint_torque_values_[idx]);
-
-    if (ret <= 0)
+    if (const std::size_t idx = i + offset; std::snprintf(
+                                              double_buffer.data(), double_buffer.size(), "%.*f",
+                                              kPrecision, joint_torque_values_[idx]) <= 0)
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer);
+    AppendToXMLString(double_buffer.data());
     AppendToXMLString("\"");
   }
   AppendToXMLString(kAttributeSuffix);
@@ -1416,8 +1413,8 @@ bool ControlSignal::WriteVelocities(
 
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    char
-      double_buffer[kPrecision + 3 + 1 + 1 + 1];  // Precision + Digits + Comma + Null + Minus sign
+    std::array<char, kPrecision + 3 + 1 + 1 + 1>
+      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
     AppendToXMLString(attrib_prefixes[i]);
 
     const std::size_t idx = i + offset;
@@ -1434,14 +1431,14 @@ bool ControlSignal::WriteVelocities(
         return false;
     }
 
-    const int ret =
-      std::snprintf(double_buffer, sizeof(double_buffer), "%.*f", kPrecision, target_value);
-    if (ret <= 0)
+    if (
+      std::snprintf(double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value) <=
+      0)
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer);
+    AppendToXMLString(double_buffer.data());
     AppendToXMLString("\"");
   }
   AppendToXMLString(kAttributeSuffix);
