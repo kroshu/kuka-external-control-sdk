@@ -210,11 +210,10 @@ Example XML fragment:
 <IPOC>...</IPOC>
 ```
 
-If `VELOCITY` or `TORQUE` is present only for a subset of joints in its scope, configuration fails with `std::invalid_argument`.
+### Notes
 
-This is valid because every configured joint field (`JOINT`) and GPIO attribute (`GPIO`) appears exactly once in `field_order`.
-
-`DELAY` and `IPOC` are injected automatically.
+- If `VELOCITY` or `TORQUE` is present only for a subset of joints in its scope, configuration fails with `std::invalid_argument`.
+- `DELAY` and `IPOC` are always injected automatically.
 
 ---
 

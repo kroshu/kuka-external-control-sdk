@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Deutschland GmbH
+// Copyright 2026 KUKA Deutschland GmbH
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -797,6 +797,42 @@ TEST_F(KSSControlSignal, TestCustomConfigWithExternalAxes)
     "<ExtAxes e1=\"0.000000\" e2=\"0.000000\"/>"
     "<IPOC>0</IPOC></Sen>";
   EXPECT_STREQ(control_signal.CreateXMLString(0).value().data(), expected_xml);
+}
+
+TEST_F(KSSControlSignal, TestGpioSerialization)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  xml_cfg.include_velocity_values = true;
+
+  std::vector<double> positions(kFixSixAxes, 0.0);
+  std::vector<double> velocities(kFixSixAxes, 0.0);
+  std::vector<double> torques = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+
+  std::vector<kuka::external::control::kss::GPIOConfiguration> gpio_configs = {
+    {"b_out", kuka::external::control::GPIOValueType::BOOL},
+    {"analog_out", kuka::external::control::GPIOValueType::DOUBLE},
+    {"count_out", kuka::external::control::GPIOValueType::LONG},
+  };
+  ControlSignal control_signal_with_gpio(
+    kFixSixAxes, gpio_configs, GetJointConfig(0, kFixSixAxes), xml_cfg);
+  std::vector<double> gpio_values = {1.0, 12.5, 42.0};
+  control_signal_with_gpio.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal_with_gpio.AddVelocityValues(velocities.begin(), velocities.end());
+  control_signal_with_gpio.AddTorqueValues(torques.begin(), torques.end());
+  EXPECT_TRUE(control_signal_with_gpio.AddGPIOValues(gpio_values.begin(), gpio_values.end()));
+
+  const char * expected_xml_with_gpio =
+    "<Sen Type=\"KROSHU\"><Stop>0</Stop>"
+    "<AK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<VK A1=\"0.000000\" A2=\"0.000000\" A3=\"0.000000\" A4=\"0.000000\" A5=\"0.000000\" "
+    "A6=\"0.000000\"/>"
+    "<TK A1=\"1.000000\" A2=\"2.000000\" A3=\"3.000000\" A4=\"4.000000\" A5=\"5.000000\" "
+    "A6=\"6.000000\"/>"
+    "<GPIO b_out=\"1\" analog_out=\"12.500000\" count_out=\"42\"/>"
+    "<IPOC>21</IPOC></Sen>";
+  EXPECT_STREQ(control_signal_with_gpio.CreateXMLString(21).value().data(), expected_xml_with_gpio);
 }
 
 TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)

@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Hungaria Kft.
+// Copyright 2026 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -150,9 +150,9 @@ enum class MotionStateXmlFieldType : uint8_t
 {
   CARTESIAN = 0,
   JOINT = 1,
+  GPIO = 2,
   // Internal-only: DELAY and IPOC are handled by the SDK and are not allowed in field_order.
-  DELAY = 2,
-  GPIO = 3,
+  DELAY = 3,
   IPOC = 4
 };
 
