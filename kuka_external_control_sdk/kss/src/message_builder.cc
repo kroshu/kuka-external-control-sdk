@@ -268,6 +268,8 @@ void MotionState::CreateFromXML(const char * incoming_xml)
   has_cartesian_positions_ = false;
   parse_pos_ = 0;
   cached_element_name_ = std::string_view{};
+  cached_element_start_ = 0;
+  cached_element_end_ = 0;
 
   for (const auto & order_entry : parse_plan_.parse_order)
   {

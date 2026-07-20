@@ -515,6 +515,30 @@ TEST_F(KSSMotionState, TestCustomXmlConfigurationParsesDelayAfterGpio)
   EXPECT_EQ(motion_state.GetIpoc(), 5);
 }
 
+TEST_F(KSSMotionState, TestCreateFromXMLParsesConsecutiveMessages)
+{
+  MotionState motion_state(kFixSixAxes, {}, GetJointConfig(0, kFixSixAxes));
+
+  const char * first_xml =
+    "<Rob Type=\"KUKA\"><RIst X=\"0.0\" Y=\"0.0\" Z=\"0.0\" A=\"0.0\" B=\"0.0\" C=\"0.0\"/>"
+    "<AIPos A1=\"0.0\" A2=\"0.0\" A3=\"0.0\" A4=\"0.0\" A5=\"0.0\" A6=\"0.0\"/>"
+    "<EIPos E1=\"0.0\" E2=\"0.0\" E3=\"0.0\" E4=\"0.0\" E5=\"0.0\" E6=\"0.0\"/>"
+    "<Delay D=\"0\"/><IPOC>10</IPOC></Rob>";
+  const char * second_xml =
+    "<Rob Type=\"KUKA\"><RIst X=\"0.0\" Y=\"0.0\" Z=\"0.0\" A=\"0.0\" B=\"0.0\" C=\"0.0\"/>"
+    "<AIPos A1=\"1.0\" A2=\"2.0\" A3=\"3.0\" A4=\"4.0\" A5=\"5.0\" A6=\"6.0\"/>"
+    "<EIPos E1=\"0.0\" E2=\"0.0\" E3=\"0.0\" E4=\"0.0\" E5=\"0.0\" E6=\"0.0\"/>"
+    "<Delay D=\"1\"/><IPOC>11</IPOC></Rob>";
+
+  EXPECT_NO_THROW(motion_state.CreateFromXML(first_xml));
+  EXPECT_NO_THROW(motion_state.CreateFromXML(second_xml));
+
+  EXPECT_EQ(motion_state.GetIpoc(), 11);
+  EXPECT_EQ(motion_state.GetDelay(), 1);
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[0], 1.0 * M_PI / 180.0, 0.0001);
+  EXPECT_NEAR(motion_state.GetMeasuredPositions()[5], 6.0 * M_PI / 180.0, 0.0001);
+}
+
 TEST_F(KSSControlSignal, TestZeroInit6Dof)
 {
   kuka::external::control::kss::MotionState initial_motion_state(
