@@ -221,7 +221,7 @@ public:
   void Reset() { has_initial_positions_ = false; }
 
 private:
-  void AppendToXMLString(std::string_view str);
+  [[nodiscard]] bool AppendToXMLString(std::string_view str);
 
   [[nodiscard]] bool WritePositions(
     const std::vector<std::string> & attrib_prefixes, const std::size_t num_values,
@@ -282,6 +282,11 @@ private:
   std::vector<double> initial_positions_;
 
   static constexpr int kPrecision = 6;
+  static constexpr std::size_t kDoubleFormatBufferSize =
+    19 + 1 + kPrecision + 1 +
+    1;  // integer part + decimal point + fractional part (kPrecision) + minus sign + null terminate
+  static constexpr std::size_t kLongFormatBufferSize =
+    19 + 1 + 1;  // LLONG_MAX has 19 digits + minus sign + null terminate
   static constexpr int kBufferSize = 1024;
   char xml_string_[kBufferSize];
   std::size_t write_pos_ = 0;

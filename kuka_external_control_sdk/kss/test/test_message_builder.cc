@@ -14,7 +14,10 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
+#include <cstdio>
+#include <limits>
 
 #include "kuka/external-control-sdk/kss/message_builder.h"
 
@@ -833,6 +836,77 @@ TEST_F(KSSControlSignal, TestGpioSerialization)
     "<GPIO b_out=\"1\" analog_out=\"12.500000\" count_out=\"42\"/>"
     "<IPOC>21</IPOC></Sen>";
   EXPECT_STREQ(control_signal_with_gpio.CreateXMLString(21).value().data(), expected_xml_with_gpio);
+}
+
+TEST_F(KSSControlSignal, TestLargeNumericValuesAreSerializedCompletely)
+{
+  ControlSignalXmlConfiguration xml_cfg;
+  xml_cfg.include_torque_values = true;
+  xml_cfg.include_velocity_values = true;
+
+  std::vector<kuka::external::control::kss::GPIOConfiguration> gpio_configs = {
+    {"analog_out", kuka::external::control::GPIOValueType::DOUBLE},
+    {"count_out", kuka::external::control::GPIOValueType::LONG},
+  };
+  ControlSignal control_signal(1, gpio_configs, GetJointConfig(0, 1), xml_cfg);
+
+  constexpr int kPrecision = 6;
+  constexpr double kLargeValue = 12345.6789;
+  std::vector<double> positions = {kLargeValue};
+  std::vector<double> velocities = {kLargeValue};
+  std::vector<double> torques = {kLargeValue};
+  std::vector<double> gpio_values = {kLargeValue, 123456.0};
+
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+  control_signal.AddVelocityValues(velocities.begin(), velocities.end());
+  control_signal.AddTorqueValues(torques.begin(), torques.end());
+  ASSERT_TRUE(control_signal.AddGPIOValues(gpio_values.begin(), gpio_values.end()));
+
+  auto xml = control_signal.CreateXMLString(77);
+  ASSERT_TRUE(xml.has_value());
+
+  std::array<char, 512> position_buf;
+  const int position_len = std::snprintf(
+    position_buf.data(), position_buf.size(), "%.*f", kPrecision, kLargeValue * 180.0 / M_PI);
+  ASSERT_GT(position_len, 0);
+  ASSERT_LT(position_len, static_cast<int>(position_buf.size()));
+
+  std::array<char, 512> torque_buf;
+  const int torque_len =
+    std::snprintf(torque_buf.data(), torque_buf.size(), "%.*f", kPrecision, kLargeValue);
+  ASSERT_GT(torque_len, 0);
+  ASSERT_LT(torque_len, static_cast<int>(torque_buf.size()));
+
+  std::string serialized(xml.value());
+  EXPECT_NE(
+    serialized.find(std::string("<AK A1=\"") + position_buf.data() + "\"/>"), std::string::npos);
+  EXPECT_NE(
+    serialized.find(std::string("<VK A1=\"") + position_buf.data() + "\"/>"), std::string::npos);
+  EXPECT_NE(
+    serialized.find(std::string("<TK A1=\"") + torque_buf.data() + "\"/>"), std::string::npos);
+  EXPECT_NE(
+    serialized.find("<GPIO analog_out=\"12345.678900\" count_out=\"123456\"/>"), std::string::npos);
+}
+
+TEST_F(KSSControlSignal, TestCreateXmlReturnsNulloptOnBufferOverflow)
+{
+  std::vector<kuka::external::control::kss::GPIOConfiguration> gpio_configs;
+  gpio_configs.reserve(120);
+  for (std::size_t i = 0; i < 120; ++i)
+  {
+    gpio_configs.push_back(
+      {"gpio_" + std::to_string(i), kuka::external::control::GPIOValueType::BOOL});
+  }
+
+  ControlSignal control_signal(1, gpio_configs, GetJointConfig(0, 1));
+
+  std::vector<double> positions = {0.0};
+  control_signal.AddJointPositionValues(positions.begin(), positions.end());
+
+  std::vector<double> gpio_values(120, 1.0);
+  ASSERT_TRUE(control_signal.AddGPIOValues(gpio_values.begin(), gpio_values.end()));
+
+  EXPECT_FALSE(control_signal.CreateXMLString(42).has_value());
 }
 
 TEST_F(KSSControlSignal, TestInvalidConfigMissingJoint)

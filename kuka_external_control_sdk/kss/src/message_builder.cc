@@ -882,13 +882,21 @@ void MotionState::ParseIpocField(std::string_view xml)
   parse_pos_ = value_end + parse_plan_.ipoc_closing_tag.size();
 }
 
-void ControlSignal::AppendToXMLString(std::string_view str)
+bool ControlSignal::AppendToXMLString(std::string_view str)
 {
-  std::size_t available = kBufferSize - write_pos_ - 1;
-  std::size_t to_copy = std::min(str.size(), available);
-  std::memcpy(xml_string_ + write_pos_, str.data(), to_copy);
-  write_pos_ += to_copy;
+  if (write_pos_ >= kBufferSize)
+  {
+    return false;
+  }
+
+  if (const std::size_t available = (kBufferSize - 1) - write_pos_; str.size() > available)
+  {
+    return false;
+  }
+  std::memcpy(xml_string_ + write_pos_, str.data(), str.size());
+  write_pos_ += str.size();
   xml_string_[write_pos_] = '\0';
+  return true;
 }
 
 void ControlSignal::InitializeWritePlan(
@@ -1192,18 +1200,27 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
   std::memset(xml_string_, 0, sizeof(xml_string_));
   write_pos_ = 0;
 
-  AppendToXMLString(kMessagePrefix);
+  if (!AppendToXMLString(kMessagePrefix))
+  {
+    return std::nullopt;
+  }
 
-  AppendToXMLString(kStopNodePrefix);
-  AppendToXMLString(stop_control ? "1" : "0");
-  AppendToXMLString(kStopNodeSuffix);
+  if (
+    !AppendToXMLString(kStopNodePrefix) || !AppendToXMLString(stop_control ? "1" : "0") ||
+    !AppendToXMLString(kStopNodeSuffix))
+  {
+    return std::nullopt;
+  }
 
   for (const auto & field_type : write_plan_.write_order)
   {
     switch (field_type)
     {
       case ControlSignalXmlFieldType::POSITION:
-        AppendToXMLString(write_plan_.joint_element_prefix);
+        if (!AppendToXMLString(write_plan_.joint_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WritePositions(
               write_plan_.joint_attrib_prefixes, num_internal_axes_, num_external_axes_))
         {
@@ -1211,14 +1228,20 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
         }
         break;
       case ControlSignalXmlFieldType::EXT_POSITION:
-        AppendToXMLString(write_plan_.ext_joint_element_prefix);
+        if (!AppendToXMLString(write_plan_.ext_joint_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WritePositions(write_plan_.ext_joint_attrib_prefixes, num_external_axes_))
         {
           return std::nullopt;
         }
         break;
       case ControlSignalXmlFieldType::TORQUE:
-        AppendToXMLString(write_plan_.torque_element_prefix);
+        if (!AppendToXMLString(write_plan_.torque_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WriteTorques(
               write_plan_.torque_attrib_prefixes, num_internal_axes_, num_external_axes_))
         {
@@ -1226,7 +1249,10 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
         }
         break;
       case ControlSignalXmlFieldType::VELOCITY:
-        AppendToXMLString(write_plan_.velocity_element_prefix);
+        if (!AppendToXMLString(write_plan_.velocity_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WriteVelocities(
               write_plan_.velocity_attrib_prefixes, num_internal_axes_, num_external_axes_))
         {
@@ -1234,21 +1260,30 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
         }
         break;
       case ControlSignalXmlFieldType::EXT_VELOCITY:
-        AppendToXMLString(write_plan_.ext_velocity_element_prefix);
+        if (!AppendToXMLString(write_plan_.ext_velocity_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WriteVelocities(write_plan_.ext_velocity_attrib_prefixes, num_external_axes_))
         {
           return std::nullopt;
         }
         break;
       case ControlSignalXmlFieldType::EXT_TORQUE:
-        AppendToXMLString(write_plan_.ext_torque_element_prefix);
+        if (!AppendToXMLString(write_plan_.ext_torque_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WriteTorques(write_plan_.ext_torque_attrib_prefixes, num_external_axes_))
         {
           return std::nullopt;
         }
         break;
       case ControlSignalXmlFieldType::GPIO:
-        AppendToXMLString(write_plan_.gpio_element_prefix);
+        if (!AppendToXMLString(write_plan_.gpio_element_prefix))
+        {
+          return std::nullopt;
+        }
         if (!WriteGpioValues())
         {
           return std::nullopt;
@@ -1256,17 +1291,21 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
         break;
       case ControlSignalXmlFieldType::IPOC:
       {
-        AppendToXMLString(write_plan_.ipoc_opening_tag);
-        std::array<char, 32> ipoc_buf;
-        if (
-          std::snprintf(
-            ipoc_buf.data(), ipoc_buf.size(), "%llu", static_cast<unsigned long long>(last_ipoc)) <
-          0)
+        if (!AppendToXMLString(write_plan_.ipoc_opening_tag))
         {
           return std::nullopt;
         }
-        AppendToXMLString(ipoc_buf.data());
-        AppendToXMLString(write_plan_.ipoc_closing_tag);
+        std::array<char, 32> ipoc_buf;
+        if (const int ret = std::snprintf(
+              ipoc_buf.data(), ipoc_buf.size(), "%llu", static_cast<unsigned long long>(last_ipoc));
+            ret < 0 || ret >= static_cast<int>(ipoc_buf.size()))
+        {
+          return std::nullopt;
+        }
+        if (!AppendToXMLString(ipoc_buf.data()) || !AppendToXMLString(write_plan_.ipoc_closing_tag))
+        {
+          return std::nullopt;
+        }
         break;
       }
       default:
@@ -1274,7 +1313,10 @@ std::optional<std::string_view> ControlSignal::CreateXMLString(
     }
   }
 
-  AppendToXMLString(kMessageSuffix);
+  if (!AppendToXMLString(kMessageSuffix))
+  {
+    return std::nullopt;
+  }
 
   return xml_string_;
 }
@@ -1283,7 +1325,10 @@ bool ControlSignal::WriteGpioValues()
 {
   for (std::size_t i = 0; i < write_plan_.gpio_attrib_prefixes.size(); ++i)
   {
-    AppendToXMLString(write_plan_.gpio_attrib_prefixes[i]);
+    if (!AppendToXMLString(write_plan_.gpio_attrib_prefixes[i]))
+    {
+      return false;
+    }
     switch (gpio_values_[i]->GetGPIOConfig()->GetValueType())
     {
       case GPIOValueType::BOOL:
@@ -1293,49 +1338,62 @@ bool ControlSignal::WriteGpioValues()
         {
           return false;
         }
-        AppendToXMLString(value.value() ? "1" : "0");
+        if (!AppendToXMLString(value.value() ? "1" : "0"))
+        {
+          return false;
+        }
         break;
       }
       case GPIOValueType::DOUBLE:
       {
-        std::array<char, kPrecision + 19 + 1 + 1 + 1> double_buffer;
+        std::array<char, kDoubleFormatBufferSize> double_buffer;
         auto value = gpio_values_[i]->GetDoubleValue();
         if (!value.has_value())
         {
           return false;
         }
-        int ret = std::snprintf(
-          double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, value.value());
-        if (ret <= 0)
+
+        if (const int ret = std::snprintf(
+              double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, value.value());
+            ret < 0 || ret >= static_cast<int>(double_buffer.size()))
         {
           return false;
         }
-        AppendToXMLString(double_buffer.data());
+        if (!AppendToXMLString(double_buffer.data()))
+        {
+          return false;
+        }
         break;
       }
       case GPIOValueType::LONG:
       {
-        std::array<char, 19 + 1 + 1> long_buffer;
+        std::array<char, kLongFormatBufferSize> long_buffer;
         auto value = gpio_values_[i]->GetLongValue();
         if (!value.has_value())
         {
           return false;
         }
-        int ret = std::snprintf(long_buffer.data(), long_buffer.size(), "%ld", value.value());
-        if (ret <= 0)
+        if (const int ret =
+              std::snprintf(long_buffer.data(), long_buffer.size(), "%ld", value.value());
+            ret < 0 || ret >= static_cast<int>(long_buffer.size()))
         {
           return false;
         }
-        AppendToXMLString(long_buffer.data());
+        if (!AppendToXMLString(long_buffer.data()))
+        {
+          return false;
+        }
         break;
       }
       default:
         return false;
     }
-    AppendToXMLString("\"");
+    if (!AppendToXMLString("\""))
+    {
+      return false;
+    }
   }
-  AppendToXMLString(kAttributeSuffix);
-  return true;
+  return AppendToXMLString(kAttributeSuffix);
 }
 
 bool ControlSignal::WritePositions(
@@ -1346,9 +1404,11 @@ bool ControlSignal::WritePositions(
 
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    std::array<char, kPrecision + 3 + 1 + 1 + 1>
-      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
-    AppendToXMLString(attrib_prefixes[i]);
+    std::array<char, kDoubleFormatBufferSize> double_buffer;
+    if (!AppendToXMLString(attrib_prefixes[i]))
+    {
+      return false;
+    }
 
     const std::size_t idx = i + offset;
     const double value = joint_position_values_[idx] - initial_positions_[idx];
@@ -1365,19 +1425,19 @@ bool ControlSignal::WritePositions(
         return false;
     }
 
-    if (
-      std::snprintf(double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value) <=
-      0)
+    if (const int ret = std::snprintf(
+          double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value);
+        ret < 0 || ret >= static_cast<int>(double_buffer.size()))
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer.data());
-    AppendToXMLString("\"");
+    if (!AppendToXMLString(double_buffer.data()) || !AppendToXMLString("\""))
+    {
+      return false;
+    }
   }
-  AppendToXMLString(kAttributeSuffix);
-
-  return true;
+  return AppendToXMLString(kAttributeSuffix);
 }
 
 bool ControlSignal::WriteTorques(
@@ -1386,23 +1446,27 @@ bool ControlSignal::WriteTorques(
 {
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    std::array<char, kPrecision + 3 + 1 + 1 + 1>
-      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
-    AppendToXMLString(attrib_prefixes[i]);
-
-    if (const std::size_t idx = i + offset; std::snprintf(
-                                              double_buffer.data(), double_buffer.size(), "%.*f",
-                                              kPrecision, joint_torque_values_[idx]) <= 0)
+    std::array<char, kDoubleFormatBufferSize> double_buffer;
+    if (!AppendToXMLString(attrib_prefixes[i]))
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer.data());
-    AppendToXMLString("\"");
-  }
-  AppendToXMLString(kAttributeSuffix);
+    const std::size_t idx = i + offset;
+    if (const int ret = std::snprintf(
+          double_buffer.data(), double_buffer.size(), "%.*f", kPrecision,
+          joint_torque_values_[idx]);
+        ret < 0 || ret >= static_cast<int>(double_buffer.size()))
+    {
+      return false;
+    }
 
-  return true;
+    if (!AppendToXMLString(double_buffer.data()) || !AppendToXMLString("\""))
+    {
+      return false;
+    }
+  }
+  return AppendToXMLString(kAttributeSuffix);
 }
 
 bool ControlSignal::WriteVelocities(
@@ -1413,9 +1477,11 @@ bool ControlSignal::WriteVelocities(
 
   for (std::size_t i = 0; i < num_values; ++i)
   {
-    std::array<char, kPrecision + 3 + 1 + 1 + 1>
-      double_buffer;  // Precision + Digits + Comma + Null + Minus sign
-    AppendToXMLString(attrib_prefixes[i]);
+    std::array<char, kDoubleFormatBufferSize> double_buffer;
+    if (!AppendToXMLString(attrib_prefixes[i]))
+    {
+      return false;
+    }
 
     const std::size_t idx = i + offset;
     double target_value;
@@ -1431,19 +1497,19 @@ bool ControlSignal::WriteVelocities(
         return false;
     }
 
-    if (
-      std::snprintf(double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value) <=
-      0)
+    if (const int ret = std::snprintf(
+          double_buffer.data(), double_buffer.size(), "%.*f", kPrecision, target_value);
+        ret < 0 || ret >= static_cast<int>(double_buffer.size()))
     {
       return false;
     }
 
-    AppendToXMLString(double_buffer.data());
-    AppendToXMLString("\"");
+    if (!AppendToXMLString(double_buffer.data()) || !AppendToXMLString("\""))
+    {
+      return false;
+    }
   }
-  AppendToXMLString(kAttributeSuffix);
-
-  return true;
+  return AppendToXMLString(kAttributeSuffix);
 }
 
 void ControlSignal::SetInitialPositions(const MotionState & initial_positions)
