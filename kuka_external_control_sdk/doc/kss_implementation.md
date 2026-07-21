@@ -48,3 +48,373 @@ If you wish to look into the implementation, you may want to start with [`robot_
 To provide a unified class for using all different versions, a wrapper class was created. This class instantiates the appropriate version of the robot interface based on the configuration passed to it and forwards all method calls to the underlying implementation.
 
 If you wish to look into the implementation, you may want to start with [`robot.h`](../kss/include/kuka/external-control-sdk/kss/robot.h).
+
+## Configurable Motion-State XML Parsing
+
+The KSS parser is configuration-driven. Instead of hard-coding `RIst/AIPos/EIPos/A1..A6/E1..E6`, the XML fields are selected by `Configuration::motion_state_xml_config` (`MotionStateXmlConfiguration`).
+
+### Configuration model
+
+`MotionStateXmlConfiguration` defines:
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `joint_fields` | `vector<MotionStateJointFieldConfiguration>` | *empty* | Maps each joint identifier (from `JointConfiguration::name`) to an XML element/attribute pair and a signal type |
+| `cartesian` | `MotionStateCartesianFieldConfiguration` | enabled, element `"RIst"` | Enable/disable Cartesian parsing and configure element/attribute names |
+| `gpio_xml_element` | `std::string` | `"GPIO"` | XML element name for GPIO state values |
+| `gpio_xml_attributes` | `vector<string>` | *empty* | Attribute names for each GPIO; defaults to GPIO config names if empty |
+| `field_order` | `vector<MotionStateXmlOrderEntry>` | *empty* | Explicit parse ordering for configurable fields; `DELAY`/`IPOC` are handled internally |
+
+Each `MotionStateJointFieldConfiguration` entry specifies:
+
+| Sub-field | Description |
+|---|---|
+| `joint_identifier` | Must match a `JointConfiguration::name` |
+| `signal_type` | One of `POSITION`, `VELOCITY`, or `TORQUE` |
+| `xml_element` | XML element that contains the attribute |
+| `xml_attribute` | Attribute name holding the numeric value |
+
+The `MotionStateXmlFieldType` enum values used in `field_order`:
+
+| Value | Meaning |
+|---|---|
+| `CARTESIAN` | TCP pose element (iff Cartesian parsing is enabled) |
+| `JOINT` | One configured joint field entry |
+| `GPIO` | One GPIO attribute entry |
+
+`DELAY` and `IPOC` are always handled internally by the SDK and must not be configured in `field_order`. If either appears in `field_order`, initialization fails with `std::invalid_argument`.
+
+If `motion_state_xml_config` is not provided, the default RSI layout is generated automatically to keep existing applications compatible.
+
+### Initialization-time validation
+
+`MotionState` builds a parse plan once during construction and validates that:
+
+- every referenced joint identifier exists
+- at least one `POSITION` entry exists for every configured joint
+- if any `VELOCITY` entry is configured, every joint has a `VELOCITY` entry
+- if any internal joint has a `TORQUE` entry, every internal joint has a `TORQUE` entry
+- if any external joint has a `TORQUE` entry, every external joint has a `TORQUE` entry
+- all required XML names are non-empty
+- GPIO mapping count matches configured GPIO states
+- `field_order` indices are in range
+- `field_order` contains each configured joint/GPIO entry exactly once
+- `CARTESIAN` appears iff Cartesian parsing is enabled
+- `DELAY` and `IPOC` are always parsed exactly once, internally
+
+Invalid configurations fail fast with `std::invalid_argument` before runtime control starts.
+
+### Runtime parsing flow (real-time safe)
+
+At runtime (`MotionState::CreateFromXML`):
+
+1. No parser metadata is built.
+2. The precomputed parse order is executed.
+3. Each step locates configured element/attribute values and parses directly from the incoming buffer.
+4. Joint units are converted using `JointConfiguration::type`:
+   - revolute position/velocity: degrees -> radians
+   - prismatic position/velocity: millimetres -> metres
+   - torque: parsed as-is (for now)
+
+No dynamic memory allocation is performed after `MotionState` and `ControlSignal` objects are created; all lookup tables and mappings are prebuilt at initialization.
+
+### Example configurations
+
+#### 1. Default layout
+
+```cpp
+kuka::external::control::kss::Configuration cfg;
+cfg.joint_configs = {
+  {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+  {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+};
+// cfg.motion_state_xml_config not set -> default RSI layout is used.
+```
+
+Expected XML fragment:
+
+```xml
+<RIst X="..." Y="..." Z="..." A="..." B="..." C="..."/>
+<AIPos A1="..." A2="..."/>
+<Delay D="..."/>
+<IPOC>...</IPOC>
+```
+
+#### 2. Full velocity + torque coverage, custom identifiers, no TCP
+
+```cpp
+MotionStateXmlConfiguration xml_cfg;
+xml_cfg.cartesian.enabled = false;
+xml_cfg.joint_fields = {
+  {"joint_1", MotionStateSignalType::POSITION, "Joints", "j1_pos"},
+  {"joint_2", MotionStateSignalType::POSITION, "Joints", "j2_pos"},
+  {"joint_1", MotionStateSignalType::VELOCITY, "Joints", "j1_vel"},
+  {"joint_2", MotionStateSignalType::VELOCITY, "Joints", "j2_vel"},
+  {"joint_1", MotionStateSignalType::TORQUE, "Forces", "j1_torque"},
+  {"joint_2", MotionStateSignalType::TORQUE, "Forces", "j2_torque"},
+};
+xml_cfg.field_order = {
+  {MotionStateXmlFieldType::JOINT, 0},
+  {MotionStateXmlFieldType::JOINT, 1},
+  {MotionStateXmlFieldType::JOINT, 2},
+  {MotionStateXmlFieldType::JOINT, 3},
+  {MotionStateXmlFieldType::JOINT, 4},
+  {MotionStateXmlFieldType::JOINT, 5},
+};
+cfg.motion_state_xml_config = xml_cfg;
+```
+
+Expected XML fragment:
+
+```xml
+<Joints j1_pos="..." j2_pos="..." j1_vel="..." j2_vel="..."/>
+<Forces j1_torque="..." j2_torque="..."/>
+<Delay D="..."/>
+<IPOC>...</IPOC>
+```
+
+#### 3. Custom ordering with GPIO and Cartesian fields
+
+```cpp
+xml_cfg = MotionStateXmlConfiguration{};
+xml_cfg.joint_fields = {
+  {"joint_1", MotionStateSignalType::POSITION, "Joints", "j1_pos"},
+  {"joint_2", MotionStateSignalType::POSITION, "Joints", "j2_pos"},
+  {"joint_1", MotionStateSignalType::VELOCITY, "Joints", "j1_vel"},
+  {"joint_2", MotionStateSignalType::VELOCITY, "Joints", "j2_vel"},
+};
+xml_cfg.cartesian.enabled = true;
+xml_cfg.cartesian.xml_element = "Tcp";
+xml_cfg.cartesian.xml_attributes = {"px", "py", "pz", "ra", "rb", "rc"};
+xml_cfg.gpio_xml_element = "Io";
+xml_cfg.gpio_xml_attributes = {"enable", "mode"};
+xml_cfg.field_order = {
+  {MotionStateXmlFieldType::JOINT, 0},
+  {MotionStateXmlFieldType::JOINT, 1},
+  {MotionStateXmlFieldType::JOINT, 2},
+  {MotionStateXmlFieldType::JOINT, 3},
+  {MotionStateXmlFieldType::GPIO, 0},
+  {MotionStateXmlFieldType::GPIO, 1},
+  {MotionStateXmlFieldType::CARTESIAN, 0},
+};
+cfg.motion_state_xml_config = xml_cfg;
+```
+
+Example XML fragment:
+
+```xml
+<Joints j1_pos="..." j2_pos="..." j1_vel="..." j2_vel="..."/>
+<Io enable="1" mode="2"/>
+<Tcp px="..." py="..." pz="..." ra="..." rb="..." rc="..."/>
+<Delay D="..."/>
+<IPOC>...</IPOC>
+```
+
+### Notes
+
+- If `VELOCITY` or `TORQUE` is present only for a subset of joints in its scope, configuration fails with `std::invalid_argument`.
+- `DELAY` and `IPOC` are always injected automatically.
+
+---
+
+## Configurable Outgoing Control Signal XML
+
+The outgoing RSI control signal (sent from the SDK to KSS) is also configuration-driven. `Configuration::control_signal_xml_config` (`ControlSignalXmlConfiguration`) lets you customise element names, attribute names, and field ordering.
+
+If `control_signal_xml_config` is not set, the default RSI layout is used and all existing applications remain unaffected.
+
+### Configuration model
+
+`ControlSignalXmlConfiguration` defines:
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `joint_xml_element` | `std::string` | `"AK"` | XML element name for internal joint positions |
+| `joint_xml_attributes` | `vector<string>` | *empty* | Attribute names for each internal axis; auto-generated as `A1`, `A2`, … if empty |
+| `ext_joint_xml_element` | `std::string` | `"EK"` | XML element name for external joint positions |
+| `ext_joint_xml_attributes` | `vector<string>` | *empty* | Attribute names for each external axis; auto-generated as `E1`, `E2`, … if empty |
+| `include_velocity_values` | `bool` | `false` | Enables/disables outgoing joint velocity values (disabled by default for compatibility) |
+| `velocity_xml_element` | `std::string` | `"VK"` | XML element name for internal joint velocities |
+| `velocity_xml_attributes` | `vector<string>` | *empty* | Attribute names for each internal velocity axis; auto-generated as `A1`, `A2`, … if empty |
+| `include_ext_velocity_values` | `bool` | `false` | Enables/disables outgoing external joint velocity values independently from internal velocity values |
+| `ext_velocity_xml_element` | `std::string` | `"EVK"` | XML element name for external joint velocities |
+| `ext_velocity_xml_attributes` | `vector<string>` | *empty* | Attribute names for each external velocity axis; auto-generated as `E1`, `E2`, … if empty |
+| `include_torque_values` | `bool` | `false` | Enables/disables outgoing joint torque values (disabled by default for compatibility) |
+| `torque_xml_element` | `std::string` | `"TK"` | XML element name for internal joint torques |
+| `torque_xml_attributes` | `vector<string>` | *empty* | Attribute names for each internal torque axis; auto-generated as `A1`, `A2`, … if empty |
+| `include_ext_torque_values` | `bool` | `false` | Enables/disables outgoing external joint torque values independently from internal torque values |
+| `ext_torque_xml_element` | `std::string` | `"ETK"` | XML element name for external joint torques |
+| `ext_torque_xml_attributes` | `vector<string>` | *empty* | Attribute names for each external torque axis; auto-generated as `E1`, `E2`, … if empty |
+| `gpio_xml_element` | `std::string` | `"GPIO"` | XML element name for GPIO command values |
+| `field_order` | `vector<ControlSignalXmlOrderEntry>` | *empty* | Explicit field ordering for configurable fields; `IPOC` is handled internally |
+
+The `ControlSignalXmlFieldType` enum values used in `field_order`:
+
+| Value | Meaning |
+|---|---|
+| `POSITION` | Internal joint positions element |
+| `EXT_POSITION` | External joint positions element |
+| `VELOCITY` | Internal joint velocities element |
+| `EXT_VELOCITY` | External joint velocities element |
+| `TORQUE` | Internal joint torques element |
+| `EXT_TORQUE` | External joint torques element |
+| `GPIO` | GPIO command element |
+
+`IPOC` is always handled internally by the SDK and must not be configured in `field_order`.
+
+If `IPOC` appears in `field_order`, initialization fails with `std::invalid_argument`.
+
+> **Note:** The `<Stop>` node that immediately follows `<Sen Type="KROSHU">` is always
+> written first and is not configurable.
+
+### Default behavior and backward compatibility
+
+When `control_signal_xml_config` is not set (or set to `std::nullopt`), the transmitted message is identical to the default format:
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop><AK A1="..." A2="..."/><EK E1="..."/><GPIO name="..."/><IPOC>...</IPOC></Sen>
+```
+
+- Internal axes always appear in `<AK>`, with attributes `A1`…`An`.
+- External axes appear in `<EK>`, with attributes `E1`…`En` (omitted when there are none).
+- Internal joint velocities are omitted by default and are only transmitted when `include_velocity_values=true`.
+- External joint velocities are omitted by default and are only transmitted when `include_ext_velocity_values=true`.
+- Internal joint torques are omitted by default and are only transmitted when `include_torque_values=true`.
+- External joint torques are omitted by default and are only transmitted when `include_ext_torque_values=true`.
+- GPIO commands appear in `<GPIO>` (omitted when none are configured).
+- IPOC is always last.
+
+### Initialization-time validation
+
+`ControlSignal` builds a write plan once during construction and validates that:
+
+- `joint_xml_element` is non-empty.
+- `ext_joint_xml_element` is non-empty when external axes are configured.
+- `velocity_xml_element` is non-empty when velocity transmission is enabled.
+- `ext_velocity_xml_element` is non-empty when external velocity transmission is enabled and external axes are configured.
+- `torque_xml_element` is non-empty when torque transmission is enabled.
+- `ext_torque_xml_element` is non-empty when external torque transmission is enabled and external axes are configured.
+- `gpio_xml_element` is non-empty when GPIO commands are configured.
+- Custom `joint_xml_attributes` count matches the number of internal axes (if provided).
+- Custom `ext_joint_xml_attributes` count matches the number of external axes (if provided).
+- Custom `velocity_xml_attributes` count matches the number of internal axes (if provided).
+- Custom `ext_velocity_xml_attributes` count matches the number of external axes (if provided).
+- Custom `torque_xml_attributes` count matches the number of internal axes (if provided).
+- Custom `ext_torque_xml_attributes` count matches the number of external axes (if provided).
+- `field_order` contains `POSITION` exactly once.
+- `field_order` contains `EXT_POSITION` exactly once iff external axes exist.
+- `field_order` contains `VELOCITY` exactly once iff velocity transmission is enabled.
+- `field_order` contains `EXT_VELOCITY` exactly once iff external velocity transmission is enabled and external axes exist.
+- `field_order` contains `TORQUE` exactly once iff torque transmission is enabled.
+- `field_order` contains `EXT_TORQUE` exactly once iff external torque transmission is enabled and external axes exist.
+- `field_order` contains `GPIO` exactly once iff GPIO commands are configured.
+- `IPOC` is always appended exactly once internally.
+- No field type appears more than once.
+
+Invalid configurations throw `std::invalid_argument` at construction time.
+
+### Example configurations
+
+#### 1. Default layout
+
+```cpp
+kuka::external::control::kss::Configuration cfg;
+cfg.joint_configs = {{"j1", JointConfiguration::Type::REVOLUTE, false}, ...};
+// cfg.control_signal_xml_config not set -> default RSI layout is used.
+```
+
+Transmitted XML:
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop><AK A1="0.000000" A2="0.000000" .../><IPOC>1234</IPOC></Sen>
+```
+
+#### 2. Custom element and attribute names
+
+```cpp
+ControlSignalXmlConfiguration xml_cfg;
+xml_cfg.joint_xml_element = "JointCmd";
+xml_cfg.joint_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
+cfg.control_signal_xml_config = xml_cfg;
+```
+
+Transmitted XML:
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop><JointCmd q1="0.000000" q2="0.000000" .../><IPOC>1234</IPOC></Sen>
+```
+
+#### 3. Internal velocity commands
+
+```cpp
+ControlSignalXmlConfiguration xml_cfg;
+xml_cfg.include_velocity_values = true;
+xml_cfg.velocity_xml_element = "VK";
+xml_cfg.velocity_xml_attributes = {"A1", "A2", "A3", "A4", "A5", "A6"};
+cfg.control_signal_xml_config = xml_cfg;
+```
+
+Transmitted XML:
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop><AK A1="0.000000" A2="0.000000" .../><VK A1="..." A2="..." .../><IPOC>1234</IPOC></Sen>
+```
+
+#### 4. Custom names for external axes
+
+```cpp
+ControlSignalXmlConfiguration xml_cfg;
+xml_cfg.joint_xml_element = "IntAxes";
+xml_cfg.joint_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
+xml_cfg.ext_joint_xml_element = "ExtAxes";
+xml_cfg.ext_joint_xml_attributes = {"e1", "e2"};
+xml_cfg.include_torque_values = true;
+xml_cfg.torque_xml_element = "IntTrq";
+xml_cfg.torque_xml_attributes = {"q1", "q2", "q3", "q4", "q5", "q6"};
+xml_cfg.include_ext_torque_values = true;
+xml_cfg.ext_torque_xml_element = "ExtTrq";
+xml_cfg.ext_torque_xml_attributes = {"te1", "te2"};
+cfg.control_signal_xml_config = xml_cfg;
+```
+
+Transmitted XML (6 internal + 2 external axes):
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop>
+  <IntAxes q1="0.000000" q2="0.000000" q3="0.000000" q4="0.000000" q5="0.000000" q6="0.000000"/>
+  <ExtAxes e1="0.000000" e2="0.000000"/>
+  <IntTrq q1="0.000000" q2="0.000000" q3="0.000000" q4="0.000000" q5="0.000000" q6="0.000000"/>
+  <ExtTrq te1="0.000000" te2="0.000000"/>
+  <IPOC>1234</IPOC>
+</Sen>
+```
+
+#### 5. External torque only (without internal torque)
+
+```cpp
+ControlSignalXmlConfiguration xml_cfg;
+xml_cfg.ext_joint_xml_element = "ExtAxes";
+xml_cfg.ext_joint_xml_attributes = {"e1", "e2"};
+xml_cfg.include_ext_torque_values = true;
+xml_cfg.ext_torque_xml_element = "ExtTrq";
+xml_cfg.ext_torque_xml_attributes = {"te1", "te2"};
+cfg.control_signal_xml_config = xml_cfg;
+```
+
+Transmitted XML (6 internal + 2 external axes):
+
+```xml
+<Sen Type="KROSHU"><Stop>0</Stop>
+  <AK A1="0.000000" A2="0.000000" A3="0.000000" A4="0.000000" A5="0.000000" A6="0.000000"/>
+  <ExtAxes e1="0.000000" e2="0.000000"/>
+  <ExtTrq te1="0.000000" te2="0.000000"/>
+  <IPOC>1234</IPOC>
+</Sen>
+```
+
+### Limitations and interoperability
+
+- The outer `<Sen Type="KROSHU">` / `</Sen>` envelope and the `<Stop>` node are always present and are not configurable &ndash; they are required by the KSS RSI protocol.
+- GPIO attribute names in the outgoing message are always derived from the names set in `gpio_command_configs`; only the container element name (`gpio_xml_element`) is configurable.
+- The `ControlSignalXmlConfiguration` does not affect how the SDK *parses* incoming state messages; use `MotionStateXmlConfiguration` for that.
+- When both `motion_state_xml_config` and `control_signal_xml_config` are set, they are independent and do not need to use matching element names.

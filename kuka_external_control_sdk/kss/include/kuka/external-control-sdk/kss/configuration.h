@@ -1,4 +1,4 @@
-// Copyright 2023 KUKA Hungaria Kft.
+// Copyright 2026 KUKA Hungaria Kft.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
 #ifndef KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
 #define KUKA__EXTERNAL_CONTROL_SDK__KSS__CONFIGURATION_H_
 
+#include <array>
 #include <chrono>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -107,6 +109,179 @@ struct JointConfiguration
   }
 };
 
+enum class MotionStateSignalType : uint8_t
+{
+  POSITION = 0,
+  VELOCITY = 1,
+  TORQUE = 2
+};
+
+constexpr const char * MotionStateSignalTypeToString(MotionStateSignalType signal_type)
+{
+  switch (signal_type)
+  {
+    case MotionStateSignalType::POSITION:
+      return "position";
+    case MotionStateSignalType::VELOCITY:
+      return "velocity";
+    case MotionStateSignalType::TORQUE:
+      return "torque";
+    default:
+      return "unknown";
+  }
+}
+
+struct MotionStateJointFieldConfiguration
+{
+  std::string joint_identifier;
+  MotionStateSignalType signal_type = MotionStateSignalType::POSITION;
+  std::string xml_element;
+  std::string xml_attribute;
+};
+
+struct MotionStateCartesianFieldConfiguration
+{
+  bool enabled = true;
+  std::string xml_element = "RIst";
+  std::array<std::string, 6> xml_attributes = {"X", "Y", "Z", "A", "B", "C"};
+};
+
+enum class MotionStateXmlFieldType : uint8_t
+{
+  CARTESIAN = 0,
+  JOINT = 1,
+  GPIO = 2,
+  // Internal-only: DELAY and IPOC are handled by the SDK and are not allowed in field_order.
+  DELAY = 3,
+  IPOC = 4
+};
+
+struct MotionStateXmlOrderEntry
+{
+  MotionStateXmlFieldType field_type = MotionStateXmlFieldType::JOINT;
+  std::size_t index = 0;
+};
+
+struct MotionStateXmlConfiguration
+{
+  // XML field definitions for joint state values.
+  // POSITION must be defined for every joint.
+  // If VELOCITY is defined for any joint, it must be defined for all joints.
+  // TORQUE is validated per joint group:
+  //  - if any internal joint defines TORQUE, all internal joints must define TORQUE
+  //  - if any external joint defines TORQUE, all external joints must define TORQUE
+  std::vector<MotionStateJointFieldConfiguration> joint_fields;
+
+  // XML field definition for Cartesian state values.
+  MotionStateCartesianFieldConfiguration cartesian;
+
+  // XML element name for GPIO state values (default: "GPIO").
+  std::string gpio_xml_element = "GPIO";
+
+  // Attribute names for GPIO state values.
+  std::vector<std::string> gpio_xml_attributes;
+
+  // Explicit field ordering for configurable fields in the incoming message.
+  // Delay and IPOC are always handled internally and must not be configured.
+  std::vector<MotionStateXmlOrderEntry> field_order;
+};
+
+// Field types for outgoing RSI control signal messages
+enum class ControlSignalXmlFieldType : uint8_t
+{
+  POSITION = 0,      // internal joint positions element
+  EXT_POSITION = 1,  // external joint positions element
+  VELOCITY = 2,      // internal joint velocities element
+  EXT_VELOCITY = 3,  // external joint velocities element
+  TORQUE = 4,        // internal joint torques element
+  EXT_TORQUE = 5,    // external joint torques element
+  GPIO = 6,          // GPIO command element
+  IPOC = 7           // internal-only (always handled internally, not allowed in field_order)
+};
+
+struct ControlSignalXmlOrderEntry
+{
+  ControlSignalXmlFieldType field_type = ControlSignalXmlFieldType::POSITION;
+  std::size_t index = 0;
+};
+
+struct ControlSignalXmlConfiguration
+{
+  // XML element name for internal joint positions (default: "AK")
+  std::string joint_xml_element = "AK";
+
+  // Attribute names for internal joint positions.
+  // If empty, auto-generated as "A1", "A2", ... up to the number of internal axes.
+  std::vector<std::string> joint_xml_attributes;
+
+  // XML element name for external joint positions (default: "EK")
+  std::string ext_joint_xml_element = "EK";
+
+  // Attribute names for external joint positions.
+  // If empty, auto-generated as "E1", "E2", ... up to the number of external axes.
+  std::vector<std::string> ext_joint_xml_attributes;
+
+  // Enable transmission of joint torque values in outgoing control signals.
+  // Default is false
+  bool include_torque_values = false;
+
+  // Enable transmission of joint velocity values in outgoing control signals.
+  // Default is false.
+  bool include_velocity_values = false;
+
+  // XML element name for internal joint torque values (default: "TK")
+  std::string torque_xml_element = "TK";
+
+  // XML element name for internal joint velocity values (default: "VK")
+  std::string velocity_xml_element = "VK";
+
+  // Attribute names for internal joint torque values.
+  // If empty, auto-generated as "A1", "A2", ... up to the number of internal axes.
+  std::vector<std::string> torque_xml_attributes;
+
+  // Attribute names for internal joint velocity values.
+  // If empty, auto-generated as "A1", "A2", ... up to the number of internal axes.
+  std::vector<std::string> velocity_xml_attributes;
+
+  // XML element name for external joint torque values (default: "ETK")
+  std::string ext_torque_xml_element = "ETK";
+
+  // XML element name for external joint velocity values (default: "EVK")
+  std::string ext_velocity_xml_element = "EVK";
+
+  // Enable transmission of external joint torque values.
+  // This is independent from include_torque_values so external torque transmission can be enabled
+  // even when internal torque values are unavailable/unconfigured.
+  bool include_ext_torque_values = false;
+
+  // Enable transmission of external joint velocity values.
+  // This is independent from include_velocity_values so external velocity transmission can be
+  // enabled even when internal velocity values are unavailable/unconfigured.
+  bool include_ext_velocity_values = false;
+
+  // Attribute names for external joint torque values.
+  // If empty, auto-generated as "E1", "E2", ... up to the number of external axes.
+  std::vector<std::string> ext_torque_xml_attributes;
+
+  // Attribute names for external joint velocity values.
+  // If empty, auto-generated as "E1", "E2", ... up to the number of external axes.
+  std::vector<std::string> ext_velocity_xml_attributes;
+
+  // XML element name for GPIO command values (default: "GPIO")
+  std::string gpio_xml_element = "GPIO";
+
+  // Explicit field ordering for configurable fields in the transmitted message.
+  // IPOC is always appended internally and must not be configured.
+  // If empty, the default order is used:
+  //   POSITION, EXT_POSITION (if external axes exist),
+  //   VELOCITY (if include_velocity_values is true),
+  //   EXT_VELOCITY (if include_ext_velocity_values && external axes exist),
+  //   TORQUE (if include_torque_values is true),
+  //   EXT_TORQUE (if include_ext_torque_values && external axes exist),
+  //   GPIO (if GPIO commands exist), IPOC
+  std::vector<ControlSignalXmlOrderEntry> field_order;
+};
+
 struct Configuration
 {
   // IP address of the KONI interface on the KRC-5.
@@ -135,6 +310,14 @@ struct Configuration
 
   // GPIO commands
   std::vector<GPIOConfiguration> gpio_command_configs;
+
+  // Optional XML layout used for parsing RSI state messages. If not set, the default
+  // RSI layout (<RIst><AIPos><EIPos><GPIO><Delay><IPOC>) is used.
+  std::optional<MotionStateXmlConfiguration> motion_state_xml_config;
+
+  // Optional XML layout for transmitted RSI control signal messages. If not set, the default
+  // RSI layout (<Stop><AK ...><EK ...><GPIO ...><IPOC>) is used.
+  std::optional<ControlSignalXmlConfiguration> control_signal_xml_config;
 
   // The control mode to begin external control in.
   // At the present, the following modes are supported:
