@@ -104,6 +104,20 @@ Status Client::StartRSI(ControlMode control_mode, CycleTime cycle_time)
            : Status{ReturnCode::WARN, "RSI program start requested, but no event handler set"};
 }
 
+Status Client::StartRSIImpedance(ControlMode control_mode)
+{
+  start_cmd_dispatcher_ = true;
+  start_rsi_impedance_ = true;
+
+  control_mode_ = control_mode;
+  rsi_started_notification_sent_ = false;
+  rsi_started_ = true;
+
+  return event_handler_set_
+           ? Status{ReturnCode::OK, "RSI impedance program start requested"}
+           : Status{ReturnCode::WARN, "RSI impedance program start requested, but no event handler set"};
+}
+
 Status Client::CancelRSI()
 {
   // Cancel only works, if program is not active, stop program by MOVE_DISABLE =
@@ -134,6 +148,7 @@ void Client::ResetRSI()
   rsi_started_ = false;
   start_cmd_dispatcher_ = false;
   start_rsi_ = false;
+  start_rsi_impedance_ = false;
 }
 
 void Client::TurnOnDrives() { mxa_wrapper_.drivesOn(); }
@@ -274,6 +289,23 @@ void Client::StartKeepAliveThread()
             if (process_rsi_res.block_state == BLOCKSTATE::DONE)
             {
               start_rsi_ = false;
+            }
+          }
+
+          // Call program starting RSI with impedance overlay
+          if (mxa_wrapper_.isServerActive() && start_rsi_impedance_)
+          {
+            auto process_rsi_res = mxa_wrapper_.processRSIImpedance(
+              static_cast<int>(control_mode_));
+            if (
+              process_rsi_res.block_state == BLOCKSTATE::ACTIVE && !rsi_started_notification_sent_)
+            {
+              rsi_started_notification_sent_ = true;
+              event_handler_->OnSampling();
+            }
+            if (process_rsi_res.block_state == BLOCKSTATE::DONE)
+            {
+              start_rsi_impedance_ = false;
             }
           }
           // ----------------------------------------------------------------------------

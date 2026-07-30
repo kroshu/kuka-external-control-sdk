@@ -3,3 +3,5 @@
       case 3 ; Cancel
          mode = #SYNC
          CWRITE($CMD, state, mode, "CANCEL 1")
+      case 4 ; Setting impedance control
+         set_impedance_control()

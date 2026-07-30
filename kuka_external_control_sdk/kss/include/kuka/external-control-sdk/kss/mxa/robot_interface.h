@@ -49,6 +49,8 @@ public:
 
   Status CancelRsiProgram() override;
 
+  bool IsImpedanceActive() const { return impedance_active_; }
+
   Status RegisterEventHandlerExtension(std::unique_ptr<IEventHandlerExtension> && extension);
 
   Status RegisterStatusResponseHandler(std::unique_ptr<IStatusUpdateHandler> && handler);
@@ -56,6 +58,7 @@ public:
 private:
   bool stop_flag_;
   bool rsi_running_ = false;
+  bool impedance_active_ = false;
   Configuration config_;
   Client client_;
   CycleTime cycle_time_;

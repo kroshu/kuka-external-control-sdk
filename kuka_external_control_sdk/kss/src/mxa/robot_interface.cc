@@ -37,12 +37,24 @@ Status Robot::Setup()
 
 Status Robot::StartControlling(kuka::external::control::ControlMode control_mode)
 {
-  Status start_rsi_ret = client_.StartRSI(control_mode, cycle_time_);
-  if (start_rsi_ret.return_code == ReturnCode::OK || start_rsi_ret.return_code == ReturnCode::WARN)
+  Status start_ret;
+  if (control_mode == ControlMode::JOINT_IMPEDANCE_CONTROL ||
+      control_mode == ControlMode::CARTESIAN_IMPEDANCE_CONTROL)
+  {
+    start_ret = client_.StartRSIImpedance(control_mode);
+    impedance_active_ = true;
+  }
+  else
+  {
+    start_ret = client_.StartRSI(control_mode, cycle_time_);
+    impedance_active_ = false;
+  }
+
+  if (start_ret.return_code == ReturnCode::OK || start_ret.return_code == ReturnCode::WARN)
   {
     rsi_running_ = true;
   }
-  return start_rsi_ret;
+  return start_ret;
 }
 
 Status Robot::StopControlling()
@@ -52,12 +64,20 @@ Status Robot::StopControlling()
     return {ReturnCode::WARN, "Control already stopped"};
   }
 
-  Status rsi_stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
-  CancelRsiProgram();
+  // Impedance mode doesn't use RSI, only cancel the mxA program
+  if (!impedance_active_)
+  {
+    Status rsi_stop_ret = kuka::external::control::kss::rsi::Robot::StopControlling();
+    if (rsi_stop_ret.return_code != ReturnCode::OK)
+    {
+      CancelRsiProgram();
+      return {ReturnCode::WARN, rsi_stop_ret.message};
+    }
+  }
 
-  return rsi_stop_ret.return_code == ReturnCode::OK
-           ? Status{ReturnCode::OK, "RSI stopped"}
-           : Status{ReturnCode::WARN, rsi_stop_ret.message};
+  CancelRsiProgram();
+  impedance_active_ = false;
+  return {ReturnCode::OK, "Control stopped"};
 }
 
 Status Robot::CancelRsiProgram()

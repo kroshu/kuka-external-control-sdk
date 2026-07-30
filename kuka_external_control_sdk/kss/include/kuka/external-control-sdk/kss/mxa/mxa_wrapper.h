@@ -197,8 +197,34 @@ public:
   {
     mxa_tech_function_m_.INT_DATA[1] = control_mode;
     mxa_tech_function_m_.INT_DATA[2] = cycle_time;
+    mxa_tech_function_m_.PARAMETERCOUNT = 2;
     mxa_tech_function_m_.BUFFERMODE = 2;
     mxa_tech_function_m_.TECHFUNCTIONID = 2;
+    mxa_tech_function_m_.EXECUTECMD = true;
+    mxa_tech_function_m_.OnCycle();
+
+    if (mxa_tech_function_m_.ERROR)
+    {
+      mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_tech_function_m_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_m_.ERRORID));
+    }
+    else if (mxa_tech_function_m_.DONE)
+    {
+      mxa_tech_function_m_.EXECUTECMD = false;
+      mxa_tech_function_m_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+  }
+
+  // Starts KRL impedance program via tech function
+  BLOCKRESULT processRSIImpedance(int control_mode)
+  {
+    mxa_tech_function_m_.INT_DATA[1] = control_mode;
+    mxa_tech_function_m_.PARAMETERCOUNT = 1;
+    mxa_tech_function_m_.BUFFERMODE = 2;
+    mxa_tech_function_m_.TECHFUNCTIONID = 4;
     mxa_tech_function_m_.EXECUTECMD = true;
     mxa_tech_function_m_.OnCycle();
 

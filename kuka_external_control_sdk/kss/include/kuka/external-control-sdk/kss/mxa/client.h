@@ -49,6 +49,9 @@ public:
   // Starts RSI program
   Status StartRSI(ControlMode control_mode, CycleTime cycle_time);
 
+  // Starts KRL impedance program via mxA
+  Status StartRSIImpedance(ControlMode control_mode);
+
   // Cancels RSI program and calls ResetRSI
   Status CancelRSI();
 
@@ -102,6 +105,7 @@ private:
 
   std::atomic<bool> start_cmd_dispatcher_{false};
   std::atomic<bool> start_rsi_{false};
+  std::atomic<bool> start_rsi_impedance_{false};
   std::atomic<bool> rsi_started_{false};
   std::atomic<bool> rsi_started_notification_sent_{false};
   std::atomic<bool> connected_notification_sent_{false};
