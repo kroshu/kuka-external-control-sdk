@@ -37,11 +37,11 @@ Set the network interface of the computer performing external control to be on t
 
 ### Example network configuration
 
-Windows computer with WorkVisual: `172.32.1.150/24`
-Robot controller KLI: `172.32.1.147/24`
-Robot controller RSI network: `172.32.2.147/24`
-Control PC RSI connection: `172.32.2.148/24`
-Control PC KLI connection: `172.32.1.148/24` (needed for EKI/mxA wrappers)
+- Windows computer with WorkVisual: `172.32.1.150/24`
+- Robot controller KLI: `172.32.1.147/24`
+- Robot controller RSI network: `172.32.2.147/24`
+- Control PC RSI connection: `172.32.2.148/24`
+- Control PC KLI connection: `172.32.1.148/24` (needed for EKI/mxA wrappers)
 
 ## Steps within WorkVisual
 
@@ -52,7 +52,7 @@ There are several KUKA-specific files located in the [`krc_setup/kss`](../krc_se
 1. Copy all files from the [`Config/User/Common/SensorInterface/`](../krc_setup/kss/Config/User/Common/SensorInterface/) directory into the `Config/User/Common/SensorInterface/` directory.
 2. Copy all files from the [`Program/RSI/`](../krc_setup/kss/KRC/R1/Program/RSI/) directories into `KRC/R1/Program/`.
 
-For a more complex control scenario including external axes or I/O-s, the context and ethernet configuration files have to be modified for the specific use case.
+For a more complex control scenario including external axes or I/Os, the context and ethernet configuration files have to be modified for the specific use case.
 
 ### EKI server setup
 
@@ -65,7 +65,7 @@ For a more complex control scenario including external axes or I/O-s, the contex
 ### mxA server setup
 
 1. Perform steps of RSI setup
-2. Install the mxA option package with mode UDP selected (this only connects the I/O-s for the UDP setup)
+2. Install the mxA option package with mode UDP selected (this only connects the I/Os for the UDP setup)
 3. Perform the manual file manipulations described by the following files:
    1. [`UDPConfig`](../krc_setup/kss/KRC/R1/TP/mxA%20file%20manipulations/UDPConfig) to fully change to UDP mode
    2. [`mxA_TechFunction.add`](../krc_setup/kss/KRC/R1/TP/mxA%20file%20manipulations/mxA_TechFunction.add) to extend the mxA TechFunction with user defined methods that enable starting the RSI program
