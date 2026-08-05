@@ -19,11 +19,9 @@ Update the IP address in the [`rsi_ethernet.xml`](../krc_setup/iiqka_os2/Config/
 
 ### Example network configuration
 
-- Windows computer with iiQWorks.Sim: `172.32.1.150/24`
-- Robot controller KLI: `172.32.1.147/24`
-- Robot controller RSI network: `172.32.2.147/24`
-- Control PC RSI connection: `172.32.2.148/24`
-- Control PC KLI connection: `172.32.1.148/24` (needed for EKI/mxA wrappers)
+- Windows computer with iiQWorks.Sim: `172.32.1.30/24`
+- Robot controller KLI: `172.32.1.10/24`
+- Control PC: `172.32.1.20/24`
 
 ## Steps within iiQWorks.Sim
 
