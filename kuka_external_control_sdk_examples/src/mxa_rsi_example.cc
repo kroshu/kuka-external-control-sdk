@@ -27,13 +27,25 @@ using kuka::external::control::ReturnCode;
 using kuka::external::control::Status;
 using kuka::external::control::kss::Configuration;
 using kuka::external::control::kss::CycleTime;
+using kuka::external::control::kss::JointConfiguration;
 using kuka::external::control::kss::mxa::Robot;
 
 int main()
 {
   // Specify the IP address of the KLI interface and create a robot interface
   // instance
-  Configuration config{.kli_ip_address = "192.168.38.8", .mxa_client_port = 1337};
+  Configuration config{
+    .kli_ip_address = "192.168.38.8",
+    .mxa_client_port = 1337,
+    .joint_configs = {
+      {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+      {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+      {"joint_3", JointConfiguration::Type::REVOLUTE, false},
+      {"joint_4", JointConfiguration::Type::REVOLUTE, false},
+      {"joint_5", JointConfiguration::Type::REVOLUTE, false},
+      {"joint_6", JointConfiguration::Type::REVOLUTE, false},
+    },
+  };
   Robot rob_if{config};
 
   // Holds status response from robot interface operations
