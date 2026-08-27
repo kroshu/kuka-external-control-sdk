@@ -212,6 +212,22 @@ void Client::StartKeepAliveThread()
           {
             connected_notification_sent_ = false;
           }
+
+          // Check ROS runtime version compatibility once, after the KRC is initialized
+          if (mxa_wrapper_.isInitialized() && !ros_runtime_version_checked_)
+          {
+            auto version_check_res = mxa_wrapper_.checkRosRuntimeVersion(
+              kRosRuntimeVersionMajor, kRosRuntimeVersionMinor, kRosRuntimeVersionRevision);
+            if (version_check_res.block_state == BLOCKSTATE::DONE)
+            {
+              ros_runtime_version_checked_ = true;
+            }
+          }
+          else if (!mxa_wrapper_.isInitialized())
+          {
+            ros_runtime_version_checked_ = false;
+          }
+
           switch (error_code)
           {
             case 0:
@@ -228,6 +244,10 @@ void Client::StartKeepAliveThread()
               break;
             case 525:
               error_msg = "ESTOP is active";
+              break;
+            case kRosRuntimeVersionMismatchErrorId:
+              error_code = -1;
+              error_msg = "ROS runtime version mismatch between client and KRC";
               break;
             default:
               error_msg = "Keep-alive thread error occurred with ID: " + std::to_string(error_code);

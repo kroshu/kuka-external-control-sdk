@@ -81,6 +81,14 @@ private:
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
 
+  // ROS runtime version compatibility check
+  static constexpr double kRosRuntimeVersionMajor = 1.0;
+  static constexpr double kRosRuntimeVersionMinor = 0.0;
+  static constexpr double kRosRuntimeVersionRevision = 0.0;
+  // Reserved KRC custom message ID raised by rosruntime.dat version check on mismatch
+  static constexpr int kRosRuntimeVersionMismatchErrorId = 900;
+  bool ros_runtime_version_checked_ = false;
+
   // Event handling
   std::mutex event_handler_mutex_;
   std::unique_ptr<EventHandler> event_handler_;

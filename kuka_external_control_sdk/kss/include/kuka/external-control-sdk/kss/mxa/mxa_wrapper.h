@@ -192,6 +192,34 @@ public:
     krc_error_.OnCycle();
   }
 
+  // Sends local semantic version to KRC for comparison against rosruntime.dat globals
+  // Only works with Techfunction extension
+  BLOCKRESULT checkRosRuntimeVersion(double major, double minor, double revision)
+  {
+    mxa_tech_function_s_.REAL_DATA[1] = static_cast<float>(major);
+    mxa_tech_function_s_.REAL_DATA[2] = static_cast<float>(minor);
+    mxa_tech_function_s_.REAL_DATA[3] = static_cast<float>(revision);
+    mxa_tech_function_s_.TECHFUNCTIONID = 4;
+    mxa_tech_function_s_.PARAMETERCOUNT = 3;
+    mxa_tech_function_s_.BUFFERMODE = 0;
+    mxa_tech_function_s_.EXECUTECMD = true;
+    mxa_tech_function_s_.OnCycle();
+
+    if (mxa_tech_function_s_.ERROR)
+    {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
+    }
+    else if (mxa_tech_function_s_.DONE)
+    {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+  }
+
   // Only works with Techfunction extension
   BLOCKRESULT processRSI(int control_mode, int cycle_time)
   {
