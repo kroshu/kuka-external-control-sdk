@@ -222,6 +222,16 @@ void Client::StartKeepAliveThread()
             {
               ros_runtime_version_checked_ = true;
             }
+            else if (version_check_res.block_state == BLOCKSTATE::ERROR)
+            {
+              const auto error_msg =
+                version_check_res.error_code == kRosRuntimeVersionMismatchErrorId
+                  ? "ROS runtime version mismatch between client and KRC"
+                  : "ROS runtime version check failed with ID: " +
+                    std::to_string(version_check_res.error_code);
+              event_handler_->OnError(error_msg);
+              ros_runtime_version_checked_ = true;
+            }
           }
           else if (!mxa_wrapper_.isInitialized())
           {

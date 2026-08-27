@@ -209,7 +209,7 @@ public:
     {
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
-      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
+      return BLOCKRESULT(mxa_tech_function_s_.ERRORID);
     }
     else if (mxa_tech_function_s_.DONE)
     {
