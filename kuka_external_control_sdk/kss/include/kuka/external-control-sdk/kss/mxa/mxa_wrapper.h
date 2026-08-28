@@ -60,7 +60,7 @@ public:
     mxa_set_override_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_tech_function_m_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_tech_function_s_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
-    mxa_sys_var_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
+    mxa_read_sys_var_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     krc_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     read_mxa_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
 
