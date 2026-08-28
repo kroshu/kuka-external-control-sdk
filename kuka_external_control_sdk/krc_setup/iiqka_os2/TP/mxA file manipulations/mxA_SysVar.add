@@ -1,0 +1,10 @@
+[Version]
+Version=1.0.0
+Type=Block
+
+[ReadSysVar]
+Type=Insert
+Before=;FOLD USER READSYSVAR
+What=mxA_sysvar_version.txt
+Start=case 8 ; Velocity reduction percent for jogging
+End=gMxA_CMD_DATA_RET[3] = ROSRUNTIME_VERSION_REV

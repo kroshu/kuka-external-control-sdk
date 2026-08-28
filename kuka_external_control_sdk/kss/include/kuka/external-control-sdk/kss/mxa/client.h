@@ -85,8 +85,6 @@ private:
   static constexpr double kRosRuntimeVersionMajor = 1.0;
   static constexpr double kRosRuntimeVersionMinor = 0.0;
   static constexpr double kRosRuntimeVersionRevision = 0.0;
-  // Reserved KRC custom message ID raised by rosruntime.dat version check on mismatch
-  static constexpr int kRosRuntimeVersionMismatchErrorId = 900;
   bool ros_runtime_version_checked_ = false;
 
   // Event handling

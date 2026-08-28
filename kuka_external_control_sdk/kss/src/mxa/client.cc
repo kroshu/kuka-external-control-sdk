@@ -213,23 +213,25 @@ void Client::StartKeepAliveThread()
             connected_notification_sent_ = false;
           }
 
-          // Check ROS runtime version compatibility once, after the KRC is initialized
+          // Read ROS runtime version from KRC, once after initialization
           if (mxa_wrapper_.isInitialized() && !ros_runtime_version_checked_)
           {
-            auto version_check_res = mxa_wrapper_.checkRosRuntimeVersion(
-              kRosRuntimeVersionMajor, kRosRuntimeVersionMinor, kRosRuntimeVersionRevision);
-            if (version_check_res.block_state == BLOCKSTATE::DONE)
+            auto result = mxa_wrapper_.readRosRuntimeVersion();
+            
+            if (result.status.block_state == BLOCKSTATE::DONE)
             {
+              // Validate version compatibility
+              if (result.version.major != kRosRuntimeVersionMajor ||
+                  result.version.minor != kRosRuntimeVersionMinor ||
+                  result.version.revision != kRosRuntimeVersionRevision)
+              {
+                error_code = -1;
+              }
               ros_runtime_version_checked_ = true;
             }
-            else if (version_check_res.block_state == BLOCKSTATE::ERROR)
+            else if (result.status.block_state == BLOCKSTATE::ERROR)
             {
-              const auto error_msg =
-                version_check_res.error_code == kRosRuntimeVersionMismatchErrorId
-                  ? "ROS runtime version mismatch between client and KRC"
-                  : "ROS runtime version check failed with ID: " +
-                    std::to_string(version_check_res.error_code);
-              event_handler_->OnError(error_msg);
+              error_code = result.status.error_code;
               ros_runtime_version_checked_ = true;
             }
           }
@@ -255,8 +257,7 @@ void Client::StartKeepAliveThread()
             case 525:
               error_msg = "ESTOP is active";
               break;
-            case kRosRuntimeVersionMismatchErrorId:
-              error_code = -1;
+            case -1:
               error_msg = "ROS runtime version mismatch between client and KRC";
               break;
             default:

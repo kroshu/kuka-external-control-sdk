@@ -14,7 +14,7 @@ Type=Insert
 Before=;FOLD USER TECHFUNC
 What=mxa_techfunc.txt
 Start=case 2 ; RSI joint pos
-End=check_ros_version(gMxA_CmdQ_Real1[CommandQueueIndex], gMxA_CmdQ_Real2[CommandQueueIndex], gMxA_CmdQ_Real3[CommandQueueIndex])
+End=CWRITE($CMD, state, mode, "CANCEL 1")
 
 [InsertCheckPar]
 Type=Insert

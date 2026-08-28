@@ -192,15 +192,29 @@ public:
     krc_error_.OnCycle();
   }
 
-  // Sends local semantic version to KRC for comparison against rosruntime.dat globals
-  // Only works with Techfunction extension
-  BLOCKRESULT checkRosRuntimeVersion(double major, double minor, double revision)
+  // Reads ROS runtime version from KRC
+  // Returns both status and version values for client to validate
+  struct VersionData
   {
-    mxa_tech_function_s_.REAL_DATA[1] = static_cast<float>(major);
-    mxa_tech_function_s_.REAL_DATA[2] = static_cast<float>(minor);
-    mxa_tech_function_s_.REAL_DATA[3] = static_cast<float>(revision);
-    mxa_tech_function_s_.TECHFUNCTIONID = 4;
-    mxa_tech_function_s_.PARAMETERCOUNT = 3;
+    double major = 0.0;
+    double minor = 0.0;
+    double revision = 0.0;
+  };
+
+  struct VersionResult
+  {
+    BLOCKRESULT status;
+    VersionData version;
+  };
+
+  VersionResult readRosRuntimeVersion()
+  {
+    VersionResult result;
+    
+    // Request to read SysVar case 9 (ROS runtime version)
+    mxa_tech_function_s_.INT_DATA[1] = 9;  // SysVar case 9 = version
+    mxa_tech_function_s_.TECHFUNCTIONID = 9;  // Use case 9 to read version SysVar
+    mxa_tech_function_s_.PARAMETERCOUNT = 1;
     mxa_tech_function_s_.BUFFERMODE = 0;
     mxa_tech_function_s_.EXECUTECMD = true;
     mxa_tech_function_s_.OnCycle();
@@ -209,15 +223,25 @@ public:
     {
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
-      return BLOCKRESULT(mxa_tech_function_s_.ERRORID);
+      result.status = BLOCKRESULT(mxa_tech_function_s_.ERRORID);
     }
     else if (mxa_tech_function_s_.DONE)
     {
+      // Extract version values from return data
+      result.version.major = static_cast<double>(mxa_tech_function_s_.REAL_DATA[1]);
+      result.version.minor = static_cast<double>(mxa_tech_function_s_.REAL_DATA[2]);
+      result.version.revision = static_cast<double>(mxa_tech_function_s_.REAL_DATA[3]);
+      
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
-      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+      result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
     }
-    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+    else
+    {
+      result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+    }
+    
+    return result;
   }
 
   // Only works with Techfunction extension
