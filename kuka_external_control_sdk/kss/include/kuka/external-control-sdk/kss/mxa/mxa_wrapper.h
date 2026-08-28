@@ -214,25 +214,17 @@ public:
 
     // Request mxA_ReadSysVar case 9. SysVar is command 27 and uses integer
     // parameter 1 for the requested system-variable case.
-    mxa_sys_var_.EXECUTE = true;
-    mxa_sys_var_.CMDID = 27;
-    mxa_sys_var_.BUFFERMODE = 0;
-    mxa_sys_var_.COMMANDSIZE = 1;
-    mxa_sys_var_.ENABLEDIRECTEXE = true;
-    mxa_sys_var_.ENABLEQUEUEEXE = true;
-    mxa_sys_var_.IGNOREINIT = false;
-    KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].COMMAND.CMDPARBOOL[1] = false;
-    KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].COMMAND.CMDPARINT[1] = 9;
-    KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].COMMAND.CMDPARREAL[1] = 0.0;
-    mxa_sys_var_.OnCycle();
+    mxa_read_sys_var_.EXECUTECMD = true;
+    mxa_read_sys_var_.INDEX = 9;  
+    mxa_read_sys_var_.OnCycle();
 
-    if (mxa_sys_var_.ERROR)
+    if (mxa_read_sys_var_.ERROR)
     {
-      mxa_sys_var_.EXECUTE = false;
-      mxa_sys_var_.OnCycle();
-      result.status = BLOCKRESULT(mxa_sys_var_.ERRORID);
+      mxa_read_sys_var_.EXECUTECMD = false;
+      mxa_read_sys_var_.OnCycle();
+      result.status = BLOCKRESULT(mxa_read_sys_var_.ERRORID);
     }
-    else if (mxa_sys_var_.DONE)
+    else if (mxa_read_sys_var_.DONE)
     {
       // Extract version values from return data
       const auto & command_data =
@@ -241,8 +233,8 @@ public:
       result.version.minor = static_cast<double>(command_data[2]);
       result.version.revision = static_cast<double>(command_data[3]);
 
-      mxa_sys_var_.EXECUTE = false;
-      mxa_sys_var_.OnCycle();
+      mxa_read_sys_var_.EXECUTECMD = false;
+      mxa_read_sys_var_.OnCycle();
       result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
     }
     else
@@ -349,7 +341,7 @@ private:
   KRC_SETOVERRIDE mxa_set_override_;
   KRC_TECHFUNCTION mxa_tech_function_m_;
   KRC_TECHFUNCTION mxa_tech_function_s_;
-  MXA_EXECUTECOMMAND mxa_sys_var_;
+  KRC_READSYSVAR mxa_read_sys_var_;
 
   static constexpr int TECH_FUNC_PARAM_COUNT = 40;
   std::array<int, TECH_FUNC_PARAM_COUNT + 1> int_array_;
