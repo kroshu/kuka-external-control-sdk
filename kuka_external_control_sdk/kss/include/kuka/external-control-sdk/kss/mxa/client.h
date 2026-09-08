@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 
@@ -72,6 +73,8 @@ private:
   // Start keep-alive thread
   void StartKeepAliveThread();
 
+  std::optional<int> CheckRosRuntimeVersion(mxAWrapper::VersionResult & version_result);
+
   // UDP communication
   std::unique_ptr<os::core::udp::communication::Publisher> udp_publisher_;
   std::unique_ptr<os::core::udp::communication::Subscriber> udp_subscriber_;
@@ -80,6 +83,12 @@ private:
   static constexpr int kMXAClientSendPort = 1335;  // Port from which the client sends MXA messages
   static constexpr int kInitTimeoutTicks = 4;
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
+
+  // ROS runtime version compatibility check
+  static constexpr int kRosRuntimeVersionMajor = 1;
+  static constexpr int kRosRuntimeVersionMinor = 0;
+  static constexpr int kRosRuntimeVersionRevision = 0;
+  bool ros_runtime_version_checked_ = false;
 
   // Event handling
   std::mutex event_handler_mutex_;

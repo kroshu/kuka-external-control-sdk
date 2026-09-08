@@ -60,6 +60,7 @@ public:
     mxa_set_override_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_tech_function_m_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_tech_function_s_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
+    mxa_read_sys_var_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     krc_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     read_mxa_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
 
@@ -192,6 +193,57 @@ public:
     krc_error_.OnCycle();
   }
 
+  // Reads ROS runtime version from KRC
+  // Returns both status and version values for client to validate
+  struct VersionData
+  {
+    int major = 0;
+    int minor = 0;
+    int revision = 0;
+  };
+
+  struct VersionResult
+  {
+    BLOCKRESULT status;
+    VersionData version;
+  };
+
+  VersionResult readRosRuntimeVersion()
+  {
+    VersionResult result;
+
+    // Request mxA_ReadSysVar case 9. SysVar is command 27 and uses integer
+    // parameter 1 for the requested system-variable case.
+    mxa_read_sys_var_.EXECUTECMD = true;
+    mxa_read_sys_var_.INDEX = 9;
+    mxa_read_sys_var_.OnCycle();
+
+    if (mxa_read_sys_var_.ERROR)
+    {
+      mxa_read_sys_var_.EXECUTECMD = false;
+      mxa_read_sys_var_.OnCycle();
+      result.status = BLOCKRESULT(mxa_read_sys_var_.ERRORID);
+    }
+    else if (mxa_read_sys_var_.DONE)
+    {
+      // Extract version values from return data
+      const auto & command_data = KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].CMDSTATE.CMDDATARETURN;
+      result.version.major = static_cast<int>(command_data[1]);
+      result.version.minor = static_cast<int>(command_data[2]);
+      result.version.revision = static_cast<int>(command_data[3]);
+
+      mxa_read_sys_var_.EXECUTECMD = false;
+      mxa_read_sys_var_.OnCycle();
+      result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    else
+    {
+      result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+    }
+
+    return result;
+  }
+
   // Only works with Techfunction extension
   BLOCKRESULT processRSI(int control_mode, int cycle_time)
   {
@@ -288,6 +340,7 @@ private:
   KRC_SETOVERRIDE mxa_set_override_;
   KRC_TECHFUNCTION mxa_tech_function_m_;
   KRC_TECHFUNCTION mxa_tech_function_s_;
+  KRC_READSYSVAR mxa_read_sys_var_;
 
   static constexpr int TECH_FUNC_PARAM_COUNT = 40;
   std::array<int, TECH_FUNC_PARAM_COUNT + 1> int_array_;
