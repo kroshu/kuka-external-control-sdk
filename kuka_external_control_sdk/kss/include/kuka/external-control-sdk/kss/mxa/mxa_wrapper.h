@@ -197,9 +197,9 @@ public:
   // Returns both status and version values for client to validate
   struct VersionData
   {
-    double major = 0.0;
-    double minor = 0.0;
-    double revision = 0.0;
+    int major = 0;
+    int minor = 0;
+    int revision = 0;
   };
 
   struct VersionResult
@@ -228,9 +228,9 @@ public:
     {
       // Extract version values from return data
       const auto & command_data = KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].CMDSTATE.CMDDATARETURN;
-      result.version.major = static_cast<double>(command_data[1]);
-      result.version.minor = static_cast<double>(command_data[2]);
-      result.version.revision = static_cast<double>(command_data[3]);
+      result.version.major = static_cast<int>(command_data[1]);
+      result.version.minor = static_cast<int>(command_data[2]);
+      result.version.revision = static_cast<int>(command_data[3]);
 
       mxa_read_sys_var_.EXECUTECMD = false;
       mxa_read_sys_var_.OnCycle();

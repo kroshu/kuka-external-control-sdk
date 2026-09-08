@@ -85,9 +85,9 @@ private:
   static constexpr std::chrono::milliseconds kUDPTimeoutMs{100};
 
   // ROS runtime version compatibility check
-  static constexpr double kRosRuntimeVersionMajor = 1.0;
-  static constexpr double kRosRuntimeVersionMinor = 0.0;
-  static constexpr double kRosRuntimeVersionRevision = 0.0;
+  static constexpr int kRosRuntimeVersionMajor = 1;
+  static constexpr int kRosRuntimeVersionMinor = 0;
+  static constexpr int kRosRuntimeVersionRevision = 0;
   bool ros_runtime_version_checked_ = false;
 
   // Event handling
