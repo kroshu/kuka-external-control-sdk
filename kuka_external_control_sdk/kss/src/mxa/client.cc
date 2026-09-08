@@ -172,7 +172,7 @@ void Client::StartKeepAliveThread()
       std::string error_msg;
       StatusUpdate status_update;
       StatusUpdate prev_status_update;
-      VersionResult version_result;
+      mxAWrapper::VersionResult version_result;
 
       while (!stop_requested_)
       {
