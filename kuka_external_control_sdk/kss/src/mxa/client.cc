@@ -179,7 +179,12 @@ std::optional<int> Client::CheckRosRuntimeVersion(mxAWrapper::VersionResult & ve
   if (version_result.status.block_state == BLOCKSTATE::DONE)
   {
     ros_runtime_version_checked_ = true;
-    return version_result.version.major != kRosRuntimeVersionMajor ? -1 : std::nullopt;
+    if (version_result.version.major != kRosRuntimeVersionMajor)
+    {
+      return -1;
+    }
+
+    return std::nullopt;
   }
 
   if (version_result.status.block_state == BLOCKSTATE::ERROR)
