@@ -37,14 +37,15 @@ int main()
   Configuration config{
     .kli_ip_address = "192.168.38.8",
     .mxa_client_port = 1337,
-    .joint_configs = {
-      {"joint_1", JointConfiguration::Type::REVOLUTE, false},
-      {"joint_2", JointConfiguration::Type::REVOLUTE, false},
-      {"joint_3", JointConfiguration::Type::REVOLUTE, false},
-      {"joint_4", JointConfiguration::Type::REVOLUTE, false},
-      {"joint_5", JointConfiguration::Type::REVOLUTE, false},
-      {"joint_6", JointConfiguration::Type::REVOLUTE, false},
-    },
+    .joint_configs =
+      {
+        {"joint_1", JointConfiguration::Type::REVOLUTE, false},
+        {"joint_2", JointConfiguration::Type::REVOLUTE, false},
+        {"joint_3", JointConfiguration::Type::REVOLUTE, false},
+        {"joint_4", JointConfiguration::Type::REVOLUTE, false},
+        {"joint_5", JointConfiguration::Type::REVOLUTE, false},
+        {"joint_6", JointConfiguration::Type::REVOLUTE, false},
+      },
   };
   Robot rob_if{config};
 

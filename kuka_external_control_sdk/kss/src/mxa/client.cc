@@ -172,6 +172,7 @@ void Client::StartKeepAliveThread()
       std::string error_msg;
       StatusUpdate status_update;
       StatusUpdate prev_status_update;
+      VersionResult version_result;
 
       while (!stop_requested_)
       {
@@ -216,22 +217,20 @@ void Client::StartKeepAliveThread()
           // Read ROS runtime version from KRC, once after initialization
           if (mxa_wrapper_.isInitialized() && !ros_runtime_version_checked_)
           {
-            auto result = mxa_wrapper_.readRosRuntimeVersion();
-            
-            if (result.status.block_state == BLOCKSTATE::DONE)
+            version_result = mxa_wrapper_.readRosRuntimeVersion();
+
+            if (version_result.status.block_state == BLOCKSTATE::DONE)
             {
               // Validate version compatibility
-              if (result.version.major != kRosRuntimeVersionMajor ||
-                  result.version.minor != kRosRuntimeVersionMinor ||
-                  result.version.revision != kRosRuntimeVersionRevision)
+              if (version_result.version.major != kRosRuntimeVersionMajor)
               {
                 error_code = -1;
               }
               ros_runtime_version_checked_ = true;
             }
-            else if (result.status.block_state == BLOCKSTATE::ERROR)
+            else if (version_result.status.block_state == BLOCKSTATE::ERROR)
             {
-              error_code = result.status.error_code;
+              error_code = version_result.status.error_code;
               ros_runtime_version_checked_ = true;
             }
           }
@@ -258,7 +257,9 @@ void Client::StartKeepAliveThread()
               error_msg = "ESTOP is active";
               break;
             case -1:
-              error_msg = "ROS runtime version mismatch between client and KRC";
+              error_msg = "ROS runtime major version mismatch between client: " +
+                          std::to_string(kRosRuntimeVersionMajor) +
+                          " and KRC: " + std::to_string(version_result.version.major);
               break;
             default:
               error_msg = "Keep-alive thread error occurred with ID: " + std::to_string(error_code);

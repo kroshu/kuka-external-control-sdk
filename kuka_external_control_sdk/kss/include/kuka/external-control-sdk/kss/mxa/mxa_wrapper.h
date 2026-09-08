@@ -215,7 +215,7 @@ public:
     // Request mxA_ReadSysVar case 9. SysVar is command 27 and uses integer
     // parameter 1 for the requested system-variable case.
     mxa_read_sys_var_.EXECUTECMD = true;
-    mxa_read_sys_var_.INDEX = 9;  
+    mxa_read_sys_var_.INDEX = 9;
     mxa_read_sys_var_.OnCycle();
 
     if (mxa_read_sys_var_.ERROR)
@@ -227,8 +227,7 @@ public:
     else if (mxa_read_sys_var_.DONE)
     {
       // Extract version values from return data
-      const auto & command_data =
-        KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].CMDSTATE.CMDDATARETURN;
+      const auto & command_data = KRC_AXISGROUPREFARR[DEFAULT_AXISGROUP_ID].CMDSTATE.CMDDATARETURN;
       result.version.major = static_cast<double>(command_data[1]);
       result.version.minor = static_cast<double>(command_data[2]);
       result.version.revision = static_cast<double>(command_data[3]);
@@ -241,7 +240,7 @@ public:
     {
       result.status = BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
     }
-    
+
     return result;
   }
 
