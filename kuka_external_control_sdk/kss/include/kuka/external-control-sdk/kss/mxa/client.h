@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 
@@ -71,6 +72,8 @@ public:
 private:
   // Start keep-alive thread
   void StartKeepAliveThread();
+
+  std::optional<int> CheckRosRuntimeVersion(mxAWrapper::VersionResult & version_result);
 
   // UDP communication
   std::unique_ptr<os::core::udp::communication::Publisher> udp_publisher_;

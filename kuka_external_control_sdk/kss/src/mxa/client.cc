@@ -162,6 +162,35 @@ Status Client::RegisterStatusUpdateHandler(std::unique_ptr<IStatusUpdateHandler>
   return {ReturnCode::OK, "Registered status update handler"};
 }
 
+std::optional<int> Client::CheckRosRuntimeVersion(mxAWrapper::VersionResult & version_result)
+{
+  if (!mxa_wrapper_.isInitialized())
+  {
+    ros_runtime_version_checked_ = false;
+    return std::nullopt;
+  }
+
+  if (ros_runtime_version_checked_)
+  {
+    return std::nullopt;
+  }
+
+  version_result = mxa_wrapper_.readRosRuntimeVersion();
+  if (version_result.status.block_state == BLOCKSTATE::DONE)
+  {
+    ros_runtime_version_checked_ = true;
+    return version_result.version.major != kRosRuntimeVersionMajor ? -1 : std::nullopt;
+  }
+
+  if (version_result.status.block_state == BLOCKSTATE::ERROR)
+  {
+    ros_runtime_version_checked_ = true;
+    return version_result.status.error_code;
+  }
+
+  return std::nullopt;
+}
+
 void Client::StartKeepAliveThread()
 {
   keep_alive_thread_ = std::thread(
@@ -215,28 +244,10 @@ void Client::StartKeepAliveThread()
           }
 
           // Read ROS runtime version from KRC, once after initialization
-          if (mxa_wrapper_.isInitialized() && !ros_runtime_version_checked_)
+          if (const auto version_error_code = CheckRosRuntimeVersion(version_result);
+              version_error_code.has_value())
           {
-            version_result = mxa_wrapper_.readRosRuntimeVersion();
-
-            if (version_result.status.block_state == BLOCKSTATE::DONE)
-            {
-              // Validate version compatibility
-              if (version_result.version.major != kRosRuntimeVersionMajor)
-              {
-                error_code = -1;
-              }
-              ros_runtime_version_checked_ = true;
-            }
-            else if (version_result.status.block_state == BLOCKSTATE::ERROR)
-            {
-              error_code = version_result.status.error_code;
-              ros_runtime_version_checked_ = true;
-            }
-          }
-          else if (!mxa_wrapper_.isInitialized())
-          {
-            ros_runtime_version_checked_ = false;
+            error_code = *version_error_code;
           }
 
           switch (error_code)
