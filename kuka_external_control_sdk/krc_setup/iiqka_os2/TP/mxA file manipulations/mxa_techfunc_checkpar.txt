@@ -1,4 +1,0 @@
-      case 2
-         bValuesOK = TRUE
-      case 3
-         bValuesOK = TRUE
