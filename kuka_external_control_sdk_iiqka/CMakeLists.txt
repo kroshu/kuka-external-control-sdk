@@ -14,13 +14,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_subdirectory(iiqka)
 
 get_target_property(IIQKA_INCLUDE_DIRS kuka-iiqka-client-library INCLUDE_DIRECTORIES)
-get_target_property(KSS_INCLUDE_DIRS kuka-kss-client-library INCLUDE_DIRECTORIES)
 
-add_library(kuka-external-control-sdk STATIC "$<TARGET_OBJECTS:kuka-iiqka-client-library>" "$<TARGET_OBJECTS:kuka-kss-client-library>")
-target_include_directories(kuka-external-control-sdk PUBLIC ${IIQKA_INCLUDE_DIRS} ${KSS_INCLUDE_DIRS})
+add_library(kuka-external-control-sdk STATIC "$<TARGET_OBJECTS:kuka-iiqka-client-library>")
+target_include_directories(kuka-external-control-sdk PUBLIC ${IIQKA_INCLUDE_DIRS})
 target_link_libraries(kuka-external-control-sdk PUBLIC
   kuka-iiqka-client-library
-  kuka-kss-client-library
 )
 
 install(TARGETS kuka-external-control-sdk EXPORT SdkExport
