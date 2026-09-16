@@ -4,13 +4,16 @@ project("external-control-sdk")
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/FindProtobuf.cmake)
 
-get_filename_component(PARENT_DIR ${CMAKE_CURRENT_LIST_DIR} DIRECTORY)
-
-set(common_directory ${PARENT_DIR}/common)
-set(iiqka_directory ${PARENT_DIR}/iiqka)
-set(utils_directory ${PARENT_DIR}/utils)
+set(iiqka_directory ${CMAKE_CURRENT_LIST_DIR})
 set(proto_api_directory ${iiqka_directory}/proto-api)
 set(test_directory ${iiqka_directory}/test)
+
+find_package(kuka_external_control_sdk_common QUIET)
+if(NOT kuka_external_control_sdk_common_FOUND)
+  list(APPEND CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
+  find_package(kuka_external_control_sdk_common REQUIRED)
+endif()
+set(common_target_name "Kuka::kuka-external-control-sdk-common")
 
 set(target_name "kuka-iiqka-client-library")
 
@@ -65,14 +68,6 @@ protobuf_generate(
 
 set(sources
   ${PROTO_SRCS}
-  ${common_directory}/src/status.cc
-  ${utils_directory}/src/os-core-udp-communication/subscriber.cc
-  ${utils_directory}/src/os-core-udp-communication/requester.cc
-  ${utils_directory}/src/os-core-udp-communication/publisher.cc
-  ${utils_directory}/src/os-core-udp-communication/replier.cc
-  ${utils_directory}/src/os-core-udp-communication/secure_replier.cc
-  ${utils_directory}/src/os-core-udp-communication/socket.cc
-  ${utils_directory}/src/os-core-udp-communication/secure_socket.cc
   ${iiqka_directory}/src/robot.cc
 )
 
@@ -83,14 +78,13 @@ add_library(${target_name} STATIC ${sources})
 target_link_libraries(${target_name} PUBLIC
   Threads::Threads
   OpenSSL::SSL
+  ${common_target_name}
   kuka-iiqka-client-library-protobuf
 )
 
 target_include_directories(${target_name} PUBLIC
-  "$<BUILD_INTERFACE:${common_directory}/include>"
   "$<BUILD_INTERFACE:${iiqka_directory}/include>"
   "$<BUILD_INTERFACE:${proto_api_directory}>"
-  "$<BUILD_INTERFACE:${utils_directory}/include>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>"
   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include/kuka/external-control-sdk/iiqka>"
 )
@@ -128,13 +122,11 @@ if(BUILD_TESTING)
   )
 
   target_include_directories(test_robot PUBLIC
-    "$<BUILD_INTERFACE:${common_directory}/include>"
     "$<BUILD_INTERFACE:${iiqka_directory}/include>"
     "$<BUILD_INTERFACE:${iiqka_directory}/test>"
   )
 
   target_include_directories(test_message_builder PUBLIC
-  "$<BUILD_INTERFACE:${common_directory}/include>"
   "$<BUILD_INTERFACE:${iiqka_directory}/include>"
   "$<BUILD_INTERFACE:${iiqka_directory}/test>"
 )
@@ -173,8 +165,3 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto-api
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/kuka/external-control-sdk/iiqka
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 
-if(NOT ${PARENT_DIR} MATCHES ${CMAKE_SOURCE_DIR})
-    install(DIRECTORY ${common_directory}/include/ ${utils_directory}/include/
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
-      FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
-endif()

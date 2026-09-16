@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.13)
 
 project(external-control-sdk)
 
-set(common_directory ${CMAKE_SOURCE_DIR}/common)
-set(utils_directory ${CMAKE_SOURCE_DIR}/utils)
-
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "$ENV{HOME}/.local" CACHE PATH "default install path" FORCE)
 endif()
@@ -36,7 +33,7 @@ install(FILES
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/kuka-external-control-sdk
 )
 
-install(DIRECTORY ${common_directory}/include/ ${utils_directory}/include/
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/iiqka/include/
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
 

@@ -6,6 +6,8 @@ project("kuka-external-control-examples")
 list(APPEND CMAKE_PREFIX_PATH "~/.local/lib/cmake")
 
 find_package(kuka-external-control-sdk CONFIG REQUIRED)
+find_package(kuka_external_control_sdk_common REQUIRED)
+find_package(kuka-external-control-sdk-iiqka2 CONFIG REQUIRED)
 
 # Monitoring example
 set(monitoring-sources
@@ -18,6 +20,8 @@ target_compile_features(${monitoring-artifact_name} INTERFACE cxx_std_20 PRIVATE
 
 target_link_libraries(${monitoring-artifact_name} PUBLIC
   Kuka::kuka-external-control-sdk
+  Kuka::kuka-external-control-sdk-common
+  Kuka::kuka-external-control-sdk-iiqka2
 )
 target_include_directories(${monitoring-artifact_name}
     PUBLIC
@@ -35,6 +39,8 @@ target_compile_features(${control-artifact_name} INTERFACE cxx_std_20 PRIVATE cx
 
 target_link_libraries(${control-artifact_name} PUBLIC
 Kuka::kuka-external-control-sdk
+Kuka::kuka-external-control-sdk-common
+Kuka::kuka-external-control-sdk-iiqka2
 )
 
 target_include_directories(${control-artifact_name}
@@ -45,19 +51,19 @@ target_include_directories(${control-artifact_name}
 # EKI + RSI example
 add_executable(eki_rsi_example src/eki_rsi_example.cc)
 target_compile_features(eki_rsi_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
-target_link_libraries(eki_rsi_example PRIVATE Kuka::kuka-external-control-sdk)
+target_link_libraries(eki_rsi_example PRIVATE Kuka::kuka-external-control-sdk Kuka::kuka-external-control-sdk-common Kuka::kuka-external-control-sdk-iiqka2)
 target_include_directories(eki_rsi_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
 # MXA + RSI example
 add_executable(mxa_rsi_example src/mxa_rsi_example.cc)
 target_compile_features(mxa_rsi_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
-target_link_libraries(mxa_rsi_example PRIVATE Kuka::kuka-external-control-sdk)
+target_link_libraries(mxa_rsi_example PRIVATE Kuka::kuka-external-control-sdk Kuka::kuka-external-control-sdk-common Kuka::kuka-external-control-sdk-iiqka2)
 target_include_directories(mxa_rsi_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
 # Multi RSI example
 add_executable(multi_rsi_robot_example src/multi_rsi_robot_example.cc)
 target_compile_features(multi_rsi_robot_example INTERFACE cxx_std_20 PRIVATE cxx_std_20)
-target_link_libraries(multi_rsi_robot_example PRIVATE Kuka::kuka-external-control-sdk)
+target_link_libraries(multi_rsi_robot_example PRIVATE Kuka::kuka-external-control-sdk Kuka::kuka-external-control-sdk-common Kuka::kuka-external-control-sdk-iiqka2)
 target_include_directories(multi_rsi_robot_example PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>)
 
 # Install package.xml file so this package can be processed by ROS toolings

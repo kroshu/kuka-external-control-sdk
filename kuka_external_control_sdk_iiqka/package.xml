@@ -19,7 +19,7 @@
   <depend>tinyxml2_vendor</depend>
 
   <exec_depend>ament_cmake</exec_depend>
-  <exec_depend>kuka_external_control_sdk_common</exec_depend>
+  <depend>kuka_external_control_sdk_common</depend>
 
   <test_depend>gtest</test_depend>
 
