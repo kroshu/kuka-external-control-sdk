@@ -31,6 +31,7 @@ jobs:
           ROS_DISTRO: humble
     env:
       CCACHE_DIR: /github/home/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
+      UPSTREAM_WORKSPACE: 'github:kuka-ros/kuka_external_control_sdk#master'
       EVENT_NAME: ${{ github.event_name }}
       BRANCH: ${{ github.event.ref }}
       PR_BRANCH: ${{ github.event.pull_request.head.ref }}
