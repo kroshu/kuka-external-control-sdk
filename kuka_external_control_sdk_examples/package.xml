@@ -12,7 +12,8 @@
 
   <buildtool_depend>cmake</buildtool_depend>
 
-  <depend>kuka_external_control_sdk</depend>
+  <depend>kuka_external_control_sdk_iiqka</depend>
+  <depend>kuka_external_control_sdk_iiqka2</depend>
 
   <exec_depend>ament_cmake</exec_depend>
 
