@@ -7,12 +7,6 @@ list(APPEND CMAKE_PREFIX_PATH "~/.local/lib/cmake")
 
 find_package(kuka-external-control-sdk CONFIG REQUIRED)
 find_package(kuka_external_control_sdk_common REQUIRED)
-
-find_package(tinyxml2 QUIET)
-if(NOT tinyxml2_FOUND)
-  find_package(tinyxml2_vendor REQUIRED)
-endif()
-
 find_package(kuka-external-control-sdk-iiqka2 CONFIG REQUIRED)
 
 # Monitoring example

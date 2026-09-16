@@ -15,8 +15,6 @@
   <depend>kuka_external_control_sdk_common</depend>
   <depend>kuka_external_control_sdk_iiqka</depend>
   <depend>kuka_external_control_sdk_iiqka2</depend>
-  <depend>tinyxml2</depend>
-  <depend>tinyxml2_vendor</depend>
 
   <exec_depend>ament_cmake</exec_depend>
 
