@@ -126,8 +126,6 @@ Requester::ErrorCode Requester::SendRequestOrTimeout(
   {
     return Requester::ErrorCode::kSocketError;
   }
-
-  return Requester::ErrorCode::kError;
 }
 
 Requester::ErrorCode Requester::ReceiveReply()

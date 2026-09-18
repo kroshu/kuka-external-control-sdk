@@ -15,6 +15,7 @@
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 #include <cstring>
+#include <stdexcept>
 
 namespace kuka::external::control::kss::rsi
 {
@@ -34,10 +35,15 @@ bool Endpoint::ReceiveOrTimeout(std::chrono::milliseconds receive_request_timeou
     replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess)
   {
-    memset(recv_msg_, '\0', kBufferSize);
-    strncpy(
-      recv_msg_, (const char *)replier_socket_->GetRequestMessage().first,
-      replier_socket_->GetRequestMessage().second);
+    const auto [request_data, request_size] = replier_socket_->GetRequestMessage();
+    if (request_size >= kBufferSize)
+    {
+      replier_socket_->Reset();
+      return false;
+    }
+
+    std::memset(recv_msg_, '\0', kBufferSize);
+    std::memcpy(recv_msg_, request_data, request_size);
     return true;
   }
   return false;
@@ -58,7 +64,7 @@ void Endpoint::EmptyBuffer()
   // Receive all messages until no message left in buffer
   if (replier_socket_->EmptyBuffer() != os::core::udp::communication::Replier::ErrorCode::kSuccess)
   {
-    throw "Failed emptying buffer";
+    throw std::runtime_error("Failed emptying buffer");
   }
 }
 

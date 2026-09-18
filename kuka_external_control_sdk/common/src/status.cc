@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cstring>
+#include <cstdio>
 
 #include "kuka/external-control-sdk/common/status.h"
 
@@ -22,7 +22,7 @@ namespace kuka::external::control
 Status::Status(ReturnCode param_return_code, const char * param_message)
 {
   return_code = param_return_code;
-  strcpy(&message[0], param_message);  // NOLINT
+  std::snprintf(message, sizeof(message), "%s", param_message == nullptr ? "" : param_message);
 }
 
 }  // namespace kuka::external::control

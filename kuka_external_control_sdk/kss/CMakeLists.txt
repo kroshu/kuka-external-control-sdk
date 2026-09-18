@@ -72,10 +72,22 @@ if(BUILD_TESTING)
     test/test_message_builder.cc
   )
 
+  add_executable(
+    test_eki_client_parsing
+    test/test_eki_client_parsing.cc
+  )
+
   target_link_libraries(
     test_kss_message_builder
     GTest::gtest_main
     kuka-external-control-sdk
+    GTest::gtest
+  )
+
+  target_link_libraries(
+    test_eki_client_parsing
+    GTest::gtest_main
+    ${target_name}
     GTest::gtest
   )
 
@@ -85,10 +97,19 @@ if(BUILD_TESTING)
     "$<BUILD_INTERFACE:${kss_directory}/test>"
   )
 
+  target_include_directories(test_eki_client_parsing PUBLIC
+    "$<BUILD_INTERFACE:${common_directory}/include>"
+    "$<BUILD_INTERFACE:${kss_directory}/include>"
+    "$<BUILD_INTERFACE:${utils_directory}/include>"
+    "$<BUILD_INTERFACE:${kss_directory}/test>"
+  )
+
   target_compile_features(test_kss_message_builder INTERFACE cxx_std_17 PRIVATE cxx_std_17)
+  target_compile_features(test_eki_client_parsing INTERFACE cxx_std_17 PRIVATE cxx_std_17)
 
   include(GoogleTest)
   gtest_discover_tests(test_kss_message_builder)
+  gtest_discover_tests(test_eki_client_parsing)
 endif()
 
 install(TARGETS ${target_name} EXPORT SdkExport
