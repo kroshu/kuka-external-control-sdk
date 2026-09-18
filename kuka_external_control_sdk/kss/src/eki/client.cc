@@ -15,8 +15,10 @@
 #include <tinyxml2.h>
 
 #include <array>
+#include <cstdio>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <optional>
 
 #include "kuka/external-control-sdk/kss/eki/client.h"
@@ -25,6 +27,34 @@
 
 namespace kuka::external::control::kss::eki
 {
+
+namespace
+{
+bool QueryUint8Attribute(tinyxml2::XMLElement * element, const char * name, uint8_t & value)
+{
+  unsigned parsed_value = 0;
+  const tinyxml2::XMLError error = element->QueryUnsignedAttribute(name, &parsed_value);
+  if (error != tinyxml2::XML_SUCCESS || parsed_value > std::numeric_limits<uint8_t>::max())
+  {
+    return false;
+  }
+
+  value = static_cast<uint8_t>(parsed_value);
+  return true;
+}
+
+bool QueryBoolAttribute(tinyxml2::XMLElement * element, const char * name, bool & value)
+{
+  uint8_t parsed_value = 0;
+  if (!QueryUint8Attribute(element, name, parsed_value) || parsed_value > 1)
+  {
+    return false;
+  }
+
+  value = parsed_value != 0;
+  return true;
+}
+}  // namespace
 
 Client::Client(const std::string & server_address, uint16_t server_port, uint16_t client_port)
 : os::core::udp::communication::TCPClient(
@@ -207,6 +237,10 @@ int Client::Dissect(char * cursor_ptr, std::size_t available_bytes)
 
   // Check opening tag (might be unnecessary) - return with failed if not found
   const char * opening_tag = "<Robot>";
+  if (available_bytes < std::strlen(opening_tag))
+  {
+    return available_bytes + 1;
+  }
   if (std::memcmp(cursor_ptr, opening_tag, std::strlen(opening_tag)) != 0)
   {
     return -1;
@@ -214,6 +248,10 @@ int Client::Dissect(char * cursor_ptr, std::size_t available_bytes)
 
   // Check whether closing tag is there - if not it's still a partial message
   const char * closing_tag = "</Robot>";
+  if (available_bytes < std::strlen(closing_tag))
+  {
+    return available_bytes + 1;
+  }
   char * start_ptr = cursor_ptr + available_bytes - std::strlen(closing_tag);
   if (std::memcmp(start_ptr, closing_tag, std::strlen(closing_tag)) != 0)
   {
@@ -269,8 +307,9 @@ bool Client::ParseInitMessage(char * data_to_parse)
     {
       TearDownConnection();
       event_response_.event_type = EventType::ERROR;
-      sprintf(  // NOLINT
-        event_response_.message, "The server (%s) and client (%s) versions are not compatible",
+      snprintf(
+        event_response_.message, sizeof(event_response_.message),
+        "The server (%s) and client (%s) versions are not compatible",
         init_data_.semantic_version.c_str(), kSemanticVersion);
     }
   }
@@ -283,22 +322,37 @@ bool Client::ParseEvent(char * data_to_parse)
   event_response_.event_type = EventType::NONE;
   event_response_.message[0] = '\0';
 
-  const char * response_tag = std::strstr(data_to_parse, "<Response");
-  if (!response_tag)
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.Parse(data_to_parse);
+  if (error != tinyxml2::XML_SUCCESS)
   {
     return false;
   }
-  // Parse event message
-  int eid = -1;
-  int ret = std::sscanf(response_tag, event_resp_format_, &eid, event_response_.message);
+
+  tinyxml2::XMLElement * root = doc.RootElement();
+  if (root == nullptr)
+  {
+    return false;
+  }
+
+  tinyxml2::XMLElement * response = root->FirstChildElement("Response");
+  if (response == nullptr)
+  {
+    return false;
+  }
+
+  int eid = 0;
+  error = response->QueryIntAttribute("EventID", &eid);
+  if (error != tinyxml2::XML_SUCCESS)
+  {
+    return false;
+  }
+
   event_response_.event_type = static_cast<EventType>(eid);
-  if (ret <= 0)
+  const char * message = response->GetText();
+  if (message != nullptr)
   {
-    return false;
-  }
-  if (ret != 2)
-  {
-    // Not all event fields scanned, might add a warning somehow later on
+    snprintf(event_response_.message, sizeof(event_response_.message), "%s", message);
   }
   return true;
 }
@@ -310,25 +364,46 @@ bool Client::ParseStatus(char * data_to_parse)
   // Reset status fields
   status_update_.Reset();
 
-  const char * status_tag = std::strstr(data_to_parse, "<Status");
-  if (!status_tag)
+  tinyxml2::XMLDocument doc;
+  tinyxml2::XMLError error = doc.Parse(data_to_parse);
+  if (error != tinyxml2::XML_SUCCESS)
   {
     return false;
   }
 
-  // Parse status message
-  int ret = std::sscanf(
-    status_tag, status_report_format_, reinterpret_cast<uint8_t *>(&status_update_.control_mode_),
-    reinterpret_cast<uint8_t *>(&status_update_.cycle_time_),
-    reinterpret_cast<uint8_t *>(&status_update_.drives_powered_),
-    reinterpret_cast<uint8_t *>(&status_update_.emergency_stop_),
-    reinterpret_cast<uint8_t *>(&status_update_.guard_stop_),
-    reinterpret_cast<uint8_t *>(&status_update_.in_motion_),
-    reinterpret_cast<uint8_t *>(&status_update_.motion_possible_),
-    reinterpret_cast<uint8_t *>(&status_update_.operation_mode_),
-    reinterpret_cast<uint8_t *>(&status_update_.robot_stopped_));
+  tinyxml2::XMLElement * root = doc.RootElement();
+  if (root == nullptr)
+  {
+    return false;
+  }
 
-  return ret == kStatusReportFieldCount;  // Ensure all fields are read
+  tinyxml2::XMLElement * status = root->FirstChildElement("Status");
+  if (status == nullptr)
+  {
+    return false;
+  }
+
+  uint8_t control_mode = 0;
+  uint8_t cycle_time = 0;
+  uint8_t operation_mode = 0;
+  if (
+    !QueryUint8Attribute(status, "ControlMode", control_mode) ||
+    !QueryUint8Attribute(status, "CycleTime", cycle_time) ||
+    !QueryBoolAttribute(status, "DrivesPowered", status_update_.drives_powered_) ||
+    !QueryBoolAttribute(status, "EmergencyStop", status_update_.emergency_stop_) ||
+    !QueryBoolAttribute(status, "GuardStop", status_update_.guard_stop_) ||
+    !QueryBoolAttribute(status, "InMotion", status_update_.in_motion_) ||
+    !QueryBoolAttribute(status, "MotionPossible", status_update_.motion_possible_) ||
+    !QueryUint8Attribute(status, "OperationMode", operation_mode) ||
+    !QueryBoolAttribute(status, "RobotStopped", status_update_.robot_stopped_))
+  {
+    return false;
+  }
+
+  status_update_.control_mode_ = static_cast<ControlMode>(control_mode);
+  status_update_.cycle_time_ = static_cast<CycleTime>(cycle_time);
+  status_update_.operation_mode_ = static_cast<OperationMode>(operation_mode);
+  return true;
 }
 
 bool Client::ParseMessage(char * data_to_parse)
@@ -344,6 +419,11 @@ bool Client::ParseMessage(char * data_to_parse)
   // In this case we can decide evet type based on EventID
 
   tinyxml2::XMLElement * root = doc.RootElement();
+  if (root == nullptr)
+  {
+    return false;
+  }
+
   tinyxml2::XMLElement * response = root->FirstChildElement("Response");
 
   if (response != nullptr)
