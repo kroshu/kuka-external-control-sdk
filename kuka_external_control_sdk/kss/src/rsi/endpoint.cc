@@ -34,10 +34,15 @@ bool Endpoint::ReceiveOrTimeout(std::chrono::milliseconds receive_request_timeou
     replier_socket_->ReceiveRequestOrTimeout(receive_request_timeout);
   if (recv_ret == os::core::udp::communication::Socket::ErrorCode::kSuccess)
   {
-    memset(recv_msg_, '\0', kBufferSize);
-    strncpy(
-      recv_msg_, (const char *)replier_socket_->GetRequestMessage().first,
-      replier_socket_->GetRequestMessage().second);
+    const auto [request_data, request_size] = replier_socket_->GetRequestMessage();
+    if (request_size >= kBufferSize)
+    {
+      replier_socket_->Reset();
+      return false;
+    }
+
+    std::memset(recv_msg_, '\0', kBufferSize);
+    std::memcpy(recv_msg_, request_data, request_size);
     return true;
   }
   return false;
