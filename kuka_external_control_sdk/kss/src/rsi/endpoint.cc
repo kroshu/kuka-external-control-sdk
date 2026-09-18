@@ -15,6 +15,7 @@
 #include "kuka/external-control-sdk/kss/rsi/endpoint.h"
 
 #include <cstring>
+#include <stdexcept>
 
 namespace kuka::external::control::kss::rsi
 {
@@ -63,7 +64,7 @@ void Endpoint::EmptyBuffer()
   // Receive all messages until no message left in buffer
   if (replier_socket_->EmptyBuffer() != os::core::udp::communication::Replier::ErrorCode::kSuccess)
   {
-    throw "Failed emptying buffer";
+    throw std::runtime_error("Failed emptying buffer");
   }
 }
 

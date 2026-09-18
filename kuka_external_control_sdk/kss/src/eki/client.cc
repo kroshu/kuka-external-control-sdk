@@ -236,24 +236,26 @@ int Client::Dissect(char * cursor_ptr, std::size_t available_bytes)
   // TODO(svastits) somehow propagate error causes in the different cases
 
   // Check opening tag (might be unnecessary) - return with failed if not found
-  const char * opening_tag = "<Robot>";
-  if (available_bytes < std::strlen(opening_tag))
+  static constexpr char opening_tag[] = "<Robot>";
+  static constexpr std::size_t opening_tag_len = sizeof(opening_tag) - 1;
+  if (available_bytes < opening_tag_len)
   {
     return available_bytes + 1;
   }
-  if (std::memcmp(cursor_ptr, opening_tag, std::strlen(opening_tag)) != 0)
+  if (std::memcmp(cursor_ptr, opening_tag, opening_tag_len) != 0)
   {
     return -1;
   }
 
   // Check whether closing tag is there - if not it's still a partial message
-  const char * closing_tag = "</Robot>";
-  if (available_bytes < std::strlen(closing_tag))
+  static constexpr char closing_tag[] = "</Robot>";
+  static constexpr std::size_t closing_tag_len = sizeof(closing_tag) - 1;
+  if (available_bytes < closing_tag_len)
   {
     return available_bytes + 1;
   }
-  char * start_ptr = cursor_ptr + available_bytes - std::strlen(closing_tag);
-  if (std::memcmp(start_ptr, closing_tag, std::strlen(closing_tag)) != 0)
+  char * start_ptr = cursor_ptr + available_bytes - closing_tag_len;
+  if (std::memcmp(start_ptr, closing_tag, closing_tag_len) != 0)
   {
     return available_bytes + 1;
   }
@@ -437,18 +439,12 @@ bool Client::ParseMessage(char * data_to_parse)
         case EventType::CONNECTED:
           event_response_.event_type = EventType::CONNECTED;
           return ParseInitMessage(data_to_parse);
-          break;
         case EventType::STATUS:
           event_response_.event_type = EventType::STATUS;
           return ParseStatus(data_to_parse);
-          break;
         default:
           return ParseEvent(data_to_parse);
-          break;
       }
-
-      event_response_.event_type = EventType::CONNECTED;
-      return ParseInitMessage(data_to_parse);
     }
     // Response should always contain EventID
     else

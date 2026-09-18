@@ -58,7 +58,7 @@ struct Configuration
   static const uint16_t udp_subscriber_port{44446};
 
   // Multicast address to which packets get published in monitoring mode.
-  const std::string udp_subscriber_multicast_address = "239.255.123.250";
+  const std::string udp_subscriber_multicast_address = "239.255.123.250";  // NOSONAR
 };
 
 struct QoS_Configuration
