@@ -32,12 +32,12 @@ TEST(EKIClientParsing, TruncatesOversizedEventMessage)
 {
   Client client("127.0.0.1", 1);
   const std::string oversized_message(512, 'A');
-  std::string xml =
-    "<Robot><Response EventID=\"4\">" + oversized_message + "</Response></Robot>";
+  std::string xml = "<Robot><Response EventID=\"4\">" + oversized_message + "</Response></Robot>";
 
   ASSERT_TRUE(client.ParseMessage(xml.data()));
   EXPECT_EQ(client.event_response_.event_type, Client::EventType::ERROR);
-  EXPECT_EQ(std::strlen(client.event_response_.message), sizeof(client.event_response_.message) - 1);
+  EXPECT_EQ(
+    std::strlen(client.event_response_.message), sizeof(client.event_response_.message) - 1);
   EXPECT_EQ(std::string(client.event_response_.message), oversized_message.substr(0, 127));
 }
 

@@ -15,8 +15,8 @@
 #include <tinyxml2.h>
 
 #include <array>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <limits>
 #include <optional>
