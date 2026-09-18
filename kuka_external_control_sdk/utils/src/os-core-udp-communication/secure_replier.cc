@@ -167,7 +167,8 @@ SecureReplier::ErrorCode SecureReplier::SendReply(uint8_t * reply_msg_data, size
 
 void SecureReplier::Serve()
 {
-  while (thread_active_flag_.load(std::memory_order_relaxed))
+  // This flag only controls loop termination; it does not publish shared state
+  while (thread_active_flag_.load(std::memory_order_relaxed))  // NOSONAR
   {
     auto accepted_socket = server_socket_.Accept();
 
