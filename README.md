@@ -2,20 +2,22 @@
 
 This repository provides the SDK used for KUKA external control. It is not a ROS package but is consumed by the drivers and other tooling.
 
+The SDK source is included as a Git submodule. After cloning this repository, initialize it with `git submodule update --init --recursive`.
+
 GitHub CI | SonarCloud
 ------------ | --------------
 [![Build Status](https://github.com/kroshu/kuka-external-control-sdk/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kroshu/kuka-external-control-sdk/actions/workflows/industrial_ci.yml) | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kroshu_kuka-external-control-sdk&metric=alert_status)](https://sonarcloud.io/dashboard?id=kroshu_kuka-external-control-sdk)
 
 
-This guide will help you understand how to use the SDK to control your robot externally. You'll find information on the SDK's structure and setup instructions tailored to different systems.
+This guide describes the bundled iiQKA.OS2 SDK. For setup instructions, see the upstream SDK documentation.
 
 ## Select Your Setup Guide
 
-Depending on the system you are using, refer to one of the following documents for setting up the controller:
+Choose the setup guide for your controller:
 
-- [External Control Setup for iiQKA](kuka_external_control_sdk/doc/iiqka_setup.md)
-- [External Control Setup for KSS](kuka_external_control_sdk/doc/kss_setup.md)
-- [External Control Setup for iiQKA.OS2](kuka_external_control_sdk/doc/iiqka_os2_setup.md)
+- [External Control Setup for iiQKA (OS1)](kuka_external_control_sdk_iiqka/doc/iiqka_setup.md)
+- [External Control Setup for iiQKA.OS2](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/iiqka_os2_setup.md)
+- [External Control Setup for KSS](kuka_external_control_sdk_kss/doc/kss_setup.md)
 
 ## Overview
 
@@ -48,7 +50,7 @@ In this section, we'll describe a general use case for both controlling and moni
 
 #### Control Example
 
-![control_example](kuka_external_control_sdk/doc/diagrams/ControlExample.png)
+![control_example](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/diagrams/ControlExample.png)
 
 To begin, call `Setup` on the specific instance of the `IRobot` interface. This will initialize the necessary variables and communication channels. If successful, you can start external control.
 
@@ -70,7 +72,7 @@ Since real-time communication follows a request-reply pattern, the `StopControll
 
 #### Monitoring Example
 
-![monitoring_example](kuka_external_control_sdk/doc/diagrams/MonitoringExample.png)
+![monitoring_example](kuka_external_control_sdk_iiqka/doc/diagrams/MonitoringExample.png)
 
 To start the monitoring flow, initialize with `Setup` and call `StartMonitoring`.
 
@@ -82,7 +84,8 @@ To stop monitoring on the client side, call `CancelMonitoringSubscription`. To s
 
 ### OS-Specific Implementations
 
-To learn more about the SDK implementation for specific robot controller systems, refer to one of the following:
+For implementation details, refer to the guide for your controller:
 
-- [iiQKA.OS1 Implementation](kuka_external_control_sdk/doc/iiqka_implementation.md)
-- [KSS Implementation](kuka_external_control_sdk/doc/kss_implementation.md)
+- [iiQKA (OS1) Implementation](kuka_external_control_sdk_iiqka/doc/iiqka_implementation.md)
+- [iiQKA.OS2 Implementation](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/iiqka_os2_implementation.md)
+- [KSS Implementation](kuka_external_control_sdk_kss/doc/kss_implementation.md)
