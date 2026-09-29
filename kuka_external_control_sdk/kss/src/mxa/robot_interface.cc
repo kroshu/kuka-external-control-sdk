@@ -103,6 +103,12 @@ Status Robot::TurnOffDrives()
   return {ReturnCode::OK};
 }
 
+Status Robot::SetImpedance(
+  const std::vector<double> & stiffness, const std::vector<double> & damping)
+{
+  return client_.SetImpedance(stiffness, damping);
+}
+
 Status Robot::SetCycleTime(CycleTime cycle_time)
 {
   cycle_time_ = cycle_time;

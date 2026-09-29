@@ -24,6 +24,7 @@
 #include <optional>
 #include <string>
 #include <thread>
+#include <vector>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
@@ -52,6 +53,11 @@ public:
 
   // Cancels RSI program and calls ResetRSI
   Status CancelRSI();
+
+  // Sends per-axis impedance (stiffness/damping) to the KRC via a techfunction.
+  // Rejected while RSI is active, as the controller locks the values then.
+  Status SetImpedance(
+    const std::vector<double> & stiffness, const std::vector<double> & damping);
 
   // Reset class to be able to start RSI again
   void ResetRSI();
@@ -121,6 +127,15 @@ private:
   std::condition_variable cancel_finished_cv_;
 
   void SetToCancelled();
+
+  // Impedance request handshake between the caller and the keep-alive thread
+  std::atomic<bool> set_impedance_requested_{false};
+  bool set_impedance_finished_{false};
+  bool set_impedance_ok_{false};
+  std::mutex set_impedance_mutex_;
+  std::condition_variable set_impedance_finished_cv_;
+  std::vector<float> impedance_stiffness_;
+  std::vector<float> impedance_damping_;
 
   std::unique_ptr<IEventHandlerExtension> event_handler_extension_;
 

@@ -16,6 +16,7 @@
 #define KUKA__EXTERNAL_CONTROL_SDK__KSS__MXA__ROBOT_INTERFACE_H_
 
 #include <memory>
+#include <vector>
 #include "kuka/external-control-sdk/kss/configuration.h"
 #include "kuka/external-control-sdk/kss/message_builder.h"
 #include "kuka/external-control-sdk/kss/mxa/client.h"
@@ -44,6 +45,9 @@ public:
   Status TurnOnDrives() override;
 
   Status TurnOffDrives() override;
+
+  Status SetImpedance(
+    const std::vector<double> & stiffness, const std::vector<double> & damping) override;
 
   Status SetCycleTime(CycleTime cycle_time) override;
 

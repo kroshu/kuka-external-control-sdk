@@ -1,0 +1,7 @@
+            case 4 ; Set axis impedance
+               ; Expect DOF*2 REAL parameters (stiffness+damping per axis).
+               ; TODO(site): validate the received parameter count against the
+               ; robot axis count, e.g. bValuesOK = (<PARAM_COUNT_VAR> == $NUM_AX * 2).
+               ; Replace <PARAM_COUNT_VAR> with the parameter-count variable used
+               ; by your generated mxA TECHFUNCCHECKPAR fold.
+               bValuesOK = TRUE

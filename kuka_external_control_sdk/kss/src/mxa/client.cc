@@ -128,6 +128,34 @@ void Client::SetToCancelled()
   cancel_finished_cv_.notify_one();
 }
 
+Status Client::SetImpedance(
+  const std::vector<double> & stiffness, const std::vector<double> & damping)
+{
+  if (rsi_started_)
+  {
+    return {ReturnCode::ERROR, "Cannot set impedance while RSI is active"};
+  }
+
+  if (stiffness.size() != damping.size() || stiffness.empty())
+  {
+    return {ReturnCode::ERROR, "Stiffness and damping must be non-empty and of equal size"};
+  }
+
+  {
+    std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
+    impedance_stiffness_.assign(stiffness.begin(), stiffness.end());
+    impedance_damping_.assign(damping.begin(), damping.end());
+    set_impedance_finished_ = false;
+    set_impedance_ok_ = false;
+    set_impedance_requested_ = true;
+
+    set_impedance_finished_cv_.wait(impedance_lock, [this] { return set_impedance_finished_; });
+  }
+
+  return set_impedance_ok_ ? Status{ReturnCode::OK, "Impedance set"}
+                           : Status{ReturnCode::ERROR, "Failed to set impedance"};
+}
+
 void Client::ResetRSI()
 {
   cancel_requested_ = false;
@@ -308,6 +336,38 @@ void Client::StartKeepAliveThread()
             }
           }
 
+          // Send impedance parameters before RSI streaming starts. The mxA
+          // server must be running to accept the techfunction, so request its
+          // start here as well.
+          if (set_impedance_requested_)
+          {
+            start_cmd_dispatcher_ = true;
+            if (mxa_wrapper_.isServerActive())
+            {
+              std::vector<float> stiffness_copy;
+              std::vector<float> damping_copy;
+              {
+                std::lock_guard<std::mutex> impedance_lock(set_impedance_mutex_);
+                stiffness_copy = impedance_stiffness_;
+                damping_copy = impedance_damping_;
+              }
+              auto impedance_res = mxa_wrapper_.setImpedance(
+                stiffness_copy.data(), damping_copy.data(),
+                static_cast<int>(stiffness_copy.size()));
+              if (
+                impedance_res.block_state == BLOCKSTATE::DONE ||
+                impedance_res.block_state == BLOCKSTATE::ERROR)
+              {
+                std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
+                set_impedance_ok_ = impedance_res.block_state == BLOCKSTATE::DONE;
+                set_impedance_finished_ = true;
+                set_impedance_requested_ = false;
+                impedance_lock.unlock();
+                set_impedance_finished_cv_.notify_one();
+              }
+            }
+          }
+
           // Call program starting RSI
           if (mxa_wrapper_.isServerActive() && start_rsi_)
           {
@@ -366,6 +426,17 @@ void Client::StartKeepAliveThread()
         {
           tick++;
         }
+      }
+
+      // Unblock any caller waiting on a pending impedance request on shutdown
+      if (set_impedance_requested_)
+      {
+        std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
+        set_impedance_ok_ = false;
+        set_impedance_finished_ = true;
+        set_impedance_requested_ = false;
+        impedance_lock.unlock();
+        set_impedance_finished_cv_.notify_one();
       }
     });
 }

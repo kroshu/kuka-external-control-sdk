@@ -244,6 +244,48 @@ public:
     return result;
   }
 
+  // Applies per-axis impedance (stiffness/damping) via a synchronous techfunction.
+  // Values are interleaved per axis: stiffness A1, damping A1, stiffness A2, ...
+  // Must be sent before the RSI program is active; the controller locks the
+  // values once motion starts. Only works with the Techfunction extension.
+  BLOCKRESULT setImpedance(const float * stiffness, const float * damping, int dof)
+  {
+    // 2 REALs per axis; capped by the techfunction parameter buffer.
+    const int parameter_count = 2 * dof;
+    if (dof < 1 || parameter_count > TECH_FUNC_PARAM_COUNT)
+    {
+      return BLOCKRESULT(BLOCKSTATE::ERROR);
+    }
+
+    for (int axis = 0; axis < dof; ++axis)
+    {
+      real_array_[2 * axis + 1] = stiffness[axis];
+      real_array_[2 * axis + 2] = damping[axis];
+    }
+
+    mxa_tech_function_s_.TECHFUNCTIONID = 4;
+    mxa_tech_function_s_.PARAMETERCOUNT = parameter_count;
+    mxa_tech_function_s_.BUFFERMODE = 0;
+    mxa_tech_function_s_.EXECUTECMD = true;
+    mxa_tech_function_s_.OnCycle();
+
+    if (mxa_tech_function_s_.ERROR)
+    {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      clearImpedanceParams(parameter_count);
+      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
+    }
+    else if (mxa_tech_function_s_.DONE)
+    {
+      mxa_tech_function_s_.EXECUTECMD = false;
+      mxa_tech_function_s_.OnCycle();
+      clearImpedanceParams(parameter_count);
+      return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
+    }
+    return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
+  }
+
   // Only works with Techfunction extension
   BLOCKRESULT processRSI(int control_mode, int cycle_time)
   {
@@ -328,6 +370,14 @@ public:
   }
 
 private:
+  void clearImpedanceParams(int parameter_count)
+  {
+    for (int i = 1; i <= parameter_count; ++i)
+    {
+      real_array_[i] = 0.0;
+    }
+  }
+
   KRC_READAXISGROUP krc_read_;
   KRC_WRITEAXISGROUP krc_write_;
   KRC_INITIALIZE mxa_init_;

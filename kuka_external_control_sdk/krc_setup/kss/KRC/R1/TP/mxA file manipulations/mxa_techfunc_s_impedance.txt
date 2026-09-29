@@ -1,0 +1,25 @@
+            case 4 ; Set axis impedance (per-axis stiffness/damping)
+               ; Parameters arrive as a REAL array, interleaved per axis:
+               ;   REAL 1 = stiffness A1, REAL 2 = damping A1,
+               ;   REAL 3 = stiffness A2, REAL 4 = damping A2, ...
+               ; Parameter count is DOF*2 (validated in TECHFUNCCHECKPAR).
+               ; Values are stored here and applied via SET_AXIS_IMPEDANCE_CTRL
+               ; from the motion program BEFORE it starts moving; the controller
+               ; locks the impedance once the robot is active.
+               ;
+               ; TODO(site): read the received REAL parameters from the mxA
+               ; command queue. Replace <REAL_PARAM>(n) with the accessor used by
+               ; your KSS/mxA version (analogous to the INT accessor
+               ; gMxA_CmdQ_Int1[QIdx] used by the RSI-streaming techfunction).
+               ;   gAxisImpParams.STIFFNESS.A1 = <REAL_PARAM>(1)
+               ;   gAxisImpParams.DAMPING.A1   = <REAL_PARAM>(2)
+               ;   gAxisImpParams.STIFFNESS.A2 = <REAL_PARAM>(3)
+               ;   gAxisImpParams.DAMPING.A2   = <REAL_PARAM>(4)
+               ;   ... up to the robot axis count (and E1..E6 for external axes)
+               ;
+               ; TODO(site): gAxisImpParams must be a GLOBAL of type
+               ; AXIS_IMPEDANCE_PARAMS declared in a data list visible to the
+               ; motion program, which calls SET_AXIS_IMPEDANCE_CTRL(gAxisImpParams)
+               ; before its first motion (see SYS18057.src for the KRL API).
+               ;Return message function executed
+               mxA_MsgMan_SetCmdStateS(QIdx,#Executed)

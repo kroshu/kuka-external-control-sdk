@@ -17,6 +17,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "kuka/external-control-sdk/common/irobot.h"
 #include "kuka/external-control-sdk/kss/configuration.h"
@@ -65,6 +66,11 @@ public:
   virtual Status CancelRsiProgram() { return {ReturnCode::UNSUPPORTED, error_text}; }
   virtual Status TurnOnDrives() { return {ReturnCode::UNSUPPORTED, error_text}; }
   virtual Status TurnOffDrives() { return {ReturnCode::UNSUPPORTED, error_text}; }
+  virtual Status SetImpedance(
+    const std::vector<double> &, const std::vector<double> &)
+  {
+    return {ReturnCode::UNSUPPORTED, error_text};
+  }
   virtual Status SetCycleTime(CycleTime cycle_time)
   {
     return {ReturnCode::UNSUPPORTED, error_text};
