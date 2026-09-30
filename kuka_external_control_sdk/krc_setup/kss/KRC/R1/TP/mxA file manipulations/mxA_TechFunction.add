@@ -42,4 +42,4 @@ Type=Insert
 Before=;FOLD USER TECHFUNCCHECKPAR
 What=mxa_techfunc_checkpar_impedance.txt
 Start=case 4 ; Set axis impedance
-End=bValuesOK = TRUE
+End=bValuesOK = bValuesOK AND ((gMxA_CmdQ_Int1[QIdx] MOD 2) == 0)

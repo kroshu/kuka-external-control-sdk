@@ -31,6 +31,11 @@ DEF rsi_joint_pos_12ms()
     ; ENDFOLD (BASISTECH INI)
     ; ENDFOLD (INI)
 
+    ; Apply mxA-provided joint impedance before the first motion.
+    IF gAxisImpParamsValid THEN
+        SET_AXIS_IMPEDANCE_CTRL(gAxisImpParams)
+    ENDIF
+
     WAIT SEC 1.0
 
     ; Move to start position
@@ -58,6 +63,11 @@ DEF rsi_joint_pos_12ms()
     ret = RSI_OFF()
     IF (ret <> RSIOK) THEN
         HALT
+    ENDIF
+
+    IF gAxisImpParamsValid THEN
+        SET_POSITION_CTRL()
+        gAxisImpParamsValid = FALSE
     ENDIF
 
     PTP $AXIS_ACT_MEAS

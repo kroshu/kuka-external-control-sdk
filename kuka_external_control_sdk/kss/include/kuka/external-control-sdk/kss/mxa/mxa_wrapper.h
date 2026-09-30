@@ -252,7 +252,7 @@ public:
   {
     // 2 REALs per axis; capped by the techfunction parameter buffer.
     const int parameter_count = 2 * dof;
-    if (dof < 1 || parameter_count > TECH_FUNC_PARAM_COUNT)
+    if (dof < 1 || dof > 12 || parameter_count > TECH_FUNC_PARAM_COUNT)
     {
       return BLOCKRESULT(BLOCKSTATE::ERROR);
     }
@@ -263,6 +263,7 @@ public:
       real_array_[2 * axis + 2] = damping[axis];
     }
 
+    int_array_[1] = parameter_count;
     mxa_tech_function_s_.TECHFUNCTIONID = 4;
     mxa_tech_function_s_.PARAMETERCOUNT = parameter_count;
     mxa_tech_function_s_.BUFFERMODE = 0;
@@ -376,6 +377,7 @@ private:
     {
       real_array_[i] = 0.0;
     }
+    int_array_[1] = 0;
   }
 
   KRC_READAXISGROUP krc_read_;

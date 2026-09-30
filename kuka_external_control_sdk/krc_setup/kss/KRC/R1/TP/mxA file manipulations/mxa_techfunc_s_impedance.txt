@@ -1,25 +1,81 @@
             case 4 ; Set axis impedance (per-axis stiffness/damping)
-               ; Parameters arrive as a REAL array, interleaved per axis:
-               ;   REAL 1 = stiffness A1, REAL 2 = damping A1,
-               ;   REAL 3 = stiffness A2, REAL 4 = damping A2, ...
-               ; Parameter count is DOF*2 (validated in TECHFUNCCHECKPAR).
-               ; Values are stored here and applied via SET_AXIS_IMPEDANCE_CTRL
-               ; from the motion program BEFORE it starts moving; the controller
-               ; locks the impedance once the robot is active.
-               ;
-               ; TODO(site): read the received REAL parameters from the mxA
-               ; command queue. Replace <REAL_PARAM>(n) with the accessor used by
-               ; your KSS/mxA version (analogous to the INT accessor
-               ; gMxA_CmdQ_Int1[QIdx] used by the RSI-streaming techfunction).
-               ;   gAxisImpParams.STIFFNESS.A1 = <REAL_PARAM>(1)
-               ;   gAxisImpParams.DAMPING.A1   = <REAL_PARAM>(2)
-               ;   gAxisImpParams.STIFFNESS.A2 = <REAL_PARAM>(3)
-               ;   gAxisImpParams.DAMPING.A2   = <REAL_PARAM>(4)
-               ;   ... up to the robot axis count (and E1..E6 for external axes)
-               ;
-               ; TODO(site): gAxisImpParams must be a GLOBAL of type
-               ; AXIS_IMPEDANCE_PARAMS declared in a data list visible to the
-               ; motion program, which calls SET_AXIS_IMPEDANCE_CTRL(gAxisImpParams)
-               ; before its first motion (see SYS18057.src for the KRL API).
+               ; INT 1 carries PARAMETERCOUNT; REAL slots are stiffness/damping pairs.
+               ; The RealN names follow the existing IntN queue naming pattern.
+               gAxisImpParamsValid = FALSE
+
+               gAxisImpParams.STIFFNESS.A1 = 0.0
+               gAxisImpParams.DAMPING.A1 = 0.0
+               gAxisImpParams.STIFFNESS.A2 = 0.0
+               gAxisImpParams.DAMPING.A2 = 0.0
+               gAxisImpParams.STIFFNESS.A3 = 0.0
+               gAxisImpParams.DAMPING.A3 = 0.0
+               gAxisImpParams.STIFFNESS.A4 = 0.0
+               gAxisImpParams.DAMPING.A4 = 0.0
+               gAxisImpParams.STIFFNESS.A5 = 0.0
+               gAxisImpParams.DAMPING.A5 = 0.0
+               gAxisImpParams.STIFFNESS.A6 = 0.0
+               gAxisImpParams.DAMPING.A6 = 0.0
+               gAxisImpParams.STIFFNESS.E1 = 0.0
+               gAxisImpParams.DAMPING.E1 = 0.0
+               gAxisImpParams.STIFFNESS.E2 = 0.0
+               gAxisImpParams.DAMPING.E2 = 0.0
+               gAxisImpParams.STIFFNESS.E3 = 0.0
+               gAxisImpParams.DAMPING.E3 = 0.0
+               gAxisImpParams.STIFFNESS.E4 = 0.0
+               gAxisImpParams.DAMPING.E4 = 0.0
+               gAxisImpParams.STIFFNESS.E5 = 0.0
+               gAxisImpParams.DAMPING.E5 = 0.0
+               gAxisImpParams.STIFFNESS.E6 = 0.0
+               gAxisImpParams.DAMPING.E6 = 0.0
+
+               IF gMxA_CmdQ_Int1[QIdx] >= 2 THEN
+                  gAxisImpParams.STIFFNESS.A1 = gMxA_CmdQ_Real1[QIdx]
+                  gAxisImpParams.DAMPING.A1 = gMxA_CmdQ_Real2[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 4 THEN
+                  gAxisImpParams.STIFFNESS.A2 = gMxA_CmdQ_Real3[QIdx]
+                  gAxisImpParams.DAMPING.A2 = gMxA_CmdQ_Real4[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 6 THEN
+                  gAxisImpParams.STIFFNESS.A3 = gMxA_CmdQ_Real5[QIdx]
+                  gAxisImpParams.DAMPING.A3 = gMxA_CmdQ_Real6[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 8 THEN
+                  gAxisImpParams.STIFFNESS.A4 = gMxA_CmdQ_Real7[QIdx]
+                  gAxisImpParams.DAMPING.A4 = gMxA_CmdQ_Real8[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 10 THEN
+                  gAxisImpParams.STIFFNESS.A5 = gMxA_CmdQ_Real9[QIdx]
+                  gAxisImpParams.DAMPING.A5 = gMxA_CmdQ_Real10[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 12 THEN
+                  gAxisImpParams.STIFFNESS.A6 = gMxA_CmdQ_Real11[QIdx]
+                  gAxisImpParams.DAMPING.A6 = gMxA_CmdQ_Real12[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 14 THEN
+                  gAxisImpParams.STIFFNESS.E1 = gMxA_CmdQ_Real13[QIdx]
+                  gAxisImpParams.DAMPING.E1 = gMxA_CmdQ_Real14[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 16 THEN
+                  gAxisImpParams.STIFFNESS.E2 = gMxA_CmdQ_Real15[QIdx]
+                  gAxisImpParams.DAMPING.E2 = gMxA_CmdQ_Real16[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 18 THEN
+                  gAxisImpParams.STIFFNESS.E3 = gMxA_CmdQ_Real17[QIdx]
+                  gAxisImpParams.DAMPING.E3 = gMxA_CmdQ_Real18[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 20 THEN
+                  gAxisImpParams.STIFFNESS.E4 = gMxA_CmdQ_Real19[QIdx]
+                  gAxisImpParams.DAMPING.E4 = gMxA_CmdQ_Real20[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 22 THEN
+                  gAxisImpParams.STIFFNESS.E5 = gMxA_CmdQ_Real21[QIdx]
+                  gAxisImpParams.DAMPING.E5 = gMxA_CmdQ_Real22[QIdx]
+               ENDIF
+               IF gMxA_CmdQ_Int1[QIdx] >= 24 THEN
+                  gAxisImpParams.STIFFNESS.E6 = gMxA_CmdQ_Real23[QIdx]
+                  gAxisImpParams.DAMPING.E6 = gMxA_CmdQ_Real24[QIdx]
+               ENDIF
+               gAxisImpParamsValid = TRUE
                ;Return message function executed
                mxA_MsgMan_SetCmdStateS(QIdx,#Executed)

@@ -1,5 +1,8 @@
 &ACCESS R
 DEFDAT rsi_helper PUBLIC
+    DECL GLOBAL AXIS_IMPEDANCE_PARAMS gAxisImpParams
+    DECL GLOBAL BOOL gAxisImpParamsValid
+
     CONST CHAR AXISCORR_NAME[64]
     AXISCORR_NAME[] = "AxisCorr_1"
 
