@@ -49,26 +49,26 @@ install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 # Licensed under Apache-2.0 license
 
 # Allows Colcon to find non-Ament packages when using workspace underlays
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${ros_package_name} "")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
 install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${ros_package_name}
+    ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME}
     DESTINATION share/ament_index/resource_index/packages
 )
 file(WRITE
-    ${CMAKE_CURRENT_BINARY_DIR}/share/${ros_package_name}/hook/ament_prefix_path.dsv
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv
     "prepend-non-duplicate;AMENT_PREFIX_PATH;"
 )
 install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/share/${ros_package_name}/hook/ament_prefix_path.dsv
-    DESTINATION share/${ros_package_name}/hook
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv
+    DESTINATION share/${PROJECT_NAME}/hook
 )
 file(WRITE
-    ${CMAKE_CURRENT_BINARY_DIR}/share/${ros_package_name}/hook/ros_package_path.dsv
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv
     "prepend-non-duplicate;ROS_PACKAGE_PATH;"
 )
 install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/share/${ros_package_name}/hook/ros_package_path.dsv
-    DESTINATION share/${ros_package_name}/hook
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv
+    DESTINATION share/${PROJECT_NAME}/hook
 )
 #### End import ####
 
