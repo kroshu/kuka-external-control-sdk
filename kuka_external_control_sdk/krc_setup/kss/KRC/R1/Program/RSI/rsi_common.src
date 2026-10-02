@@ -1,0 +1,50 @@
+&ACCESS RVP
+&PARAM DISKPATH = KRC:\R1\Program\ROS
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF rsi_common(control_mode:IN, cycle_time:IN)
+    ; =============================================
+    ; Copyright 2025 KUKA Hungaria Kft.
+    ;
+    ; Licensed under the Apache License, Version 2.0 (the "License");
+    ; you may not use this file except in compliance with the License.
+    ; You may obtain a copy of the License at
+    ;
+    ;     http://www.apache.org/licenses/LICENSE-2.0
+    ;
+    ; Unless required by applicable law or agreed to in writing, software
+    ; distributed under the License is distributed on an "AS IS" BASIS,
+    ; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    ; See the License for the specific language governing permissions and
+    ; limitations under the License.
+    ; =============================================
+
+    DECL INT control_mode
+    DECL INT cycle_time
+
+    ; Common entry point called from the mxA wrapper. Dispatches to the program
+    ; matching the control mode and cycle time requested by the client, keeping
+    ; the server in sync with the client-selected control mode.
+    SWITCH control_mode
+        CASE 1 ; Joint position control
+            SWITCH cycle_time
+                CASE 1 ; RSI 4 ms
+                    rsi_joint_pos_4ms()
+                CASE 2 ; RSI 12 ms
+                    rsi_joint_pos_12ms()
+                DEFAULT
+                    RETURN
+            ENDSWITCH
+        CASE 2 ; Joint impedance control
+            SWITCH cycle_time
+                CASE 1 ; RSI 4 ms
+                    rsi_joint_impedance_4ms()
+                CASE 2 ; RSI 12 ms
+                    rsi_joint_impedance_12ms()
+                DEFAULT
+                    RETURN
+            ENDSWITCH
+        DEFAULT
+            RETURN
+    ENDSWITCH
+END

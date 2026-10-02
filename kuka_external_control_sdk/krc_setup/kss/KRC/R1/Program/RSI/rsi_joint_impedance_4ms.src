@@ -2,7 +2,7 @@
 &PARAM DISKPATH = KRC:\R1\Program\ROS
 &PARAM EDITMASK = *
 &PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
-DEF rsi_joint_pos_12ms()
+DEF rsi_joint_impedance_4ms()
     ; =============================================
     ; Copyright 2025 KUKA Hungaria Kft.
     ;
@@ -20,16 +20,25 @@ DEF rsi_joint_pos_12ms()
     ; =============================================
 
     ; Declaration of KRL variables
-    DECL INT ret
-    DECL INT cont_id
+    DECL INT ret ; Return value for RSI commands
+    DECL INT cont_id ; ContainerID
 
-    ; FOLD INI
-    ; FOLD BASISTECH INI
-    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ()
-    INTERRUPT ON 3
-    BAS (#INITMOV, 0)
-    ; ENDFOLD (BASISTECH INI)
-    ; ENDFOLD (INI)
+    ;FOLD INI
+        ;FOLD BASISTECH INI
+            GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ()
+            INTERRUPT ON 3
+            BAS (#INITMOV, 0)
+        ;ENDFOLD (BASISTECH INI)
+        ;FOLD USER INI
+            ;Make your modifications here
+
+        ;ENDFOLD (USER INI)
+    ;ENDFOLD (INI)
+
+    ; Apply mxA-provided joint impedance before the first motion.
+    IF gAxisImpParamsValid THEN
+        SET_AXIS_IMPEDANCE_CTRL(gAxisImpParams)
+    ENDIF
 
     WAIT SEC 1.0
 
@@ -46,7 +55,7 @@ DEF rsi_joint_pos_12ms()
     ROS_SetAxisCorrLimits(cont_id)
 
     ; Start RSI execution
-    ret = RSI_ON(#ABSOLUTE, #IPO)
+    ret = RSI_ON(#ABSOLUTE, #IPO_FAST)
     IF (ret <> RSIOK) THEN
         HALT
     ENDIF
@@ -58,6 +67,12 @@ DEF rsi_joint_pos_12ms()
     ret = RSI_OFF()
     IF (ret <> RSIOK) THEN
         HALT
+    ENDIF
+
+    ; Restore position control after impedance streaming finished
+    IF gAxisImpParamsValid THEN
+        SET_POSITION_CTRL()
+        gAxisImpParamsValid = FALSE
     ENDIF
 
     PTP $AXIS_ACT_MEAS
