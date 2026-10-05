@@ -122,9 +122,10 @@ Status Client::CancelRSI()
 
 void Client::SetToCancelled()
 {
-  std::unique_lock<std::mutex> cancel_lock(cancel_finished_mutex_);
-  cancelled_ = true;
-  cancel_lock.unlock();
+  {
+    std::lock_guard<std::mutex> cancel_lock(cancel_finished_mutex_);
+    cancelled_ = true;
+  }
   cancel_finished_cv_.notify_one();
 }
 

@@ -144,14 +144,6 @@ private:
   static constexpr char general_req_format[] =
     "<External REQTYPE=\"%d\" CycleTime=\"%d\" ControlMode=\"%d\"></External>\n";
 
-  static constexpr char event_resp_format_[] = "<Response EventID=\"%d\">%[^<]</Response>";
-
-  static constexpr char status_report_format_[] =
-    "<Status ControlMode=\"%hhu\" CycleTime=\"%hhu\" DrivesPowered=\"%hhu\" "
-    "EmergencyStop=\"%hhu\" GuardStop=\"%hhu\" InMotion=\"%hhu\" "
-    "MotionPossible=\"%hhu\" OperationMode=\"%hhu\" RobotStopped=\"%hhu\"></Status>";
-  static constexpr uint8_t kStatusReportFieldCount = 9;
-
   static constexpr char kSemanticVersion[] = "1.0.0";
 
   EKIInitializationData init_data_;

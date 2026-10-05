@@ -21,6 +21,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <stdexcept>
+
 namespace os::core::udp::communication
 {
 
@@ -181,7 +183,7 @@ int SecureSocket::SendTo(
   const SocketAddress & /*remote_address*/, const unsigned char * /*raw_data*/,
   int /*raw_data_size*/, int /*flags*/)
 {
-  throw "NOT SUPPORTED";
+  throw std::logic_error("NOT SUPPORTED");
 }
 
 int SecureSocket::Receive(unsigned char * buffer, int buffer_size, int /*flags*/)
@@ -212,7 +214,7 @@ int SecureSocket::ReceiveFrom(
   SocketAddress & /*incoming_remote_address*/, unsigned char * /*buffer*/, int /*buffer_size*/,
   int /*flags*/)
 {
-  throw "NOT SUPPORTED";
+  throw std::logic_error("NOT SUPPORTED");
 }
 
 std::string SecureSocket::GetLastErrorText() const

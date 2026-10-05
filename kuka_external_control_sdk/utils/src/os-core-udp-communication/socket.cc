@@ -21,7 +21,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <cstdio>
 #include <cstring>
+#include <stdexcept>
 #include <string>
 
 namespace os::core::udp::communication
@@ -41,7 +43,7 @@ SocketAddress::SocketAddress()
   sockaddr_.sin_port = htons(0);
   port_ = 0;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, kAnyAddress, strlen(kAnyAddress));
+  memcpy(ip_, kAnyAddress, sizeof(kAnyAddress));
 }
 
 SocketAddress::SocketAddress(const std::string & ip, int port)
@@ -52,7 +54,7 @@ SocketAddress::SocketAddress(const std::string & ip, int port)
   sockaddr_.sin_port = htons(port);
   port_ = port;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, ip.c_str(), ip.size());
+  std::snprintf(ip_, sizeof(ip_), "%s", ip.c_str());
 }
 
 SocketAddress::SocketAddress(const std::string & ip)
@@ -63,7 +65,7 @@ SocketAddress::SocketAddress(const std::string & ip)
   sockaddr_.sin_port = htons(0);
   port_ = 0;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, ip.c_str(), ip.size());
+  std::snprintf(ip_, sizeof(ip_), "%s", ip.c_str());
 }
 
 SocketAddress::SocketAddress(int port)
@@ -74,7 +76,7 @@ SocketAddress::SocketAddress(int port)
   sockaddr_.sin_port = htons(port);
   port_ = port;
   memset(ip_, 0, INET_ADDRSTRLEN);
-  memcpy(ip_, kAnyAddress, strlen(kAnyAddress));
+  memcpy(ip_, kAnyAddress, sizeof(kAnyAddress));
 }
 
 SocketAddress::SocketAddress(const struct sockaddr_in * raw_address)
@@ -518,7 +520,7 @@ std::pair<Socket::ErrorCode, int> Socket::GetLastSocketError() const
   return {last_error_state_, last_errno_};
 }
 
-bool Socket::IsReadable() const { throw "NOT IMPLEMENTED"; }
+bool Socket::IsReadable() const { throw std::logic_error("NOT IMPLEMENTED"); }
 
 bool Socket::IsDGRAM() const
 {
