@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        debian_version: [bullseye, bookworm]
+        debian_version: [bookworm]
     container:
       image: debian:${{ matrix.debian_version }}
 
