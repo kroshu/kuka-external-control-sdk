@@ -1,2 +1,0 @@
-   DECL STATE_T state
-   DECL MODUS_T mode

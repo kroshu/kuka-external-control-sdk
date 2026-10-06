@@ -6,18 +6,18 @@ run-name: ROS-Industrial CI - ${{ github.event_name }}
 
 # or more fine-grained
 on:
-  # When main, feature or fix branch is pushed to
+  # When master branch is pushed to
   push:
     branches:
       - master
-      - feature/**
-      - fix/**
   # When there is a pull request against master
   pull_request:
     branches:
       - master
-      - feature/**
-      - fix/**
+
+
+permissions:
+  contents: read
 
 jobs:
   industrial_ci:
@@ -27,8 +27,16 @@ jobs:
         env:
         - ROS_REPO: ros
           BUILDER: colcon
+          TARGET_CMAKE_ARGS: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ADDITIONAL_DEBS: ca-certificates curl jq unzip
           TEST_COVERAGE: true
           ROS_DISTRO: humble
+        - ROS_REPO: ros
+          BUILDER: colcon
+          TARGET_CMAKE_ARGS: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ADDITIONAL_DEBS: ca-certificates curl jq unzip
+          TEST_COVERAGE: true
+          ROS_DISTRO: jazzy
     env:
       CCACHE_DIR: /github/home/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
       EVENT_NAME: ${{ github.event_name }}
@@ -36,26 +44,28 @@ jobs:
       PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       PR_BASE: ${{ github.event.pull_request.base.ref }}
       PR_NUMBER: ${{ github.event.number }}
-      # enable SonarCloud analysis when the ANALYZER_TOKEN secret is configured
-      ANALYZER: sonarqube
-      ANALYZER_TOKEN: ${{ secrets.ANALYZER_TOKEN }}
-      DEBUG_BASH: true
+      DEBUG_BASH: false
     runs-on: ubuntu-latest
     steps:
-      - name: Reset ANALYZER for pushes not targeting master
-        run: |
-          # only run SonarCloud on pushes to the default branch (master) or for pull requests
-          if [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
-            echo "ANALYZER=" >> $GITHUB_ENV
-          fi
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          submodules: recursive
       # This step will fetch/store the directory used by ccache before/after the ci run
       - uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
       # Run industrial_ci
-      - uses: 'kroshu/industrial_ci@master'
-        env: ${{ matrix.env }}
+      - uses: ros-industrial/industrial_ci@125164b9f1883cdf1858897a7146d1bebf2be5c6
+        with:
+          config: ${{ toJSON(matrix.env) }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          DOCKER_RUN_OPTS: >-
+            -e SONAR_TOKEN -e EVENT_NAME -e BRANCH
+            -e PR_BRANCH -e PR_BASE -e PR_NUMBER
+          AFTER_SCRIPT: |
+            if [[ "${{ matrix.env.ROS_DISTRO }}" == "jazzy" ]]; then
+              rosenv bash "$TARGET_REPO_PATH/.ci/sonar.sh" "$BASEDIR/${PREFIX}target_ws" "$TARGET_REPO_NAME"
+            fi
