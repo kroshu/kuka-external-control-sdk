@@ -164,4 +164,3 @@ install(DIRECTORY ${iiqka_directory}/include/
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/proto-api
       DESTINATION ${CMAKE_INSTALL_PREFIX}/include/kuka/external-control-sdk/iiqka
       FILES_MATCHING PATTERN "*.h" PATTERN "*.hh")
-

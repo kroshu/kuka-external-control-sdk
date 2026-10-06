@@ -19,24 +19,28 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
 
     - name: Install dependencies
       run: |
         #!/bin/bash
-        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev libtinyxml2-dev && mkdir -p kuka_external_control_sdk/build && mkdir -p kuka_external_control_sdk_examples/build
+        apt update && apt install -y cmake build-essential pkg-config libssl-dev protobuf-compiler-grpc libgrpc++-dev libgtest-dev libtinyxml2-dev
 
-    - name: Build and install
-      run: cmake -DBUILD_TESTING=1 .. && make install
-      working-directory: ./kuka_external_control_sdk/build
+    - name: Build and install common SDK
+      run: cmake -S upstream/kuka_external_control_sdk/kuka_external_control_sdk_common -B build/common -DCMAKE_INSTALL_PREFIX="$HOME/.local" && cmake --build build/common --parallel && cmake --install build/common
 
-    - name: Run iiQKA tests
-      run: ./test_robot && ./test_message_builder
-      working-directory: ./kuka_external_control_sdk/build/iiqka
+    - name: Build and install iiQKA (OS1)
+      run: cmake -DBUILD_TESTING=1 -S kuka_external_control_sdk_iiqka -B build/iiqka-os1 -DCMAKE_INSTALL_PREFIX="$HOME/.local" && cmake --build build/iiqka-os1 --parallel && cmake --install build/iiqka-os1
 
-    - name: Run KSS tests
-      run: ./test_kss_message_builder
-      working-directory: ./kuka_external_control_sdk/build/kss
+    - name: Run iiQKA (OS1) tests
+      run: ./build/iiqka-os1/iiqka/test_robot && ./build/iiqka-os1/iiqka/test_message_builder
 
-    - name: Build and install examples
-      run: cmake -DBUILD_TESTING=1 .. && make
-      working-directory: ./kuka_external_control_sdk_examples/build
+    - name: Build and install iiQKA.OS2
+      run: cmake -DBUILD_TESTING=1 -S upstream/kuka_external_control_sdk/kuka_external_control_sdk_iiqka2 -B build/iiqka-os2 -DCMAKE_INSTALL_PREFIX="$HOME/.local" -DCMAKE_PREFIX_PATH="$HOME/.local" && cmake --build build/iiqka-os2 --parallel && cmake --install build/iiqka-os2
+
+    - name: Run iiQKA.OS2 tests
+      run: ./build/iiqka-os2/test_iiqka2_message_builder && ./build/iiqka-os2/test_eki_client_parsing
+
+    - name: Build examples
+      run: cmake -S kuka_external_control_sdk_examples -B build/examples -DCMAKE_PREFIX_PATH="$HOME/.local" && cmake --build build/examples --parallel
