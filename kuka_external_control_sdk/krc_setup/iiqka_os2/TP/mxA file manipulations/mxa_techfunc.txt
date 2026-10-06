@@ -1,5 +1,9 @@
-      case 2 ; RSI joint pos
-         rsi_joint_pos()
+      case 2 ; RSI streaming
+         IF ((gMxA_CmdQ_Int1[QIdx] == 1) OR (gMxA_CmdQ_Int1[QIdx] == 2)) AND (gMxA_CmdQ_Int2[QIdx] == 1) THEN
+            rsi_common(gMxA_CmdQ_Int1[QIdx], gMxA_CmdQ_Int2[QIdx])
+         ELSE
+            mxA_Error(gMxAErr_InvTechFunPar)
+         ENDIF
       case 3 ; Cancel
          mode = #SYNC
          CWRITE($CMD, state, mode, "CANCEL 1")

@@ -1,0 +1,49 @@
+&ACCESS RVP
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM EDITMASK = *
+DEF rsi_joint_impedance()
+  DECL INT ret
+
+  ;FOLD INI
+    ;FOLD BASISTECH INI
+    BAS (#INITMOV,0 )
+    ;ENDFOLD (BASISTECH INI)
+  ;ENDFOLD (INI)
+
+  IF gAxisImpParamsValid THEN
+    SET_AXIS_IMPEDANCE_CTRL(gAxisImpParams)
+  ENDIF
+
+  PTP $AXIS_ACT_MEAS
+
+  ret = RSI_LOAD(CONTEXT_NAME[])
+  IF (ret <> RSIOK) THEN
+    HALT
+  ENDIF
+
+  ROS_SetAxisCorrLimits(CONTEXT_NAME[])
+
+  ret = RSI_ACTIVATE(CONTEXT_NAME[])
+  IF (ret <> RSIOK) THEN
+    HALT
+  ENDIF
+
+  ret = RSI_PROCESS_ON(#ABSOLUTE)
+  IF (ret <> RSIOK) THEN
+    HALT
+  ENDIF
+
+  RSI_MOVECORR()
+
+  ret = RSI_PROCESS_OFF()
+  IF (ret <> RSIOK) THEN
+    HALT
+  ENDIF
+
+  IF gAxisImpParamsValid THEN
+    SET_POSITION_CTRL()
+    gAxisImpParamsValid = FALSE
+  ENDIF
+
+  PTP $AXIS_ACT_MEAS
+END

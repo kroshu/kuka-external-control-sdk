@@ -1,0 +1,18 @@
+&ACCESS RVP
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM EDITMASK = *
+DEF rsi_common(control_mode:IN, cycle_time:IN)
+    DECL INT control_mode
+    DECL INT cycle_time
+
+    SWITCH control_mode
+        CASE 1
+            IF cycle_time == 1 THEN
+                rsi_joint_pos()
+            ENDIF
+        CASE 2
+            IF cycle_time == 1 THEN
+                rsi_joint_impedance()
+            ENDIF
+    ENDSWITCH
+END

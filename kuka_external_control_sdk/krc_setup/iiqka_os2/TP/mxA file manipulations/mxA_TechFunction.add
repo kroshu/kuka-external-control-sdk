@@ -21,4 +21,18 @@ Type=Insert
 Before=;FOLD USER TECHFUNCCHECKPAR
 What=mxa_techfunc_checkpar.txt
 Start=case 2
-End=bValuesOK = TRUE
+End=bValuesOK = bValuesOK AND (gMxA_CmdQ_Int2[QIdx] == 1)
+
+[InsertImpedance]
+Type=Insert
+Before=;FOLD USER TECHFUNC
+What=mxa_techfunc_s_impedance.txt
+Start=case 4 ; Set axis impedance (per-axis stiffness/damping)
+End=mxA_MsgMan_SetCmdStateS(QIdx,#Executed)
+
+[InsertCheckParImpedance]
+Type=Insert
+Before=;FOLD USER TECHFUNCCHECKPAR
+What=mxa_techfunc_checkpar_impedance.txt
+Start=case 4 ; Set axis impedance
+End=bValuesOK = bValuesOK AND ((gMxA_CmdQ_Int1[QIdx] MOD 2) == 0)
