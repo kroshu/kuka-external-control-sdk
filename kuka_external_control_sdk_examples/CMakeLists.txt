@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13)
 
-project("kuka-external-control-examples")
+project(kuka_external_control_sdk_examples)
 
 # Project dependencies
 list(APPEND CMAKE_PREFIX_PATH "~/.local/lib/cmake")
@@ -69,4 +69,40 @@ target_include_directories(multi_rsi_robot_example PRIVATE $<BUILD_INTERFACE:${C
 # Install package.xml file so this package can be processed by ROS toolings
 # See REP 136 for details
 # Installing this in non-ROS environments won't have any effect, but it won't harm, either.
-install(FILES package.xml DESTINATION share/external_control_sdk)
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
+# Generate colcon environment hooks when building in a ROS environment.
+find_package(ament_cmake QUIET)
+
+if(ament_cmake_FOUND)
+  ament_package()
+else()
+  #### Begin import ####
+  # Imported from ros-industrial/ros_industrial_cmake_boilerplate
+  # Copyright (C) 2018 by George Cave - gcave@stablecoder.ca
+  # Copyright (c) 2020, Southwest Research Institute
+  # Licensed under Apache-2.0 license
+  # Allows colcon to find this non-ament package in workspace underlays.
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
+  install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME}
+    DESTINATION share/ament_index/resource_index/packages
+  )
+  file(WRITE
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv
+    "prepend-non-duplicate;AMENT_PREFIX_PATH;"
+  )
+  install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv
+    DESTINATION share/${PROJECT_NAME}/hook
+  )
+  file(WRITE
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv
+    "prepend-non-duplicate;ROS_PACKAGE_PATH;"
+  )
+  install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ros_package_path.dsv
+    DESTINATION share/${PROJECT_NAME}/hook
+  )
+  #### End import ####
+endif()
