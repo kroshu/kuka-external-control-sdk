@@ -17,6 +17,9 @@ jobs:
       image: fedora:${{ matrix.fedora_version }}
 
     steps:
+    - name: Install Git for checkout
+      run: dnf install -y git
+
     - uses: actions/checkout@v2
       with:
         submodules: recursive

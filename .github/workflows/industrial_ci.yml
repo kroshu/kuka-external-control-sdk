@@ -16,8 +16,7 @@ on:
   pull_request:
     branches:
       - master
-      - feature/**
-      - fix/**
+
 
 permissions:
   contents: read
@@ -34,6 +33,12 @@ jobs:
           ADDITIONAL_DEBS: ca-certificates curl jq unzip
           TEST_COVERAGE: true
           ROS_DISTRO: humble
+        - ROS_REPO: ros
+          BUILDER: colcon
+          TARGET_CMAKE_ARGS: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ADDITIONAL_DEBS: ca-certificates curl jq unzip
+          TEST_COVERAGE: true
+          ROS_DISTRO: jazzy
     env:
       CCACHE_DIR: /github/home/.ccache # Directory for ccache (and how we enable ccache in industrial_ci)
       EVENT_NAME: ${{ github.event_name }}

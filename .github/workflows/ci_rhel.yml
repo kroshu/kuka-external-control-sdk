@@ -17,6 +17,9 @@ jobs:
       image: almalinux:${{ matrix.rhel_version }}
 
     steps:
+    - name: Install Git for checkout
+      run: dnf install -y git
+
     - uses: actions/checkout@v2
       with:
         submodules: recursive
