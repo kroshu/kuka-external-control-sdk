@@ -1,4 +1,7 @@
-            case 4 ; Set axis impedance
-               bValuesOK = gMxA_CmdQ_Int1[QIdx] >= 2
-               bValuesOK = bValuesOK AND (gMxA_CmdQ_Int1[QIdx] <= 24)
-               bValuesOK = bValuesOK AND ((gMxA_CmdQ_Int1[QIdx] MOD 2) == 0)
+      case 4 ; Set axis impedance
+         bValuesOK = (gMxA_CmdQ_Int1[CommandQueueIndex] == 2)
+         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 4)
+         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 6)
+         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 8)
+         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 10)
+         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 12)

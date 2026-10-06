@@ -250,9 +250,9 @@ public:
   // values once motion starts. Only works with the Techfunction extension.
   BLOCKRESULT setImpedance(const float * stiffness, const float * damping, int dof)
   {
-    // 2 REALs per axis; capped by the techfunction parameter buffer.
+    // The KRL impedance handler supports A1-A6, with two REALs per axis.
     const int parameter_count = 2 * dof;
-    if (dof < 1 || dof > 12 || parameter_count > TECH_FUNC_PARAM_COUNT)
+    if (dof < 1 || dof > 6 || parameter_count > TECH_FUNC_PARAM_COUNT)
     {
       return BLOCKRESULT(BLOCKSTATE::ERROR);
     }
