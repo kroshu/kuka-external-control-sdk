@@ -1,15 +1,20 @@
 # KUKA External Control SDK
 
-This repository provides the SDK used for KUKA external control. It is not a ROS package but is consumed by the drivers and other tooling.
+This repository provides packages and tools for KUKA external control. The repository itself is not a ROS package, but it contains ROS 2 SDK packages consumed by the drivers and other tooling.
 
-The SDK source is included as a Git submodule. After cloning this repository, initialize it with `git submodule update --init --recursive`.
+The SDK packages are split between this repository and an upstream Git submodule:
+
+- This repository contains `kuka_external_control_sdk_iiqka` for iiQKA (OS1) and `kuka_external_control_sdk_kss` for KSS.
+- The `upstream/kuka_external_control_sdk` submodule, from the [kuka-ros/kuka_external_control_sdk repository](https://github.com/kuka-ros/kuka_external_control_sdk), contains `kuka_external_control_sdk_common` and `kuka_external_control_sdk_iiqka2` for iiQKA.OS2.
+
+After cloning, initialize the submodule with `git submodule update --init --recursive` to check out all SDK packages and documentation.
 
 GitHub CI | SonarCloud
 ------------ | --------------
 [![Build Status](https://github.com/kroshu/kuka-external-control-sdk/actions/workflows/industrial_ci.yml/badge.svg)](https://github.com/kroshu/kuka-external-control-sdk/actions/workflows/industrial_ci.yml) | [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=kroshu_kuka-external-control-sdk&metric=alert_status)](https://sonarcloud.io/dashboard?id=kroshu_kuka-external-control-sdk)
 
 
-This guide describes the bundled iiQKA.OS2 SDK. For setup instructions, see the upstream SDK documentation.
+The iiQKA.OS2 SDK implementation is maintained in the upstream submodule. For setup instructions, see its documentation linked below.
 
 ## Select Your Setup Guide
 
