@@ -19,6 +19,9 @@ on:
       - feature/**
       - fix/**
 
+permissions:
+  contents: read
+
 jobs:
   industrial_ci:
     name: ROS-Industrial CI
@@ -27,6 +30,8 @@ jobs:
         env:
         - ROS_REPO: ros
           BUILDER: colcon
+          TARGET_CMAKE_ARGS: -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          ADDITIONAL_DEBS: ca-certificates curl jq unzip
           TEST_COVERAGE: true
           ROS_DISTRO: humble
     env:
@@ -36,18 +41,9 @@ jobs:
       PR_BRANCH: ${{ github.event.pull_request.head.ref }}
       PR_BASE: ${{ github.event.pull_request.base.ref }}
       PR_NUMBER: ${{ github.event.number }}
-      # enable SonarCloud analysis when the ANALYZER_TOKEN secret is configured
-      ANALYZER: sonarqube
-      ANALYZER_TOKEN: ${{ secrets.ANALYZER_TOKEN }}
-      DEBUG_BASH: true
+      DEBUG_BASH: false
     runs-on: ubuntu-latest
     steps:
-      - name: Reset ANALYZER for pushes not targeting master
-        run: |
-          # only run SonarCloud on pushes to the default branch (master) or for pull requests
-          if [[ "${{ github.event_name }}" == "push" ]] && [[ "${{ github.ref }}" != "refs/heads/master" ]]; then
-            echo "ANALYZER=" >> $GITHUB_ENV
-          fi
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -58,5 +54,14 @@ jobs:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
       # Run industrial_ci
-      - uses: 'kroshu/industrial_ci@master'
-        env: ${{ matrix.env }}
+      - uses: ros-industrial/industrial_ci@125164b9f1883cdf1858897a7146d1bebf2be5c6
+        with:
+          config: ${{ toJSON(matrix.env) }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          DOCKER_RUN_OPTS: >-
+            -e SONAR_TOKEN -e EVENT_NAME -e BRANCH
+            -e PR_BRANCH -e PR_BASE -e PR_NUMBER
+          AFTER_SCRIPT: >-
+            rosenv bash "$TARGET_REPO_PATH/.ci/sonar.sh"
+            "$BASEDIR/${PREFIX}target_ws" "$TARGET_REPO_NAME"
