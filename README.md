@@ -55,7 +55,7 @@ In this section, we'll describe a general use case for both controlling and moni
 
 #### Control Example
 
-![control_example](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/diagrams/ControlExample.png)
+![control_example](https://raw.githubusercontent.com/kuka-ros/kuka_external_control_sdk/master/kuka_external_control_sdk_common/doc/diagrams/ControlExample.png)
 
 To begin, call `Setup` on the specific instance of the `IRobot` interface. This will initialize the necessary variables and communication channels. If successful, you can start external control.
 
