@@ -6,12 +6,10 @@ run-name: ROS-Industrial CI - ${{ github.event_name }}
 
 # or more fine-grained
 on:
-  # When main, feature or fix branch is pushed to
+  # When master branch is pushed to
   push:
     branches:
       - master
-      - feature/**
-      - fix/**
   # When there is a pull request against master
   pull_request:
     branches:
