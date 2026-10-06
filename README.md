@@ -21,7 +21,7 @@ The iiQKA.OS2 SDK implementation is maintained in the upstream submodule. For se
 Choose the setup guide for your controller:
 
 - [External Control Setup for iiQKA (OS1)](kuka_external_control_sdk_iiqka/doc/iiqka_setup.md)
-- [External Control Setup for iiQKA.OS2](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/iiqka_os2_setup.md)
+- [External Control Setup for iiQKA.OS2](https://github.com/kuka-ros/kuka_external_control_sdk/blob/master/kuka_external_control_sdk_common/doc/iiqka_os2_setup.md)
 - [External Control Setup for KSS](kuka_external_control_sdk_kss/doc/kss_setup.md)
 
 ## Overview
@@ -92,5 +92,5 @@ To stop monitoring on the client side, call `CancelMonitoringSubscription`. To s
 For implementation details, refer to the guide for your controller:
 
 - [iiQKA (OS1) Implementation](kuka_external_control_sdk_iiqka/doc/iiqka_implementation.md)
-- [iiQKA.OS2 Implementation](upstream/kuka_external_control_sdk/kuka_external_control_sdk_common/doc/iiqka_os2_implementation.md)
+- [iiQKA.OS2 Implementation](https://github.com/kuka-ros/kuka_external_control_sdk/blob/master/kuka_external_control_sdk_common/doc/iiqka_os2_implementation.md)
 - [KSS Implementation](kuka_external_control_sdk_kss/doc/kss_implementation.md)
