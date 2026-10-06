@@ -1,6 +1,0 @@
-            case 4 ; Set axis impedance
-               ; INT 1 carries the number of REAL parameters: two per axis.
-               ; AXIS_IMPEDANCE_PARAMS provides A1-A6 and E1-E6 (12 axes max).
-               bValuesOK = gMxA_CmdQ_Int1[QIdx] >= 2
-               bValuesOK = bValuesOK AND (gMxA_CmdQ_Int1[QIdx] <= 24)
-               bValuesOK = bValuesOK AND ((gMxA_CmdQ_Int1[QIdx] MOD 2) == 0)

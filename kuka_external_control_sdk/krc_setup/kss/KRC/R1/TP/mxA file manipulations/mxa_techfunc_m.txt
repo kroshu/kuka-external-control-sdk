@@ -1,10 +1,16 @@
             case 2 ; RSI streaming
-               ; Dispatch through the shared program so the server stays in sync
-               ; with the control mode and cycle time requested by the client.
-               IF ((gMxA_CmdQ_Int1[QIdx] == 1) OR (gMxA_CmdQ_Int1[QIdx] == 2)) AND ((gMxA_CmdQ_Int2[QIdx] == 1) OR (gMxA_CmdQ_Int2[QIdx] == 2)) THEN
-                  rsi_common(gMxA_CmdQ_Int1[QIdx], gMxA_CmdQ_Int2[QIdx])
-               ELSE
-                  mxA_Error(gMxAErr_InvTechFunPar)
-               ENDIF
+               switch gMxA_CmdQ_Int1[QIdx]
+                  case 1 ; Joint position control
+                     switch gMxA_CmdQ_Int2[QIdx]
+                        case 1 ; RSI 4 ms
+                           rsi_joint_pos_4ms()
+                        case 2 ; RSI 12 ms
+                           rsi_joint_pos_12ms()
+                        default
+                           mxA_Error(gMxAErr_InvTechFunPar)
+                     endswitch
+                  default
+                     mxA_Error(gMxAErr_InvTechFunPar)
+               endswitch
                ;Return message function executed
                mxA_MsgMan_SetCmdStateM(QIdx,#Executed)
