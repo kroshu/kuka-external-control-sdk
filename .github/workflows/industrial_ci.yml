@@ -65,6 +65,7 @@ jobs:
           DOCKER_RUN_OPTS: >-
             -e SONAR_TOKEN -e EVENT_NAME -e BRANCH
             -e PR_BRANCH -e PR_BASE -e PR_NUMBER
-          AFTER_SCRIPT: >-
-            rosenv bash "$TARGET_REPO_PATH/.ci/sonar.sh"
-            "$BASEDIR/${PREFIX}target_ws" "$TARGET_REPO_NAME"
+          AFTER_SCRIPT: |
+            if [[ "${{ matrix.env.ROS_DISTRO }}" == "jazzy" ]]; then
+              rosenv bash "$TARGET_REPO_PATH/.ci/sonar.sh" "$BASEDIR/${PREFIX}target_ws" "$TARGET_REPO_NAME"
+            fi
