@@ -293,9 +293,10 @@ public:
 
     if (mxa_tech_function_m_.ERROR)
     {
+      const auto error_id = mxa_tech_function_m_.ERRORID;
       mxa_tech_function_m_.EXECUTECMD = false;
       mxa_tech_function_m_.OnCycle();
-      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_m_.ERRORID));
+      return BLOCKRESULT(error_id);
     }
     else if (mxa_tech_function_m_.DONE)
     {

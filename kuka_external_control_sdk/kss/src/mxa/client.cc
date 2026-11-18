@@ -382,8 +382,9 @@ void Client::StartKeepAliveThread()
           // Call program starting RSI
           if (mxa_wrapper_.isServerActive() && start_rsi_)
           {
-            auto process_rsi_res = mxa_wrapper_.processRSI(
-              static_cast<int>(control_mode_), static_cast<int>(cycle_time_));
+            const auto control_mode = static_cast<int>(control_mode_);
+            const auto cycle_time = static_cast<int>(cycle_time_);
+            const auto process_rsi_res = mxa_wrapper_.processRSI(control_mode, cycle_time);
             if (
               process_rsi_res.block_state == BLOCKSTATE::ACTIVE && !rsi_started_notification_sent_)
             {
@@ -393,6 +394,14 @@ void Client::StartKeepAliveThread()
             if (process_rsi_res.block_state == BLOCKSTATE::DONE)
             {
               start_rsi_ = false;
+            }
+            else if (process_rsi_res.block_state == BLOCKSTATE::ERROR)
+            {
+              start_rsi_ = false;
+              event_handler_->OnError(
+                "mxA RSI startup TechFunction 2 failed with ID: " +
+                std::to_string(process_rsi_res.error_code) + " (Int1=" +
+                std::to_string(control_mode) + ", Int2=" + std::to_string(cycle_time) + ")");
             }
           }
           // ----------------------------------------------------------------------------
