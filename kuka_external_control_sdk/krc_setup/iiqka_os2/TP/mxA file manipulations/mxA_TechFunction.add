@@ -4,35 +4,35 @@ Type=Block
 
 [InsertTechFuncVar]
 Type=Insert
-Before=;FOLD USER VARSTECHFUNC
+Before=;ENDFOLD (USER VARSTECHFUNC)
 What=mxa_techfunc_var.txt
 Start=DECL STATE_T state
 End=DECL MODUS_T mode
 
 [InsertTechFunc]
 Type=Insert
-Before=;FOLD USER TECHFUNC
+Before=;ENDFOLD (USER TECHFUNC)
 What=mxa_techfunc.txt
 Start=case 2 ; RSI streaming
 End=CWRITE($CMD, state, mode, "CANCEL 1")
 
 [InsertCheckPar]
 Type=Insert
-Before=;FOLD USER TECHFUNCCHECKPAR
+Before=;ENDFOLD (USER TECHFUNCCHECKPAR)
 What=mxa_techfunc_checkpar.txt
 Start=case 2
 End=bValuesOK = bValuesOK AND (gMxA_CmdQ_Int2[CommandQueueIndex] == 1)
 
 [InsertImpedance]
 Type=Insert
-Before=;FOLD USER TECHFUNC
+Before=;ENDFOLD (USER TECHFUNC)
 What=mxa_techfunc_s_impedance.txt
 Start=case 4 ; Set axis impedance (per-axis stiffness/damping)
 End=gAxisImpParamsValid = TRUE
 
 [InsertCheckParImpedance]
 Type=Insert
-Before=;FOLD USER TECHFUNCCHECKPAR
+Before=;ENDFOLD (USER TECHFUNCCHECKPAR)
 What=mxa_techfunc_checkpar_impedance.txt
 Start=case 4 ; Set axis impedance
 End=bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 12)
