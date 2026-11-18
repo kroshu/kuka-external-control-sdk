@@ -44,13 +44,6 @@ class mxAWrapper
 public:
   mxAWrapper()
   {
-    for (int i = 0; i <= TECH_FUNC_PARAM_COUNT; i++)
-    {
-      int_array_[i] = 0;
-      real_array_[i] = 0.0;
-      bool_array_[i] = false;
-    }
-
     krc_read_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     krc_write_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     mxa_init_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
@@ -64,13 +57,13 @@ public:
     krc_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
     read_mxa_error_.AXISGROUPIDX = DEFAULT_AXISGROUP_ID;
 
-    mxa_tech_function_m_.BOOL_DATA = bool_array_.data();
-    mxa_tech_function_m_.INT_DATA = int_array_.data();
-    mxa_tech_function_m_.REAL_DATA = real_array_.data();
+    mxa_tech_function_m_.BOOL_DATA = motion_params_.bool_data.data();
+    mxa_tech_function_m_.INT_DATA = motion_params_.int_data.data();
+    mxa_tech_function_m_.REAL_DATA = motion_params_.real_data.data();
 
-    mxa_tech_function_s_.BOOL_DATA = bool_array_.data();
-    mxa_tech_function_s_.INT_DATA = int_array_.data();
-    mxa_tech_function_s_.REAL_DATA = real_array_.data();
+    mxa_tech_function_s_.BOOL_DATA = synchronous_params_.bool_data.data();
+    mxa_tech_function_s_.INT_DATA = synchronous_params_.int_data.data();
+    mxa_tech_function_s_.REAL_DATA = synchronous_params_.real_data.data();
 
     // Set AutExt block values
     mxa_aut_ext_.CONF_MESS = false;
@@ -259,11 +252,11 @@ public:
 
     for (int axis = 0; axis < dof; ++axis)
     {
-      real_array_[2 * axis + 1] = stiffness[axis];
-      real_array_[2 * axis + 2] = damping[axis];
+      synchronous_params_.real_data[2 * axis + 1] = stiffness[axis];
+      synchronous_params_.real_data[2 * axis + 2] = damping[axis];
     }
 
-    int_array_[1] = parameter_count;
+    synchronous_params_.int_data[1] = parameter_count;
     mxa_tech_function_s_.TECHFUNCTIONID = 4;
     mxa_tech_function_s_.PARAMETERCOUNT = parameter_count;
     mxa_tech_function_s_.BUFFERMODE = 0;
@@ -272,16 +265,17 @@ public:
 
     if (mxa_tech_function_s_.ERROR)
     {
+      const auto error_id = mxa_tech_function_s_.ERRORID;
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
-      clearImpedanceParams(parameter_count);
-      return BLOCKRESULT(BLOCKSTATE(mxa_tech_function_s_.ERRORID));
+      synchronous_params_ = {};
+      return BLOCKRESULT(error_id);
     }
     else if (mxa_tech_function_s_.DONE)
     {
       mxa_tech_function_s_.EXECUTECMD = false;
       mxa_tech_function_s_.OnCycle();
-      clearImpedanceParams(parameter_count);
+      synchronous_params_ = {};
       return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::DONE));
     }
     return BLOCKRESULT(BLOCKSTATE(BLOCKSTATE::ACTIVE));
@@ -371,15 +365,6 @@ public:
   }
 
 private:
-  void clearImpedanceParams(int parameter_count)
-  {
-    for (int i = 1; i <= parameter_count; ++i)
-    {
-      real_array_[i] = 0.0;
-    }
-    int_array_[1] = 0;
-  }
-
   KRC_READAXISGROUP krc_read_;
   KRC_WRITEAXISGROUP krc_write_;
   KRC_INITIALIZE mxa_init_;
@@ -395,9 +380,14 @@ private:
   KRC_READSYSVAR mxa_read_sys_var_;
 
   static constexpr int TECH_FUNC_PARAM_COUNT = 40;
-  std::array<int, TECH_FUNC_PARAM_COUNT + 1> int_array_;
-  std::array<bool, TECH_FUNC_PARAM_COUNT + 1> bool_array_;
-  std::array<float, TECH_FUNC_PARAM_COUNT + 1> real_array_;
+  struct TechFunctionParams
+  {
+    std::array<int, TECH_FUNC_PARAM_COUNT + 1> int_data{};
+    std::array<bool, TECH_FUNC_PARAM_COUNT + 1> bool_data{};
+    std::array<float, TECH_FUNC_PARAM_COUNT + 1> real_data{};
+  };
+  TechFunctionParams motion_params_;
+  TechFunctionParams synchronous_params_;
 
   static constexpr int DEFAULT_AXISGROUP_ID = 1;
 };

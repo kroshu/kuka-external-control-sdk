@@ -132,6 +132,7 @@ private:
   std::atomic<bool> set_impedance_requested_{false};
   bool set_impedance_finished_{false};
   bool set_impedance_ok_{false};
+  int set_impedance_error_code_{0};
   std::mutex set_impedance_mutex_;
   std::condition_variable set_impedance_finished_cv_;
   std::vector<float> impedance_stiffness_;

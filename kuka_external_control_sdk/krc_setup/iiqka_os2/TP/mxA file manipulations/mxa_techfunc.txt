@@ -1,8 +1,8 @@
       case 2 ; RSI streaming
-         IF ((gMxA_CmdQ_Int1[QIdx] == 1) OR (gMxA_CmdQ_Int1[QIdx] == 2)) AND (gMxA_CmdQ_Int2[QIdx] == 1) THEN
-            rsi_common(gMxA_CmdQ_Int1[QIdx], gMxA_CmdQ_Int2[QIdx])
+         IF ((gMxA_CmdQ_Int1[CommandQueueIndex] == 1) OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 2)) AND (gMxA_CmdQ_Int2[CommandQueueIndex] == 1) THEN
+            rsi_common(gMxA_CmdQ_Int1[CommandQueueIndex], gMxA_CmdQ_Int2[CommandQueueIndex])
          ELSE
-            mxA_Error(gMxAErr_InvTechFunPar)
+            mxA_Error(MXA69_INVALID_TECH_FUNCT, "nIndex")
          ENDIF
       case 3 ; Cancel
          mode = #SYNC

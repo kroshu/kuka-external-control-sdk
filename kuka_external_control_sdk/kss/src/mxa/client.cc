@@ -147,13 +147,23 @@ Status Client::SetImpedance(
     impedance_damping_.assign(damping.begin(), damping.end());
     set_impedance_finished_ = false;
     set_impedance_ok_ = false;
+    set_impedance_error_code_ = 0;
     set_impedance_requested_ = true;
 
     set_impedance_finished_cv_.wait(impedance_lock, [this] { return set_impedance_finished_; });
+    if (set_impedance_ok_)
+    {
+      return {ReturnCode::OK, "Impedance set"};
+    }
+    if (set_impedance_error_code_ != 0)
+    {
+      const auto message =
+        "mxA impedance TechFunction 4 failed with ID: " + std::to_string(set_impedance_error_code_);
+      return {ReturnCode::ERROR, message.c_str()};
+    }
   }
 
-  return set_impedance_ok_ ? Status{ReturnCode::OK, "Impedance set"}
-                           : Status{ReturnCode::ERROR, "Failed to set impedance"};
+  return {ReturnCode::ERROR, "Failed to set impedance"};
 }
 
 void Client::ResetRSI()
@@ -360,6 +370,7 @@ void Client::StartKeepAliveThread()
               {
                 std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
                 set_impedance_ok_ = impedance_res.block_state == BLOCKSTATE::DONE;
+                set_impedance_error_code_ = impedance_res.error_code;
                 set_impedance_finished_ = true;
                 set_impedance_requested_ = false;
                 impedance_lock.unlock();

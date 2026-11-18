@@ -1,5 +1,5 @@
       case 2
-         bValuesOK = ((gMxA_CmdQ_Int1[QIdx] == 1) OR (gMxA_CmdQ_Int1[QIdx] == 2))
-         bValuesOK = bValuesOK AND (gMxA_CmdQ_Int2[QIdx] == 1)
+         bValuesOK = ((gMxA_CmdQ_Int1[CommandQueueIndex] == 1) OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 2))
+         bValuesOK = bValuesOK AND (gMxA_CmdQ_Int2[CommandQueueIndex] == 1)
       case 3
          bValuesOK = TRUE
