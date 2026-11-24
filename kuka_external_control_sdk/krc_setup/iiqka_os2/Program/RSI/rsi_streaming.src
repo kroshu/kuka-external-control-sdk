@@ -1,0 +1,13 @@
+&ACCESS RVP
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM EDITMASK = *
+DEF rsi_streaming(control_mode:IN)
+    DECL INT control_mode
+
+    SWITCH control_mode
+        CASE 1
+            rsi_joint_pos()
+        CASE 2
+            rsi_joint_impedance()
+    ENDSWITCH
+END

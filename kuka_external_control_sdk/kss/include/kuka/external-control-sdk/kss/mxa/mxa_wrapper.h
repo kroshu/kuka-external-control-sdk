@@ -387,8 +387,8 @@ private:
     std::array<bool, TECH_FUNC_PARAM_COUNT + 1> bool_data{};
     std::array<float, TECH_FUNC_PARAM_COUNT + 1> real_data{};
   };
-  TechFunctionParams motion_params_;
-  TechFunctionParams synchronous_params_;
+  TechFunctionParams motion_params_{};
+  TechFunctionParams synchronous_params_{};
 
   static constexpr int DEFAULT_AXISGROUP_ID = 1;
 };

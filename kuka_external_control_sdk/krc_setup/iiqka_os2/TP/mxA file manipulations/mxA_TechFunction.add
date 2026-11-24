@@ -35,4 +35,4 @@ Type=Insert
 Before=;ENDFOLD (USER TECHFUNCCHECKPAR)
 What=mxa_techfunc_checkpar_impedance.txt
 Start=case 4 ; Set axis impedance
-End=bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 12)
+End=ENDSWITCH

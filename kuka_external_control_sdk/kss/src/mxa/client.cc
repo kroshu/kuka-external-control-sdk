@@ -346,36 +346,30 @@ void Client::StartKeepAliveThread()
             }
           }
 
-          // Send impedance parameters before RSI streaming starts. The mxA
-          // server must be running to accept the techfunction, so request its
-          // start here as well.
+          // The impedance TechFunction runs in parallel without the robot interpreter.
           if (set_impedance_requested_)
           {
-            start_cmd_dispatcher_ = true;
-            if (mxa_wrapper_.isServerActive())
+            std::vector<float> stiffness_copy;
+            std::vector<float> damping_copy;
             {
-              std::vector<float> stiffness_copy;
-              std::vector<float> damping_copy;
-              {
-                std::lock_guard<std::mutex> impedance_lock(set_impedance_mutex_);
-                stiffness_copy = impedance_stiffness_;
-                damping_copy = impedance_damping_;
-              }
-              auto impedance_res = mxa_wrapper_.setImpedance(
-                stiffness_copy.data(), damping_copy.data(),
-                static_cast<int>(stiffness_copy.size()));
-              if (
-                impedance_res.block_state == BLOCKSTATE::DONE ||
-                impedance_res.block_state == BLOCKSTATE::ERROR)
-              {
-                std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
-                set_impedance_ok_ = impedance_res.block_state == BLOCKSTATE::DONE;
-                set_impedance_error_code_ = impedance_res.error_code;
-                set_impedance_finished_ = true;
-                set_impedance_requested_ = false;
-                impedance_lock.unlock();
-                set_impedance_finished_cv_.notify_one();
-              }
+              std::lock_guard<std::mutex> impedance_lock(set_impedance_mutex_);
+              stiffness_copy = impedance_stiffness_;
+              damping_copy = impedance_damping_;
+            }
+            auto impedance_res = mxa_wrapper_.setImpedance(
+              stiffness_copy.data(), damping_copy.data(),
+              static_cast<int>(stiffness_copy.size()));
+            if (
+              impedance_res.block_state == BLOCKSTATE::DONE ||
+              impedance_res.block_state == BLOCKSTATE::ERROR)
+            {
+              std::unique_lock<std::mutex> impedance_lock(set_impedance_mutex_);
+              set_impedance_ok_ = impedance_res.block_state == BLOCKSTATE::DONE;
+              set_impedance_error_code_ = impedance_res.error_code;
+              set_impedance_finished_ = true;
+              set_impedance_requested_ = false;
+              impedance_lock.unlock();
+              set_impedance_finished_cv_.notify_one();
             }
           }
 

@@ -1,7 +1,7 @@
       case 4 ; Set axis impedance
-         bValuesOK = (gMxA_CmdQ_Int1[CommandQueueIndex] == 2)
-         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 4)
-         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 6)
-         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 8)
-         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 10)
-         bValuesOK = bValuesOK OR (gMxA_CmdQ_Int1[CommandQueueIndex] == 12)
+         SWITCH gMxA_CmdQ_Int1[CommandQueueIndex]
+            CASE 2,4,6,8,10,12
+               bValuesOK = TRUE
+            DEFAULT
+               bValuesOK = FALSE
+         ENDSWITCH
